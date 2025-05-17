@@ -1,0 +1,13 @@
+.env
+LICENSE
+README.md
+pull_request.bat
+pull_request.sh
+send_discord.bat
+.github
+.vscode
+tools
+k8s
+docker-compose.yml
+node_modules
+.next

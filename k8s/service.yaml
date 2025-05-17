@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aws-genai-frontend-service
+  namespace: bae-recipe
+spec:
+  selector:
+    app: aws-genai-frontend
+  ports:
+  - port: 3002
+    targetPort: 80
+    protocol: TCP
+    name: http
+  type: ClusterIP
