@@ -1,31 +1,42 @@
 {
-  "name": "aws-genai-hackathon-frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "biome lint --write ./src",
-    "format": "biome format --write ./src",
-    "format:check": "biome check ./src",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "@vitejs/plugin-react": "^4.4.1",
-    "globals": "^16.0.0",
-    "typescript": "~5.8.3",
-    "vite": "^6.3.5"
-  },
-  "volta": {
-    "node": "24.0.2",
-    "npm": "11.4.0"
-  }
+    "name": "aws-genai-hackathon-frontend",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "lint": "biome lint ./src",
+        "lint:fix": "biome lint --write ./src",
+        "format": "biome format ./src",
+        "format:fix": "biome format --write ./src",
+        "check": "biome check ./src",
+        "check:fix": "biome check --write ./src",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@chakra-ui/react": "^2.10.9",
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.0",
+        "axios": "^1.9.0",
+        "framer-motion": "^12.12.1",
+        "jotai": "^2.12.4",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0",
+        "react-router": "^7.6.0"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "1.9.4",
+        "@types/react": "^19.1.2",
+        "@types/react-dom": "^19.1.2",
+        "@vitejs/plugin-react": "^4.4.1",
+        "globals": "^16.0.0",
+        "typescript": "~5.8.3",
+        "vite": "^6.3.5",
+        "vite-tsconfig-paths": "^5.1.4"
+    },
+    "volta": {
+        "node": "24.0.2",
+        "npm": "11.4.0"
+    }
 }
