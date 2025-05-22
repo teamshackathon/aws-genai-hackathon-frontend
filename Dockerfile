@@ -14,8 +14,9 @@ RUN npm ci --quiet
 COPY . .
 
 # サブディレクトリのパスを環境変数で指定可能にする
-ARG BASE_PATH=/bae-recipe/
+ARG BASE_PATH=/bae-recipe
 ENV VITE_BASE_PATH=$BASE_PATH
+ENV VITE_PUBLIC_API_URL=https://163.44.125.128/api-bae-recipe/api/v1
 
 # アプリケーションをビルド
 RUN npm run build

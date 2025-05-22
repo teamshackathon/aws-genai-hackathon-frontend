@@ -40,7 +40,7 @@
         {
             "label": "コードの整形",
             "type": "shell",
-            "command": "npm run format && npm run lint",
+            "command": "npm run format:fix && npm run lint:fix && npm run check:fix",
             "args": [],
             "problemMatcher": [],
         }
