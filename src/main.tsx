@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/lib/provider/AuthProvider";
 import { ChakraProvider } from "@chakra-ui/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -9,7 +10,9 @@ if (rootElement) {
 	createRoot(rootElement).render(
 		<StrictMode>
 			<ChakraProvider>
-				<App />
+				<AuthProvider>
+					<App />
+				</AuthProvider>
 			</ChakraProvider>
 		</StrictMode>,
 	);
