@@ -7,8 +7,9 @@ import type { HealthCheckResponse } from "@/lib/domain/HealthCheckQuery";
 import { useAtomValue } from "jotai";
 import type { Loadable } from "jotai/vanilla/utils/loadable"; // ShadCN UI では Lucide アイコンを多用
 
-import { Badge, Box, Flex, Heading, Spinner, Text } from "@chakra-ui/react";
+import { Badge, Box, Flex, Spinner, Text } from "@chakra-ui/react";
 
+import Header from "@/components/organisms/Header";
 const getStatusDisplay = (
 	check: Loadable<Promise<HealthCheckResponse | null>>,
 ) => {
@@ -24,16 +25,14 @@ const getStatusDisplay = (
 	return <Badge colorScheme="yellow">UNKNOWN</Badge>;
 };
 
-export default function Header() {
+export default function MainPage() {
 	const liveness = useAtomValue(healthCheckLivenessAtomLoadable);
 	const readiness = useAtomValue(healthCheckReadinessAtomLoadable);
 
 	return (
-		<Box p={4}>
+		<Box>
+			<Header />
 			<Box>
-				<Heading as="h1" size="lg" mb={2}>
-					Health Check
-				</Heading>
 				<Flex alignItems="center" mb={1}>
 					<Text fontSize="sm" fontWeight="medium" mr={2}>
 						Liveness:
