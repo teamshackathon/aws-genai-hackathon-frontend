@@ -7,7 +7,7 @@ import MainPage from "@/components/pages/MainPage";
 
 function App() {
 	return (
-		<BrowserRouter>
+		<BrowserRouter basename="/bae-recipe">
 			<Routes>
 				<Route path="/" element={<MainPage />} />
 

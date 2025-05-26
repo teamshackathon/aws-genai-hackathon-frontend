@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: ghcr.io/teamshackathon/prod/aws-genai-frontend:v0.0.3
+        image: ghcr.io/teamshackathon/prod/aws-genai-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
