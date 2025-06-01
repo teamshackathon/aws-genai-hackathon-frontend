@@ -32,3 +32,6 @@ seeds/*
 # 環境変数系
 .env
 response.json
+
+# kubernetes系
+k8s/secrets.yaml
