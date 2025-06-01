@@ -4,7 +4,12 @@ import AvatarIconMenu from "../atoms/AvatarIconMenu";
 
 export default function Header() {
 	return (
-		<Flex bg={"lightblue"} alignItems="center" p={1}>
+		<Flex
+			bg={"lightblue"}
+			alignItems="center"
+			p={1}
+			bgGradient="linear(to-r, orange.500, pink.500)"
+		>
 			<Box ml={1}>
 				<Text fontSize="4xl" fontWeight="bold">
 					BAE RECIPE
