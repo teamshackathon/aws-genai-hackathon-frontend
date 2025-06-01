@@ -1,4 +1,8 @@
-import { authTokenAtom, isLoadingAuthAtom } from "@/lib/atom/AuthAtom";
+import {
+	authTokenAtom,
+	isLoadingAuthAtom,
+	isLoggedInAtom,
+} from "@/lib/atom/AuthAtom";
 import { Center, Spinner } from "@chakra-ui/react";
 import { useAtomValue } from "jotai";
 import { Navigate, Outlet, useLocation } from "react-router";
@@ -10,6 +14,7 @@ import { Navigate, Outlet, useLocation } from "react-router";
 export function ProtectedRoute() {
 	const authToken = useAtomValue(authTokenAtom);
 	const isLoading = useAtomValue(isLoadingAuthAtom);
+	const isLoggedIn = useAtomValue(isLoggedInAtom);
 	const location = useLocation();
 
 	// 認証状態が読み込み中の場合は、ローディング表示
@@ -22,7 +27,7 @@ export function ProtectedRoute() {
 	}
 
 	// 認証されていない場合は、現在のパスを記録してログインページにリダイレクト
-	if (!authToken) {
+	if (!authToken || !isLoggedIn) {
 		// 現在のURLをセッションストレージに保存して、ログイン後にリダイレクトできるようにする
 		sessionStorage.setItem("returnUrl", location.pathname + location.search);
 
