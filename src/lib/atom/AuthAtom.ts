@@ -22,7 +22,13 @@ export const isLoadingAuthAtom = atom<boolean>(false);
 // ログイン済みかどうかを示すatom
 export const isLoggedInAtom = atom((get) => {
 	const authToken = get(authTokenAtom);
-	return authToken !== null && authToken !== undefined;
+	const user = get(userAtom);
+	return (
+		authToken !== null &&
+		authToken !== undefined &&
+		user !== null &&
+		user !== undefined
+	);
 });
 
 // write only aton

@@ -42,7 +42,7 @@ export default function CallbackPage() {
 				setAuthToken(accessToken);
 
 				// リダイレクト先を決定
-				const returnUrl = sessionStorage.getItem("returnUrl") || "/";
+				const returnUrl = sessionStorage.getItem("returnUrl") || "/home";
 				sessionStorage.removeItem("returnUrl");
 
 				// ダッシュボードページにリダイレクト
