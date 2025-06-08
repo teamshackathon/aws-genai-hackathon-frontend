@@ -9,7 +9,7 @@ import { userAtom } from "./UserAtom";
 export const authTokenAtom = atomWithStorage<string | null>(
 	"auth_token",
 	null,
-	createJSONStorage(() => localStorage),
+	createJSONStorage(),
 	{ getOnInit: true },
 );
 
