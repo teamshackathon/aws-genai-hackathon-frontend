@@ -7,6 +7,7 @@ import LoginPage from "@/components/pages/LoginPage";
 import MainPage from "@/components/pages/MainPage";
 import ProfilePage from "@/components/pages/ProfilePage";
 // import RecipePage from "@/components/pages/RecipePage";
+import RegisterPage from "@/components/pages/RegisterPage";
 import SettingPage from "@/components/pages/SettingPage";
 
 function App() {
@@ -14,9 +15,12 @@ function App() {
 		<BrowserRouter basename="/bae-recipe">
 			<Routes>
 				<Route path="/" element={<LandingPage />} />
+				<Route path="/login" element={<LoginPage />} />
+				<Route path="/register" element={<RegisterPage />} />
 
 				{/* ログイン関係のルート */}
 				<Route path="/auth/login" element={<LoginPage />} />
+				<Route path="/auth/register" element={<RegisterPage />} />
 				<Route path="/auth/callback" element={<CallbackPage />} />
 
 				{/* ルートが存在しない場合の404ページ */}
