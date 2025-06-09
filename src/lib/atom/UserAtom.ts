@@ -1,4 +1,9 @@
-import { type User, getUser } from "@/lib/domain/UserQuery";
+import {
+	type User,
+	type UserUpdateRequest,
+	getUser,
+	updateUser,
+} from "@/lib/domain/UserQuery";
 import { atom } from "jotai";
 
 export const userAtom = atom<User | null | undefined>(undefined);
@@ -18,3 +23,18 @@ export const getUserAtom = atom(null, async (_, set) => {
 		set(isUserLoadingAtom, false);
 	}
 });
+
+export const updateUserAtom = atom(
+	null,
+	async (_, set, user: UserUpdateRequest) => {
+		set(isUserLoadingAtom, true);
+		try {
+			const updatedUser = await updateUser(user);
+			set(userAtom, updatedUser);
+		} catch (error) {
+			console.error("Failed to update user data:", error);
+		} finally {
+			set(isUserLoadingAtom, false);
+		}
+	},
+);
