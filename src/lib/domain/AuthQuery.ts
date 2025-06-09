@@ -1,4 +1,5 @@
 import { createAxiosClient } from "@/lib/infrastructure/AxiosClient";
+import { User, type UserCreateRequest, type UserResponse } from "./UserQuery";
 
 class AuthInPassword {
 	constructor(
@@ -30,6 +31,16 @@ function createAuthInPassword(res: AuthInPasswordResponse): AuthInPassword {
 	);
 }
 
+function createUser(res: UserResponse): User {
+	return new User(
+		res.id,
+		res.name || "No Name", // 名前がnullの場合はデフォルト値を設定
+		res.email,
+		res.avatar_url || "", // アバターURLがnullの場合は空文字列を設定
+		res.last_login_at ? new Date(res.last_login_at) : null,
+	);
+}
+
 export async function postAuthInPassword(
 	username: string,
 	password: string,
@@ -43,4 +54,15 @@ export async function postAuthInPassword(
 		password,
 	});
 	return createAuthInPassword(response.data);
+}
+
+export async function postUserCreate(
+	request: UserCreateRequest,
+): Promise<User> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.post<UserCreateRequest, UserResponse>(
+		"/auth/register",
+		request,
+	);
+	return createUser(response.data);
 }
