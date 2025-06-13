@@ -1,5 +1,5 @@
 import {
-	Badge,
+	// Badge,
 	Box,
 	Button,
 	Card,
@@ -27,7 +27,7 @@ import {
 	FaBookmark,
 	FaClock,
 	FaCookieBite,
-	FaHeart,
+	// FaHeart,
 	FaPlus,
 	FaSearch,
 	FaVideo,
@@ -36,6 +36,7 @@ import { HiSparkles } from "react-icons/hi2";
 
 import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
+import { recipeListAtomLoadable } from "@/lib/atom/RecipeAtom";
 import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
@@ -44,106 +45,28 @@ const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 
 // モックデータ - 実際のデータはAPIから取得
-const mockRecipes = [
-	{
-		id: 1,
-		title: "究極のふわふわパンケーキ",
-		thumbnail: "https://via.placeholder.com/300x200?text=パンケーキ",
-		category: "デザート",
-		cookingTime: "30分",
-		difficulty: "簡単",
-		likes: 234,
-		isBookmarked: true,
-		createdAt: "2日前",
-		tags: ["映える", "ふわふわ", "朝食"],
-	},
-	{
-		id: 2,
-		title: "カラフル野菜のガパオライス",
-		thumbnail: "https://via.placeholder.com/300x200?text=ガパオライス",
-		category: "メインディッシュ",
-		cookingTime: "25分",
-		difficulty: "普通",
-		likes: 189,
-		isBookmarked: false,
-		createdAt: "1週間前",
-		tags: ["ヘルシー", "カラフル", "エスニック"],
-	},
-	{
-		id: 3,
-		title: "チーズとろとろオムライス",
-		thumbnail: "https://via.placeholder.com/300x200?text=オムライス",
-		category: "メインディッシュ",
-		cookingTime: "20分",
-		difficulty: "普通",
-		likes: 456,
-		isBookmarked: true,
-		createdAt: "3日前",
-		tags: ["チーズ", "とろとろ", "洋食"],
-	},
-	{
-		id: 4,
-		title: "レインボーバーガー",
-		thumbnail: "https://via.placeholder.com/300x200?text=バーガー",
-		category: "ファストフード",
-		cookingTime: "40分",
-		difficulty: "やや難しい",
-		likes: 678,
-		isBookmarked: false,
-		createdAt: "5日前",
-		tags: ["レインボー", "インスタ映え", "アメリカン"],
-	},
-	{
-		id: 5,
-		title: "抹茶ティラミス",
-		thumbnail: "https://via.placeholder.com/300x200?text=ティラミス",
-		category: "デザート",
-		cookingTime: "60分",
-		difficulty: "やや難しい",
-		likes: 321,
-		isBookmarked: true,
-		createdAt: "1週間前",
-		tags: ["抹茶", "和風", "上品"],
-	},
-	{
-		id: 6,
-		title: "カラフル手巻き寿司",
-		thumbnail: "https://via.placeholder.com/300x200?text=手巻き寿司",
-		category: "和食",
-		cookingTime: "45分",
-		difficulty: "簡単",
-		likes: 543,
-		isBookmarked: false,
-		createdAt: "4日前",
-		tags: ["カラフル", "ヘルシー", "パーティー"],
-	},
-];
 
 // 難易度に応じた色
-const getDifficultyColor = (difficulty: string) => {
-	switch (difficulty) {
-		case "簡単":
-			return "green";
-		case "普通":
-			return "blue";
-		case "やや難しい":
-			return "orange";
-		case "難しい":
-			return "red";
-		default:
-			return "gray";
-	}
-};
+// const getDifficultyColor = (difficulty: string) => {
+// 	switch (difficulty) {
+// 		case "簡単":
+// 			return "green";
+// 		case "普通":
+// 			return "blue";
+// 		case "やや難しい":
+// 			return "orange";
+// 		case "難しい":
+// 			return "red";
+// 		default:
+// 			return "gray";
+// 	}
+// };
 
 export default function MainPage() {
 	const [urlInput, setUrlInput] = useState("");
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
-	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(
-		new Set(
-			mockRecipes.filter((recipe) => recipe.isBookmarked).map((r) => r.id),
-		),
-	);
+	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(new Set());
 
 	const toast = useToast();
 
@@ -156,6 +79,7 @@ export default function MainPage() {
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
 	const session = useLoadableAtom(sessionAtomLoadable);
+	const recipes = useLoadableAtom(recipeListAtomLoadable);
 
 	const handleUrlSubmit = async () => {
 		if (!urlInput.trim()) {
@@ -353,7 +277,7 @@ export default function MainPage() {
 								あなたのレシピ
 							</Heading>
 							<Text color={textColor}>
-								{mockRecipes.length}個のレシピが保存されています
+								{recipes?.total}個のレシピが保存されています
 							</Text>
 						</VStack>
 
@@ -372,7 +296,7 @@ export default function MainPage() {
 					</Flex>
 
 					<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-						{mockRecipes.map((recipe, index) => (
+						{recipes?.items.map((recipe, index) => (
 							<MotionCard
 								key={recipe.id}
 								initial={{ opacity: 0, y: 20 }}
@@ -393,8 +317,8 @@ export default function MainPage() {
 							>
 								<Box position="relative">
 									<Image
-										src={recipe.thumbnail}
-										alt={recipe.title}
+										// src={recipe.thumbnail}
+										alt={recipe.recipeName}
 										h="200px"
 										w="full"
 										objectFit="cover"
@@ -434,10 +358,10 @@ export default function MainPage() {
 									<VStack align="start" spacing={4}>
 										<VStack align="start" spacing={2} w="full">
 											<Heading size="md" noOfLines={2} lineHeight={1.3}>
-												{recipe.title}
+												{recipe.recipeName}
 											</Heading>
 
-											<HStack spacing={2} flexWrap="wrap">
+											{/* <HStack spacing={2} flexWrap="wrap">
 												{recipe.tags.slice(0, 2).map((tag) => (
 													<Badge
 														key={tag}
@@ -448,36 +372,36 @@ export default function MainPage() {
 														{tag}
 													</Badge>
 												))}
-											</HStack>
+											</HStack> */}
 										</VStack>
 
 										<HStack justify="space-between" w="full">
 											<VStack align="start" spacing={1}>
 												<HStack spacing={1}>
 													<Icon as={FaClock} boxSize={3} color="gray.500" />
-													<Text fontSize="sm" color={textColor}>
+													{/* <Text fontSize="sm" color={textColor}>
 														{recipe.cookingTime}
-													</Text>
+													</Text> */}
 												</HStack>
-												<Badge
+												{/* <Badge
 													colorScheme={getDifficultyColor(recipe.difficulty)}
 													variant="subtle"
 													fontSize="xs"
 												>
 													{recipe.difficulty}
-												</Badge>
+												</Badge> */}
 											</VStack>
 
 											<VStack align="end" spacing={1}>
-												<HStack spacing={1}>
+												{/* <HStack spacing={1}>
 													<Icon as={FaHeart} boxSize={3} color="red.400" />
 													<Text fontSize="sm" color={textColor}>
 														{recipe.likes}
 													</Text>
-												</HStack>
-												<Text fontSize="xs" color={textColor}>
-													{recipe.createdAt}
-												</Text>
+												</HStack> */}
+												{/* <Text fontSize="xs" color={textColor}>
+													{recipe?.createdDate}
+												</Text> */}
 											</VStack>
 										</HStack>
 									</VStack>
