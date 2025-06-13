@@ -36,6 +36,7 @@ import { HiSparkles } from "react-icons/hi2";
 
 import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
+import { recipeListAtomLoadable } from "@/lib/atom/RecipeAtom";
 import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
@@ -156,6 +157,7 @@ export default function MainPage() {
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
 	const session = useLoadableAtom(sessionAtomLoadable);
+	const recipes = useLoadableAtom(recipeListAtomLoadable);
 
 	const handleUrlSubmit = async () => {
 		if (!urlInput.trim()) {
@@ -353,7 +355,7 @@ export default function MainPage() {
 								あなたのレシピ
 							</Heading>
 							<Text color={textColor}>
-								{mockRecipes.length}個のレシピが保存されています
+								{recipes?.total}個のレシピが保存されています
 							</Text>
 						</VStack>
 
@@ -372,7 +374,7 @@ export default function MainPage() {
 					</Flex>
 
 					<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-						{mockRecipes.map((recipe, index) => (
+						{recipes?.items.map((recipe, index) => (
 							<MotionCard
 								key={recipe.id}
 								initial={{ opacity: 0, y: 20 }}
@@ -393,8 +395,8 @@ export default function MainPage() {
 							>
 								<Box position="relative">
 									<Image
-										src={recipe.thumbnail}
-										alt={recipe.title}
+										// src={recipe.thumbnail}
+										alt={recipe.recipeName}
 										h="200px"
 										w="full"
 										objectFit="cover"
@@ -434,10 +436,10 @@ export default function MainPage() {
 									<VStack align="start" spacing={4}>
 										<VStack align="start" spacing={2} w="full">
 											<Heading size="md" noOfLines={2} lineHeight={1.3}>
-												{recipe.title}
+												{recipe.recipeName}
 											</Heading>
 
-											<HStack spacing={2} flexWrap="wrap">
+											{/* <HStack spacing={2} flexWrap="wrap">
 												{recipe.tags.slice(0, 2).map((tag) => (
 													<Badge
 														key={tag}
@@ -448,36 +450,36 @@ export default function MainPage() {
 														{tag}
 													</Badge>
 												))}
-											</HStack>
+											</HStack> */}
 										</VStack>
 
 										<HStack justify="space-between" w="full">
 											<VStack align="start" spacing={1}>
 												<HStack spacing={1}>
 													<Icon as={FaClock} boxSize={3} color="gray.500" />
-													<Text fontSize="sm" color={textColor}>
+													{/* <Text fontSize="sm" color={textColor}>
 														{recipe.cookingTime}
-													</Text>
+													</Text> */}
 												</HStack>
-												<Badge
+												{/* <Badge
 													colorScheme={getDifficultyColor(recipe.difficulty)}
 													variant="subtle"
 													fontSize="xs"
 												>
 													{recipe.difficulty}
-												</Badge>
+												</Badge> */}
 											</VStack>
 
 											<VStack align="end" spacing={1}>
-												<HStack spacing={1}>
+												{/* <HStack spacing={1}>
 													<Icon as={FaHeart} boxSize={3} color="red.400" />
 													<Text fontSize="sm" color={textColor}>
 														{recipe.likes}
 													</Text>
-												</HStack>
-												<Text fontSize="xs" color={textColor}>
-													{recipe.createdAt}
-												</Text>
+												</HStack> */}
+												{/* <Text fontSize="xs" color={textColor}>
+													{recipe?.createdDate}
+												</Text> */}
 											</VStack>
 										</HStack>
 									</VStack>
