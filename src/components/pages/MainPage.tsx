@@ -1,5 +1,5 @@
 import {
-	Badge,
+	// Badge,
 	Box,
 	Button,
 	Card,
@@ -27,7 +27,7 @@ import {
 	FaBookmark,
 	FaClock,
 	FaCookieBite,
-	FaHeart,
+	// FaHeart,
 	FaPlus,
 	FaSearch,
 	FaVideo,
@@ -45,106 +45,28 @@ const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 
 // モックデータ - 実際のデータはAPIから取得
-const mockRecipes = [
-	{
-		id: 1,
-		title: "究極のふわふわパンケーキ",
-		thumbnail: "https://via.placeholder.com/300x200?text=パンケーキ",
-		category: "デザート",
-		cookingTime: "30分",
-		difficulty: "簡単",
-		likes: 234,
-		isBookmarked: true,
-		createdAt: "2日前",
-		tags: ["映える", "ふわふわ", "朝食"],
-	},
-	{
-		id: 2,
-		title: "カラフル野菜のガパオライス",
-		thumbnail: "https://via.placeholder.com/300x200?text=ガパオライス",
-		category: "メインディッシュ",
-		cookingTime: "25分",
-		difficulty: "普通",
-		likes: 189,
-		isBookmarked: false,
-		createdAt: "1週間前",
-		tags: ["ヘルシー", "カラフル", "エスニック"],
-	},
-	{
-		id: 3,
-		title: "チーズとろとろオムライス",
-		thumbnail: "https://via.placeholder.com/300x200?text=オムライス",
-		category: "メインディッシュ",
-		cookingTime: "20分",
-		difficulty: "普通",
-		likes: 456,
-		isBookmarked: true,
-		createdAt: "3日前",
-		tags: ["チーズ", "とろとろ", "洋食"],
-	},
-	{
-		id: 4,
-		title: "レインボーバーガー",
-		thumbnail: "https://via.placeholder.com/300x200?text=バーガー",
-		category: "ファストフード",
-		cookingTime: "40分",
-		difficulty: "やや難しい",
-		likes: 678,
-		isBookmarked: false,
-		createdAt: "5日前",
-		tags: ["レインボー", "インスタ映え", "アメリカン"],
-	},
-	{
-		id: 5,
-		title: "抹茶ティラミス",
-		thumbnail: "https://via.placeholder.com/300x200?text=ティラミス",
-		category: "デザート",
-		cookingTime: "60分",
-		difficulty: "やや難しい",
-		likes: 321,
-		isBookmarked: true,
-		createdAt: "1週間前",
-		tags: ["抹茶", "和風", "上品"],
-	},
-	{
-		id: 6,
-		title: "カラフル手巻き寿司",
-		thumbnail: "https://via.placeholder.com/300x200?text=手巻き寿司",
-		category: "和食",
-		cookingTime: "45分",
-		difficulty: "簡単",
-		likes: 543,
-		isBookmarked: false,
-		createdAt: "4日前",
-		tags: ["カラフル", "ヘルシー", "パーティー"],
-	},
-];
 
 // 難易度に応じた色
-const getDifficultyColor = (difficulty: string) => {
-	switch (difficulty) {
-		case "簡単":
-			return "green";
-		case "普通":
-			return "blue";
-		case "やや難しい":
-			return "orange";
-		case "難しい":
-			return "red";
-		default:
-			return "gray";
-	}
-};
+// const getDifficultyColor = (difficulty: string) => {
+// 	switch (difficulty) {
+// 		case "簡単":
+// 			return "green";
+// 		case "普通":
+// 			return "blue";
+// 		case "やや難しい":
+// 			return "orange";
+// 		case "難しい":
+// 			return "red";
+// 		default:
+// 			return "gray";
+// 	}
+// };
 
 export default function MainPage() {
 	const [urlInput, setUrlInput] = useState("");
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
-	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(
-		new Set(
-			mockRecipes.filter((recipe) => recipe.isBookmarked).map((r) => r.id),
-		),
-	);
+	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(new Set());
 
 	const toast = useToast();
 
