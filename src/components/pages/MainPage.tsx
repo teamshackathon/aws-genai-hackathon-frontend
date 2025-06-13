@@ -22,7 +22,7 @@ import {
 	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	FaBookmark,
 	FaClock,
@@ -34,7 +34,10 @@ import {
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 
+import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
+import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
+import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
 // Motion components
 const MotionBox = motion(Box);
@@ -135,6 +138,7 @@ const getDifficultyColor = (difficulty: string) => {
 export default function MainPage() {
 	const [urlInput, setUrlInput] = useState("");
 	const [isProcessing, setIsProcessing] = useState(false);
+	const [isChatOpen, setIsChatOpen] = useState(false);
 	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(
 		new Set(
 			mockRecipes.filter((recipe) => recipe.isBookmarked).map((r) => r.id),
@@ -151,6 +155,8 @@ export default function MainPage() {
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
+	const session = useLoadableAtom(sessionAtomLoadable);
+
 	const handleUrlSubmit = async () => {
 		if (!urlInput.trim()) {
 			toast({
@@ -162,9 +168,11 @@ export default function MainPage() {
 			return;
 		}
 
+		// チャットを開く
+		setIsChatOpen(true);
 		setIsProcessing(true);
-		// モック処理 - 実際はAPIを呼び出し
-		await new Promise((resolve) => setTimeout(resolve, 3000));
+
+		// WebSocket通信が開始される（isProcessing=trueによってAIProcessChatでWebSocket接続開始）
 
 		toast({
 			title: "レシピを解析中です",
@@ -174,17 +182,18 @@ export default function MainPage() {
 			isClosable: true,
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 2000));
+		// 5秒後に処理完了をシミュレート（テスト用）
+		setTimeout(() => {
+			setIsProcessing(false); // WebSocket接続を停止
+			toast({
+				title: "レシピが追加されました！",
+				description: "新しいレシピがあなたのコレクションに追加されました",
+				status: "success",
+				duration: 4000,
+				isClosable: true,
+			});
+		}, 5000);
 
-		toast({
-			title: "レシピが追加されました！",
-			description: "新しいレシピがあなたのコレクションに追加されました",
-			status: "success",
-			duration: 4000,
-			isClosable: true,
-		});
-
-		setIsProcessing(false);
 		setUrlInput("");
 	};
 
@@ -211,6 +220,13 @@ export default function MainPage() {
 			return newSet;
 		});
 	};
+
+	useEffect(() => {
+		if (session) {
+			setIsChatOpen(true);
+			setIsProcessing(true);
+		}
+	}, [session]);
 
 	return (
 		<Box minH="100vh" bgGradient={bgGradient}>
@@ -471,6 +487,13 @@ export default function MainPage() {
 					</SimpleGrid>
 				</MotionBox>
 			</Container>
+
+			{/* AI処理チャット */}
+			<AIProcessChat
+				isOpen={isChatOpen}
+				isProcessing={isProcessing}
+				onClose={() => setIsChatOpen(false)}
+			/>
 		</Box>
 	);
 }
