@@ -14,7 +14,7 @@ import {
 	Container,
 	Divider,
 	FormControl,
-	FormHelperText,
+	// FormHelperText,
 	FormLabel,
 	Grid,
 	GridItem,
@@ -22,10 +22,10 @@ import {
 	Heading,
 	Icon,
 	Select,
-	Slider,
-	SliderFilledTrack,
-	SliderThumb,
-	SliderTrack,
+	// Slider,
+	// SliderFilledTrack,
+	// SliderThumb,
+	// SliderTrack,
 	Switch,
 	Text,
 	VStack,
@@ -41,10 +41,10 @@ import {
 	FaCog,
 	FaDownload,
 	FaExclamationTriangle,
-	FaEye,
-	FaGlobe,
+	// FaEye,
+	// FaGlobe,
 	FaLanguage,
-	FaLock,
+	// FaLock,
 	FaMoon,
 	FaPalette,
 	FaSave,
@@ -56,37 +56,15 @@ import {
 } from "react-icons/fa";
 
 import Header from "@/components/organisms/Header";
+import { settingsAtom } from "@/lib/atom/BaseAtom";
+import type { SettingsData } from "@/lib/type/Base";
+import { useAtom } from "jotai";
+import { useResetAtom } from "jotai/utils";
 
 // Motion components
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 const MotionButton = motion(Button);
-
-interface SettingsData {
-	notifications: {
-		email: boolean;
-		push: boolean;
-		recipeUpdates: boolean;
-		newsletter: boolean;
-	};
-	appearance: {
-		theme: string;
-		fontSize: number;
-		language: string;
-		animations: boolean;
-	};
-	privacy: {
-		profileVisibility: string;
-		dataCollection: boolean;
-		cookieSettings: boolean;
-		shareAnalytics: boolean;
-	};
-	account: {
-		twoFactorAuth: boolean;
-		sessionTimeout: number;
-		downloadData: boolean;
-	};
-}
 
 export default function SettingPage() {
 	const toast = useToast();
@@ -106,31 +84,8 @@ export default function SettingPage() {
 	const headingColor = useColorModeValue("gray.800", "white");
 
 	// Settings state
-	const [settings, setSettings] = useState<SettingsData>({
-		notifications: {
-			email: true,
-			push: false,
-			recipeUpdates: true,
-			newsletter: false,
-		},
-		appearance: {
-			theme: colorMode,
-			fontSize: 16,
-			language: "ja",
-			animations: true,
-		},
-		privacy: {
-			profileVisibility: "public",
-			dataCollection: true,
-			cookieSettings: true,
-			shareAnalytics: false,
-		},
-		account: {
-			twoFactorAuth: false,
-			sessionTimeout: 30,
-			downloadData: false,
-		},
-	});
+	const [settings, setSettings] = useAtom<SettingsData>(settingsAtom);
+	const resetSettings = useResetAtom(settingsAtom);
 
 	const handleSave = async () => {
 		setIsLoading(true);
@@ -159,31 +114,7 @@ export default function SettingPage() {
 	};
 
 	const handleReset = () => {
-		setSettings({
-			notifications: {
-				email: true,
-				push: false,
-				recipeUpdates: true,
-				newsletter: false,
-			},
-			appearance: {
-				theme: "light",
-				fontSize: 16,
-				language: "ja",
-				animations: true,
-			},
-			privacy: {
-				profileVisibility: "public",
-				dataCollection: true,
-				cookieSettings: true,
-				shareAnalytics: false,
-			},
-			account: {
-				twoFactorAuth: false,
-				sessionTimeout: 30,
-				downloadData: false,
-			},
-		});
+		resetSettings();
 
 		toast({
 			title: "設定をリセットしました",
@@ -373,6 +304,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.notifications.email}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -396,6 +328,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.notifications.push}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -419,6 +352,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.notifications.recipeUpdates}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -442,6 +376,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.notifications.newsletter}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -505,7 +440,7 @@ export default function SettingPage() {
 												</HStack>
 											</HStack>
 
-											<FormControl>
+											{/* <FormControl>
 												<FormLabel fontWeight="semibold">
 													フォントサイズ
 												</FormLabel>
@@ -540,7 +475,7 @@ export default function SettingPage() {
 												<FormHelperText>
 													現在のサイズ: {settings.appearance.fontSize}px
 												</FormHelperText>
-											</FormControl>
+											</FormControl> */}
 
 											<FormControl>
 												<FormLabel fontWeight="semibold">言語</FormLabel>
@@ -558,34 +493,8 @@ export default function SettingPage() {
 													icon={<FaLanguage />}
 												>
 													<option value="ja">日本語</option>
-													<option value="en">English</option>
-													<option value="ko">한국어</option>
-													<option value="zh">中文</option>
 												</Select>
 											</FormControl>
-
-											<HStack justify="space-between">
-												<VStack align="start" spacing={1}>
-													<Text fontWeight="semibold">アニメーション</Text>
-													<Text fontSize="sm" color={textColor}>
-														スムーズなアニメーション効果を有効にする
-													</Text>
-												</VStack>
-												<Switch
-													isChecked={settings.appearance.animations}
-													onChange={(e) =>
-														setSettings({
-															...settings,
-															appearance: {
-																...settings.appearance,
-																animations: e.target.checked,
-															},
-														})
-													}
-													colorScheme="purple"
-													size="lg"
-												/>
-											</HStack>
 										</VStack>
 									</CardBody>
 								</MotionCard>
@@ -617,29 +526,6 @@ export default function SettingPage() {
 									</CardHeader>
 									<CardBody pt={0}>
 										<VStack spacing={6} align="stretch">
-											<FormControl>
-												<FormLabel fontWeight="semibold">
-													プロフィール公開設定
-												</FormLabel>
-												<Select
-													value={settings.privacy.profileVisibility}
-													onChange={(e) =>
-														setSettings({
-															...settings,
-															privacy: {
-																...settings.privacy,
-																profileVisibility: e.target.value,
-															},
-														})
-													}
-													icon={<FaGlobe />}
-												>
-													<option value="public">公開</option>
-													<option value="friends">友達のみ</option>
-													<option value="private">非公開</option>
-												</Select>
-											</FormControl>
-
 											<HStack justify="space-between">
 												<VStack align="start" spacing={1}>
 													<Text fontWeight="semibold">データ収集を許可</Text>
@@ -649,6 +535,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.privacy.dataCollection}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -672,6 +559,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.privacy.cookieSettings}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -695,6 +583,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.privacy.shareAnalytics}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -753,6 +642,7 @@ export default function SettingPage() {
 												</VStack>
 												<Switch
 													isChecked={settings.account.twoFactorAuth}
+													isDisabled={true}
 													onChange={(e) =>
 														setSettings({
 															...settings,
@@ -767,7 +657,7 @@ export default function SettingPage() {
 												/>
 											</HStack>
 
-											<FormControl>
+											{/* <FormControl>
 												<FormLabel fontWeight="semibold">
 													セッションタイムアウト
 												</FormLabel>
@@ -802,7 +692,7 @@ export default function SettingPage() {
 												<FormHelperText>
 													現在の設定: {settings.account.sessionTimeout}分
 												</FormHelperText>
-											</FormControl>
+											</FormControl> */}
 
 											<Divider />
 
