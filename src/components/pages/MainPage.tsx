@@ -36,7 +36,11 @@ import { HiSparkles } from "react-icons/hi2";
 
 import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
-import { recipeListAtomLoadable } from "@/lib/atom/RecipeAtom";
+import {
+	externalServiceAtomLoadable,
+	recipeListAtomLoadable,
+	recipeStatusAtomLoadable,
+} from "@/lib/atom/RecipeAtom";
 import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
@@ -80,6 +84,11 @@ export default function MainPage() {
 
 	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
+	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
+	const recipeStatuses = useLoadableAtom(recipeStatusAtomLoadable);
+
+	console.log("External Services:", externalServices);
+	console.log("Recipe Statuses:", recipeStatuses);
 
 	const handleUrlSubmit = async () => {
 		if (!urlInput.trim()) {
