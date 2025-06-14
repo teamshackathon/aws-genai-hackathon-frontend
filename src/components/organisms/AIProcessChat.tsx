@@ -1,4 +1,5 @@
 import { useRecipeGenWebSocket } from "@/lib/hook/useRecipeGenWebSocket";
+import { WebSocketMessage } from "@/lib/type/websocket";
 import {
 	Box,
 	Flex,
@@ -13,7 +14,6 @@ import {
 import { motion } from "framer-motion";
 import { useCallback, useState } from "react";
 import { FaChevronDown, FaChevronUp, FaRobot, FaTimes } from "react-icons/fa";
-import { HiSparkles } from "react-icons/hi2";
 
 const MotionBox = motion(Box);
 
@@ -21,6 +21,76 @@ interface AIProcessChatProps {
 	isOpen: boolean;
 	isProcessing: boolean;
 	onClose: () => void;
+}
+
+function webSocketStatus(status: string) {
+	switch (status) {
+		case "Connecting":
+			return {
+				icon: <Icon as={FaRobot} boxSize={3} color="orange.500" />,
+				text: "接続中...",
+				color: "orange.500",
+			};
+		case "Open":
+			return {
+				icon: <Icon as={FaRobot} boxSize={3} color="green.500" />,
+				text: "オンライン",
+				color: "green.500",
+			};
+		case "Closing":
+			return {
+				icon: <Icon as={FaRobot} boxSize={3} color="red.500" />,
+				text: "切断中...",
+				color: "red.500",
+			};
+		case "Closed":
+			return {
+				icon: <Icon as={FaRobot} boxSize={3} color="gray.500" />,
+				text: "オフライン",
+				color: "gray.500",
+			};
+		default:
+			return {
+				icon: <Icon as={FaRobot} boxSize={3} color="gray.500" />,
+				text: "不明",
+				color: "gray.500",
+			};
+	}
+}
+
+// WebSocketに送られたメッセージをtypeごとに分類するための関数
+function classifyWebSocketMessage(message: WebSocketMessage) {
+	const type = message.type || "unknown";
+	const contents: string[] = [];
+	switch (type) {
+		case "connection_established":
+			contents.push(message.data.content);
+			return contents;
+		case "system_response":
+			contents.push(message.data.content);
+			return contents;
+		case "user_input":
+			contents.push(message.data.content);
+			return contents;
+		case "session_history":
+			for (const item of message.data.messages) {
+				const subMessage = new WebSocketMessage(
+					item.type,
+					{
+						content: item.content,
+						metadata: item.metadata,
+						session_id: message.sessionId,
+					},
+					new Date(item.timestamp),
+					message.sessionId,
+				);
+				contents.push(...classifyWebSocketMessage(subMessage));
+			}
+			return contents;
+		default:
+			console.warn("Unknown message type:", type);
+			return [];
+	}
 }
 
 export default function AIProcessChat({
@@ -35,17 +105,28 @@ export default function AIProcessChat({
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const [message, setMessage] = useState<string[]>([]);
 
-	const handleWebSocketMessage = useCallback((message: any) => {
-		if (message.data) {
-			setMessage((prev) => [...prev, message.data]);
+	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
+		if (message) {
+			// JSON.parseを使用してメッセージを解析
+			try {
+				const parsedMessage = JSON.parse(message.data);
+				const wsMessage = new WebSocketMessage(
+					parsedMessage.type,
+					parsedMessage.data,
+					new Date(parsedMessage.timestamp),
+					parsedMessage.session_id,
+				);
+				const classifiedMessages = classifyWebSocketMessage(wsMessage);
+				setMessage((prev) => [...prev, ...classifiedMessages]);
+			} catch (error) {
+				return;
+			}
 		}
 	}, []);
-	const { lastMessage, connectionStatus, readyState } = useRecipeGenWebSocket({
+	const { connectionStatus } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
 		shouldConnect: isProcessing,
 	});
-
-	if (!isOpen) return null;
 
 	const handleToggleMinimize = () => {
 		setIsMinimized(!isMinimized);
@@ -56,13 +137,7 @@ export default function AIProcessChat({
 		onClose();
 	};
 
-	console.log("WebSocket Connection Status:", connectionStatus);
-	console.log("WebSocket Ready State:", readyState);
-	console.log(
-		"Last Message:",
-		lastMessage ? lastMessage.data : "No messages received",
-	);
-	console.log("Current Messages:", message);
+	if (!isOpen) return null;
 
 	return (
 		<MotionBox
@@ -98,14 +173,18 @@ export default function AIProcessChat({
 				>
 					<HStack spacing={3}>
 						<Box p={2} bg="orange.100" rounded="full" position="relative">
-							<Icon as={FaRobot} boxSize={5} color="orange.500" />
+							<Icon
+								as={FaRobot}
+								boxSize={5}
+								color={webSocketStatus(connectionStatus).color}
+							/>
 							<Box
 								position="absolute"
 								top={1}
 								right={1}
 								w={2}
 								h={2}
-								bg={isProcessing ? "orange.400" : "green.400"}
+								bg={webSocketStatus(connectionStatus).color}
 								rounded="full"
 								border="2px"
 								borderColor={bgColor}
@@ -116,17 +195,13 @@ export default function AIProcessChat({
 								AI レシピアシスタント
 							</Heading>
 							<HStack spacing={1}>
-								<Icon
-									as={HiSparkles}
-									boxSize={3}
-									color={isProcessing ? "orange.400" : "green.400"}
-								/>
+								{webSocketStatus(connectionStatus).icon}
 								<Text
 									fontSize="xs"
-									color={isProcessing ? "orange.500" : "green.500"}
+									color={webSocketStatus(connectionStatus).color}
 									fontWeight="medium"
 								>
-									{isProcessing ? "処理中..." : "オンライン"}
+									{webSocketStatus(connectionStatus).text}
 								</Text>
 							</HStack>
 						</VStack>
@@ -164,60 +239,34 @@ export default function AIProcessChat({
 						{" "}
 						<Box flex={1} w="full" p={4} overflowY="auto">
 							<VStack spacing={4} align="stretch">
-								{/* AIメッセージ */}
-								<Flex justify="start">
-									<Box
-										maxW="80%"
-										bg={useColorModeValue("gray.100", "gray.700")}
-										p={3}
-										rounded="lg"
-										roundedBottomLeft="sm"
-										position="relative"
-									>
-										<Text
-											fontSize="sm"
-											color={useColorModeValue("gray.800", "white")}
-										>
-											Hello World! 🌟
-										</Text>
-										<Text fontSize="sm" mt={2} color={textColor}>
-											AIレシピアシスタントです。動画の解析を開始しますか？
-										</Text>
-										<Text fontSize="xs" color={textColor} mt={1}>
-											{new Date().toLocaleTimeString("ja-JP", {
-												hour: "2-digit",
-												minute: "2-digit",
-											})}
-										</Text>
-									</Box>
-								</Flex>
-
 								{/* WebSocketからのメッセージを表示 */}
-								{message.map((msg, index) => (
-									<Flex key={index} justify="start">
-										<Box
-											maxW="80%"
-											bg={useColorModeValue("blue.100", "blue.700")}
-											p={3}
-											rounded="lg"
-											roundedBottomLeft="sm"
-											position="relative"
-										>
-											<Text
-												fontSize="sm"
-												color={useColorModeValue("blue.800", "white")}
+								{message.map((msg, index) => {
+									return (
+										<Flex key={index} justify="start">
+											<Box
+												maxW="80%"
+												bg={useColorModeValue("blue.100", "blue.700")}
+												p={3}
+												rounded="lg"
+												roundedBottomLeft="sm"
+												position="relative"
 											>
-												{msg}
-											</Text>
-											<Text fontSize="xs" color={textColor} mt={1}>
-												{new Date().toLocaleTimeString("ja-JP", {
-													hour: "2-digit",
-													minute: "2-digit",
-												})}
-											</Text>
-										</Box>
-									</Flex>
-								))}
+												<Text
+													fontSize="sm"
+													color={useColorModeValue("blue.800", "white")}
+												>
+													{msg}
+												</Text>
+												<Text fontSize="xs" color={textColor} mt={1}>
+													{new Date().toLocaleTimeString("ja-JP", {
+														hour: "2-digit",
+														minute: "2-digit",
+													})}
+												</Text>
+											</Box>
+										</Flex>
+									);
+								})}
 
 								{/* システムメッセージ */}
 								<Flex justify="center">

@@ -36,13 +36,10 @@ import { HiSparkles } from "react-icons/hi2";
 
 import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
-import {
-	externalServiceAtomLoadable,
-	recipeListAtomLoadable,
-	recipeStatusAtomLoadable,
-} from "@/lib/atom/RecipeAtom";
+import { recipeListAtomLoadable, recipeUrlAtom } from "@/lib/atom/RecipeAtom";
 import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
+import { useAtom } from "jotai";
 
 // Motion components
 const MotionBox = motion(Box);
@@ -67,7 +64,7 @@ const MotionCard = motion(Card);
 // };
 
 export default function MainPage() {
-	const [urlInput, setUrlInput] = useState("");
+	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
 	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(new Set());
@@ -84,11 +81,6 @@ export default function MainPage() {
 
 	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
-	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
-	const recipeStatuses = useLoadableAtom(recipeStatusAtomLoadable);
-
-	console.log("External Services:", externalServices);
-	console.log("Recipe Statuses:", recipeStatuses);
 
 	const handleUrlSubmit = async () => {
 		if (!urlInput.trim()) {
@@ -100,34 +92,9 @@ export default function MainPage() {
 			});
 			return;
 		}
-
 		// チャットを開く
 		setIsChatOpen(true);
 		setIsProcessing(true);
-
-		// WebSocket通信が開始される（isProcessing=trueによってAIProcessChatでWebSocket接続開始）
-
-		toast({
-			title: "レシピを解析中です",
-			description: "AIがレシピを分析しています...",
-			status: "info",
-			duration: 2000,
-			isClosable: true,
-		});
-
-		// 5秒後に処理完了をシミュレート（テスト用）
-		setTimeout(() => {
-			setIsProcessing(false); // WebSocket接続を停止
-			toast({
-				title: "レシピが追加されました！",
-				description: "新しいレシピがあなたのコレクションに追加されました",
-				status: "success",
-				duration: 4000,
-				isClosable: true,
-			});
-		}, 5000);
-
-		setUrlInput("");
 	};
 
 	const toggleBookmark = (recipeId: number) => {
