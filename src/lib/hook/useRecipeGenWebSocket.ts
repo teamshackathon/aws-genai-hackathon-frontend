@@ -4,6 +4,7 @@ import { authTokenAtom } from "@/lib/atom/AuthAtom";
 import type { WebSocketOptions } from "@/lib/type/websocket";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
+import { recipeUrlAtom } from "../atom/RecipeAtom";
 import { sessionAtomLoadable } from "../atom/SessionAtom";
 import { useLoadableAtom } from "./useLoadableAtom";
 
@@ -16,6 +17,7 @@ export const useRecipeGenWebSocket = ({
 	const baseURL = import.meta.env.VITE_PUBLIC_API_URL;
 	const authToken = useAtomValue(authTokenAtom);
 	const session = useLoadableAtom(sessionAtomLoadable);
+	const recipeUrl = useAtomValue(recipeUrlAtom);
 
 	const [connectionStatus, setConnectionStatus] =
 		useState<string>("Uninstantiated");
@@ -24,7 +26,7 @@ export const useRecipeGenWebSocket = ({
 
 	const { sendMessage, lastMessage, readyState } = useWebSocket(
 		shouldConnect
-			? `${baseURL}/ws/recipe-gen?token=${authToken}&session_id=${sessionId}`
+			? `${baseURL}/ws/recipe-gen?token=${authToken}&session_id=${sessionId}&url=${recipeUrl || ""}`
 			: null,
 		{
 			reconnectAttempts,
