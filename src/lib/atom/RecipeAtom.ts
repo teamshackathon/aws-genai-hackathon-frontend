@@ -9,7 +9,9 @@ import {
 } from "@/lib/domain/RecipeQuery";
 import { atom } from "jotai";
 
-import { atomWithRefresh, loadable } from "jotai/utils";
+import { atomWithRefresh, atomWithReset, loadable } from "jotai/utils";
+
+export const recipeUrlAtom = atomWithReset<string>("");
 
 const recipeQueryParamAtom = atom<RecipeQueryParams>({
 	page: 1,
