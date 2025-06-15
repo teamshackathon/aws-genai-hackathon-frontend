@@ -40,6 +40,28 @@ export class RecipeList {
 	) {}
 }
 
+export class Ingridient {
+	constructor(
+		public id: number,
+		public recipeId: number,
+		public ingredient: string,
+		public amount: string,
+		public createdDate: Date,
+		public updatedDate: Date,
+	) {}
+}
+
+export class Process {
+	constructor(
+		public id: number,
+		public recipeId: number,
+		public processNumber: number,
+		public process: string,
+		public createdDate: Date,
+		public updatedDate: Date,
+	) {}
+}
+
 export interface RecipeResponse {
 	id: number;
 	recipe_name: string;
@@ -70,6 +92,24 @@ export interface RecipeListResponse {
 	page: number;
 	per_page: number;
 	pages: number;
+}
+
+export interface IngridientResponse {
+	id: number;
+	recipe_id: number;
+	ingredient: string;
+	amount: string;
+	created_date: string; // ISO 8601形式の文字列
+	updated_date: string; // ISO 8601形式の文字列
+}
+
+export interface ProcessResponse {
+	id: number;
+	recipe_id: number;
+	process_number: number;
+	process: string;
+	created_date: string; // ISO 8601形式の文字列
+	updated_date: string; // ISO 8601形式の文字列
 }
 
 export interface RecipeQueryParams {
@@ -106,6 +146,28 @@ export function createRecipeStatus(res: RecipeStatusResponse): RecipeStatus {
 	return new RecipeStatus(
 		res.id,
 		res.status,
+		new Date(res.created_date),
+		new Date(res.updated_date),
+	);
+}
+
+export function createIngridient(res: IngridientResponse): Ingridient {
+	return new Ingridient(
+		res.id,
+		res.recipe_id,
+		res.ingredient,
+		res.amount,
+		new Date(res.created_date),
+		new Date(res.updated_date),
+	);
+}
+
+export function createProcess(res: ProcessResponse): Process {
+	return new Process(
+		res.id,
+		res.recipe_id,
+		res.process_number,
+		res.process,
 		new Date(res.created_date),
 		new Date(res.updated_date),
 	);
@@ -152,4 +214,20 @@ export async function getRecipeStatuses(): Promise<RecipeStatus[]> {
 	const response =
 		await axiosClient.get<RecipeStatusResponse[]>("/recipes/statuses");
 	return response.data.map(createRecipeStatus);
+}
+
+export async function getIngridients(recipeId: number): Promise<Ingridient[]> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<IngridientResponse[]>(
+		`/recipes/${recipeId}/ingredients`,
+	);
+	return response.data.map(createIngridient);
+}
+
+export async function getProcesses(recipeId: number): Promise<Process[]> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<ProcessResponse[]>(
+		`/recipes/${recipeId}/processes`,
+	);
+	return response.data.map(createProcess);
 }
