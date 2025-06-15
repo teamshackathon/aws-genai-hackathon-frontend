@@ -12,7 +12,7 @@ import {
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaChevronDown, FaChevronUp, FaRobot, FaTimes } from "react-icons/fa";
 
 const MotionBox = motion(Box);
@@ -20,6 +20,7 @@ const MotionBox = motion(Box);
 interface AIProcessChatProps {
 	isOpen: boolean;
 	isProcessing: boolean;
+	setIsProcessing: (isProcessing: boolean) => void;
 	onClose: () => void;
 }
 
@@ -72,6 +73,15 @@ function classifyWebSocketMessage(message: WebSocketMessage) {
 		case "user_input":
 			contents.push(message.data.content);
 			return contents;
+		case "task_started":
+			contents.push(`タスクが開始されました: ${message.data.content}`);
+			return contents;
+		case "task_progress":
+			contents.push(`タスクの進行状況: ${message.data.content}`);
+			return contents;
+		case "task_completed":
+			contents.push(`タスクが完了しました: ${message.data.content}`);
+			return contents;
 		case "session_history":
 			for (const item of message.data.messages) {
 				const subMessage = new WebSocketMessage(
@@ -96,6 +106,7 @@ function classifyWebSocketMessage(message: WebSocketMessage) {
 export default function AIProcessChat({
 	isOpen,
 	isProcessing,
+	setIsProcessing,
 	onClose,
 }: AIProcessChatProps) {
 	const [isMinimized, setIsMinimized] = useState(false);
@@ -104,6 +115,7 @@ export default function AIProcessChat({
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const [message, setMessage] = useState<string[]>([]);
+	const [types, setTypes] = useState<string[]>([]);
 
 	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
 		if (message) {
@@ -116,6 +128,7 @@ export default function AIProcessChat({
 					new Date(parsedMessage.timestamp),
 					parsedMessage.session_id,
 				);
+				setTypes((prev) => [...prev, wsMessage.type]);
 				const classifiedMessages = classifyWebSocketMessage(wsMessage);
 				setMessage((prev) => [...prev, ...classifiedMessages]);
 			} catch (error) {
@@ -123,7 +136,7 @@ export default function AIProcessChat({
 			}
 		}
 	}, []);
-	const { connectionStatus } = useRecipeGenWebSocket({
+	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
 		shouldConnect: isProcessing,
 	});
@@ -136,6 +149,26 @@ export default function AIProcessChat({
 		setIsMinimized(false);
 		onClose();
 	};
+
+	useEffect(() => {
+		if (types.length > 0) {
+			const type = types[types.length - 1];
+			// 最後のメッセージが"AI処理が開始されました"であれば、最小化状態にする
+			if (type === "task_completed") {
+				setIsMinimized(false);
+				setIsProcessing(false);
+				disconnect();
+			}
+		}
+	}, [types, disconnect]);
+
+	// 初回レンダリング時にメッセージをクリア
+	useEffect(() => {
+		if (isOpen) {
+			setMessage([]);
+			setTypes([]);
+		}
+	}, [isOpen]);
 
 	if (!isOpen) return null;
 

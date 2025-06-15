@@ -114,6 +114,7 @@ export default function MainPage() {
 		// チャットを開く
 		setIsChatOpen(true);
 		setIsProcessing(true);
+		setUrlInput("");
 	};
 
 	const toggleBookmark = (recipeId: number) => {
@@ -413,6 +414,7 @@ export default function MainPage() {
 			<AIProcessChat
 				isOpen={isChatOpen}
 				isProcessing={isProcessing}
+				setIsProcessing={setIsProcessing}
 				onClose={() => setIsChatOpen(false)}
 			/>
 		</Box>
