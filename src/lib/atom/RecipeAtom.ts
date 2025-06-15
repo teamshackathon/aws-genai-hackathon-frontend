@@ -2,12 +2,14 @@ import {
 	type ExternalService,
 	type Ingridient,
 	type Process,
+	type Recipe,
 	type RecipeList,
 	type RecipeQueryParams,
 	type RecipeStatus,
 	getExternalServices,
 	getIngridients,
 	getProcesses,
+	getRecipeById,
 	getRecipeStatuses,
 	getRecipes,
 } from "@/lib/domain/RecipeQuery";
@@ -18,6 +20,7 @@ import { atomWithRefresh, atomWithReset, loadable } from "jotai/utils";
 export const recipeUrlAtom = atomWithReset<string>("");
 export const ingredientsAtom = atomWithReset<Ingridient[]>([]);
 export const processesAtom = atomWithReset<Process[]>([]);
+export const currentRecipeAtom = atomWithReset<Recipe | null>(null);
 
 export const recipeQueryParamAtom = atom<RecipeQueryParams>({
 	page: 1,
@@ -91,3 +94,16 @@ export const getProcessesAtom = atom(null, async (_, set, recipeId: number) => {
 		set(processesAtom, []);
 	}
 });
+
+export const getRecipeByIdAtom = atom(
+	null,
+	async (_, set, recipeId: number) => {
+		try {
+			const recipe = await getRecipeById(recipeId);
+			set(currentRecipeAtom, recipe);
+		} catch (error) {
+			console.error("Error fetching recipe by ID:", error);
+			set(currentRecipeAtom, null);
+		}
+	},
+);

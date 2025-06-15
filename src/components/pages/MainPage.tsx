@@ -33,6 +33,7 @@ import {
 	FaVideo,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
+import { useNavigate } from "react-router";
 
 import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
@@ -64,6 +65,7 @@ const MotionCard = motion(Card);
 // };
 
 export default function MainPage() {
+	const navigate = useNavigate();
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
@@ -290,6 +292,7 @@ export default function MainPage() {
 									borderColor: "orange.300",
 								}}
 								cursor="pointer"
+								onClick={() => navigate(`/home/recipe/${recipe.id}`)}
 							>
 								<Box position="relative">
 									<Image
