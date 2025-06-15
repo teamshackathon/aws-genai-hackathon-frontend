@@ -85,11 +85,28 @@ export default function MainPage() {
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 
 	const handleUrlSubmit = async () => {
+		//youtube shorts以外を受け付けない→
+		// YouTube ShortsのURLパターンをチェックする正規表現
+		// youtube.com/shorts/ または youtu.be/ に続く11桁の英数字（動画ID）をチェックします。
+		const youtubeShortsRegex =
+			/^(https?:\/\/)?(www\.)?(youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})(\?.*)?$/;
+
 		if (!urlInput.trim()) {
 			toast({
-				title: "URLを入力してください",
+				title: "Youtube ShortsのURLを入力してください",
 				status: "warning",
 				duration: 3000,
+				isClosable: true,
+			});
+			return;
+		}
+		// 入力されたURLがYouTube Shortsの正規表現に一致するかをチェック
+		if (!youtubeShortsRegex.test(urlInput)) {
+			toast({
+				title:
+					"有効なYouTube ShortsのURLではありません。Shortsのリンクのみを受け付けています。",
+				status: "error",
+				duration: 5000,
 				isClosable: true,
 			});
 			return;
@@ -97,6 +114,7 @@ export default function MainPage() {
 		// チャットを開く
 		setIsChatOpen(true);
 		setIsProcessing(true);
+		setUrlInput("");
 	};
 
 	const toggleBookmark = (recipeId: number) => {
@@ -190,13 +208,14 @@ export default function MainPage() {
 							</HStack>
 
 							<Text color={textColor} textAlign="center">
-								YouTubeやTikTokなどの動画URLを入力すると、AIが自動でレシピを抽出・整理します
+								YouTube
+								Shortsの動画URLを入力すると、AIが自動でレシピを抽出・整理します
 							</Text>
 
 							<HStack w="full" spacing={4}>
 								<InputGroup flex={1}>
 									<Input
-										placeholder="https://youtube.com/watch?v=..."
+										placeholder="https://youtube.com/shorts/..."
 										value={urlInput}
 										onChange={(e) => setUrlInput(e.target.value)}
 										size="lg"
@@ -395,6 +414,7 @@ export default function MainPage() {
 			<AIProcessChat
 				isOpen={isChatOpen}
 				isProcessing={isProcessing}
+				setIsProcessing={setIsProcessing}
 				onClose={() => setIsChatOpen(false)}
 			/>
 		</Box>

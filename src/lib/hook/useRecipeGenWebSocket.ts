@@ -60,6 +60,7 @@ export const useRecipeGenWebSocket = ({
 			// WebSocket接続を閉じる
 			if (readyState === ReadyState.OPEN) {
 				// react-use-websocketには直接disconnect機能がないため、shouldConnectをfalseにして接続を切断
+				shouldConnect = false;
 			}
 		},
 	};
