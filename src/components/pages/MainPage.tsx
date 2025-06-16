@@ -215,7 +215,7 @@ export default function MainPage() {
 								lineHeight="1.8" // 行間広げて見やすく
 								px={4} // スマホ対策で左右に余白
 							>
-								YouTube や TikTok の動画URLを入力すると、
+								YouTubeShortsの動画URLを入力すると、
 								<br />
 								AIが自動でレシピを抽出・整理します
 							</Text>
