@@ -194,20 +194,30 @@ export default function MainPage() {
 						mx="auto"
 					>
 						<VStack spacing={6}>
-							<HStack>
+							<HStack spacing={2}>
+								{" "}
+								{/* spacing追加 */}
 								<Icon as={FaVideo} boxSize={6} color="purple.500" />
 								<Heading
 									size="md"
 									color={useColorModeValue("gray.800", "white")}
+									lineHeight="1.4" // 少し行間をゆったり
 								>
 									動画レシピをAIで解析
 								</Heading>
 								<Icon as={HiSparkles} boxSize={5} color="pink.500" />
 							</HStack>
 
-							<Text color={textColor} textAlign="center">
-								YouTube
-								Shortsの動画URLを入力すると、AIが自動でレシピを抽出・整理します
+							<Text
+								color={textColor}
+								textAlign="center"
+								fontSize="md" // 明示的に中サイズ指定
+								lineHeight="1.8" // 行間広げて見やすく
+								px={4} // スマホ対策で左右に余白
+							>
+								YouTube や TikTok の動画URLを入力すると、
+								<br />
+								AIが自動でレシピを抽出・整理します
 							</Text>
 
 							<HStack w="full" spacing={4}>
