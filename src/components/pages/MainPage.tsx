@@ -114,7 +114,7 @@ export default function MainPage() {
 		// チャットを開く
 		setIsChatOpen(true);
 		setIsProcessing(true);
-		setUrlInput("");
+		// setUrlInput("");
 	};
 
 	const toggleBookmark = (recipeId: number) => {

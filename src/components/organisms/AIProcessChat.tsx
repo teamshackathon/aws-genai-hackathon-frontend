@@ -1,3 +1,4 @@
+import { recipeUrlAtom, refreshRecipeListAtom } from "@/lib/atom/RecipeAtom";
 import { useRecipeGenWebSocket } from "@/lib/hook/useRecipeGenWebSocket";
 import { WebSocketMessage } from "@/lib/type/websocket";
 import {
@@ -12,6 +13,7 @@ import {
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
+import { useAtom, useSetAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
 import { FaChevronDown, FaChevronUp, FaRobot, FaTimes } from "react-icons/fa";
 
@@ -116,6 +118,8 @@ export default function AIProcessChat({
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const [message, setMessage] = useState<string[]>([]);
 	const [types, setTypes] = useState<string[]>([]);
+	const [recipeUrl, setRecipeUrl] = useAtom(recipeUrlAtom);
+	const refreshRecipe = useSetAtom(refreshRecipeListAtom);
 
 	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
 		if (message) {
@@ -138,7 +142,7 @@ export default function AIProcessChat({
 	}, []);
 	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
-		shouldConnect: isProcessing,
+		shouldConnect: isProcessing && recipeUrl !== "",
 	});
 
 	const handleToggleMinimize = () => {
@@ -155,18 +159,20 @@ export default function AIProcessChat({
 			const type = types[types.length - 1];
 			// 最後のメッセージが"AI処理が開始されました"であれば、最小化状態にする
 			if (type === "task_completed") {
+				refreshRecipe();
 				setIsMinimized(false);
 				setIsProcessing(false);
 				disconnect();
 			}
 		}
-	}, [types, disconnect]);
+	}, [types]);
 
 	// 初回レンダリング時にメッセージをクリア
 	useEffect(() => {
 		if (isOpen) {
 			setMessage([]);
 			setTypes([]);
+			setRecipeUrl("");
 		}
 	}, [isOpen]);
 
