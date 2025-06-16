@@ -14,7 +14,6 @@ import {
 	Icon,
 	List,
 	ListItem,
-	OrderedList,
 	Skeleton,
 	SkeletonText,
 	Text,
