@@ -28,7 +28,6 @@ import {
 	FaClock,
 	FaCookieBite,
 	// FaHeart,
-	FaPlus,
 	FaSearch,
 	FaVideo,
 } from "react-icons/fa";
