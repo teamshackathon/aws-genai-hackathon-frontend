@@ -1,3 +1,5 @@
+import { recipeListAtomLoadable } from "@/lib/atom/RecipeAtom";
+import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 import {
 	Badge,
 	Box,
@@ -21,10 +23,8 @@ import { motion } from "framer-motion";
 import {
 	FaBars,
 	FaBook,
-	FaBookmark,
 	FaCog,
 	FaCookieBite,
-	FaHeart,
 	FaHistory,
 	FaHome,
 	FaUser,
@@ -41,15 +41,10 @@ const SiderDrawer = () => {
 	const textColor = "white";
 	const drawerBg = useColorModeValue("white", "gray.800");
 
+	const recipeList = useLoadableAtom(recipeListAtomLoadable);
+
 	const sidebarItems = [
 		{ icon: FaHome, label: "ホーム", href: "/home", badge: null },
-		{ icon: FaBook, label: "レシピ一覧", href: "/home/recipe", badge: null },
-		{
-			icon: FaBookmark,
-			label: "お気に入り",
-			href: "/home/favorites",
-			badge: "12",
-		},
 		{ icon: FaHistory, label: "履歴", href: "/home/history", badge: null },
 		{ icon: FaUser, label: "プロフィール", href: "/home/profile", badge: null },
 		{ icon: FaCog, label: "設定", href: "/home/setting", badge: null },
@@ -171,16 +166,7 @@ const SiderDrawer = () => {
 											<Text fontSize="sm">保存レシピ</Text>
 										</HStack>
 										<Badge colorScheme="blue" rounded="full">
-											42
-										</Badge>
-									</Flex>
-									<Flex justify="space-between" align="center">
-										<HStack spacing={2}>
-											<Icon as={FaHeart} boxSize={4} color="red.400" />
-											<Text fontSize="sm">お気に入り</Text>
-										</HStack>
-										<Badge colorScheme="red" rounded="full">
-											12
+											{recipeList?.total}
 										</Badge>
 									</Flex>
 								</VStack>

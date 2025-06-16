@@ -39,8 +39,9 @@ import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
 import { recipeListAtomLoadable, recipeUrlAtom } from "@/lib/atom/RecipeAtom";
 import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
+import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 
 // Motion components
 const MotionBox = motion(Box);
@@ -69,7 +70,6 @@ export default function MainPage() {
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
-	const [bookmarkedRecipes, setBookmarkedRecipes] = useState(new Set());
 
 	const toast = useToast();
 
@@ -83,6 +83,7 @@ export default function MainPage() {
 
 	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
+	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
 
 	const handleUrlSubmit = async () => {
 		//youtube shorts以外を受け付けない→
@@ -117,28 +118,27 @@ export default function MainPage() {
 		// setUrlInput("");
 	};
 
-	const toggleBookmark = (recipeId: number) => {
-		setBookmarkedRecipes((prev) => {
-			const newSet = new Set(prev);
-			if (newSet.has(recipeId)) {
-				newSet.delete(recipeId);
-				toast({
-					title: "ブックマークを解除しました",
-					status: "info",
-					duration: 2000,
-					isClosable: true,
-				});
-			} else {
-				newSet.add(recipeId);
-				toast({
-					title: "ブックマークに追加しました",
-					status: "success",
-					duration: 2000,
-					isClosable: true,
-				});
-			}
-			return newSet;
+	const toggleBookmark = (recipeId: number, isFavorite: boolean) => {
+		updateUserRecipe(recipeId, {
+			is_favorite: !isFavorite,
 		});
+		if (isFavorite) {
+			// 既にブックマークされている場合は解除
+			toast({
+				title: "ブックマークを解除しました",
+				status: "info",
+				duration: 2000,
+				isClosable: true,
+			});
+		} else {
+			// ブックマークされていない場合は追加
+			toast({
+				title: "ブックマークに追加しました",
+				status: "success",
+				duration: 2000,
+				isClosable: true,
+			});
+		}
 	};
 
 	useEffect(() => {
@@ -326,11 +326,7 @@ export default function MainPage() {
 										icon={
 											<Icon
 												as={FaBookmark}
-												color={
-													bookmarkedRecipes.has(recipe.id)
-														? "orange.400"
-														: "gray.400"
-												}
+												color={recipe.isFavorite ? "orange.400" : "gray.400"}
 											/>
 										}
 										position="absolute"
@@ -347,7 +343,7 @@ export default function MainPage() {
 										transition="all 0.2s"
 										onClick={(e) => {
 											e.stopPropagation();
-											toggleBookmark(recipe.id);
+											toggleBookmark(recipe.id, recipe.isFavorite);
 										}}
 									/>
 								</Box>
