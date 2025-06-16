@@ -107,3 +107,11 @@ export const getRecipeByIdAtom = atom(
 		}
 	},
 );
+
+export const refreshRecipeListAtom = atom(null, async (_, set) => {
+	try {
+		set(recipeListAtomAsync);
+	} catch (error) {
+		console.error("Error refreshing recipe list:", error);
+	}
+});
