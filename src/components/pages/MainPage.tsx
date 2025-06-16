@@ -276,19 +276,6 @@ export default function MainPage() {
 								{recipes?.total}個のレシピが保存されています
 							</Text>
 						</VStack>
-
-						<Button
-							leftIcon={<Icon as={FaPlus} />}
-							variant="outline"
-							colorScheme="orange"
-							_hover={{
-								transform: "translateY(-2px)",
-								shadow: "md",
-							}}
-							transition="all 0.3s"
-						>
-							新しいレシピ
-						</Button>
 					</Flex>
 
 					<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
