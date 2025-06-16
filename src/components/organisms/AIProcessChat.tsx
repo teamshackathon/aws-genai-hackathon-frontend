@@ -112,7 +112,6 @@ export default function AIProcessChat({
 	onClose,
 }: AIProcessChatProps) {
 	const [isMinimized, setIsMinimized] = useState(false);
-
 	const bgColor = useColorModeValue("white", "gray.800");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 	const textColor = useColorModeValue("gray.600", "gray.300");
@@ -120,6 +119,8 @@ export default function AIProcessChat({
 	const [types, setTypes] = useState<string[]>([]);
 	const [recipeUrl, setRecipeUrl] = useAtom(recipeUrlAtom);
 	const refreshRecipe = useSetAtom(refreshRecipeListAtom);
+
+	const shouldConnect = isProcessing && recipeUrl !== "";
 
 	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
 		if (message) {
@@ -142,7 +143,7 @@ export default function AIProcessChat({
 	}, []);
 	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
-		shouldConnect: isProcessing && recipeUrl !== "",
+		shouldConnect: shouldConnect,
 	});
 
 	const handleToggleMinimize = () => {
