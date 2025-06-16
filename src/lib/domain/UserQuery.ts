@@ -35,6 +35,10 @@ export interface UserUpdateRequest {
 	bio?: string | null;
 }
 
+export interface UserRecipeRequest {
+	is_favorite?: boolean; // レシピのお気に入り状態
+}
+
 function createUser(res: UserResponse): User {
 	return new User(
 		res.id,
@@ -59,4 +63,15 @@ export async function updateUser(request: UserUpdateRequest): Promise<User> {
 		request,
 	);
 	return createUser(response.data);
+}
+
+export async function updateUserRecipe(
+	recipeId: number,
+	request: UserRecipeRequest,
+): Promise<void> {
+	const axiosClient = createAxiosClient();
+	await axiosClient.put<UserRecipeRequest, boolean>(
+		`/users/me/recipes/${recipeId}`,
+		request,
+	);
 }

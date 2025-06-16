@@ -306,11 +306,21 @@ export default function LoginPage() {
 									</MotionButton>
 
 									<HStack w="full" align="center">
-										<Divider />
-										<Text color={mutedColor} fontSize="sm" px={3}>
+										<Divider orientation="horizontal" />
+										<Text
+											color={mutedColor}
+											fontSize="sm"
+											px={3}
+											sx={{
+												writingMode: "horizontal-tb",
+												textOrientation: "mixed",
+												display: "inline-block",
+												whiteSpace: "nowrap",
+											}}
+										>
 											または
 										</Text>
-										<Divider />
+										<Divider orientation="horizontal" />
 									</HStack>
 
 									<MotionButton
