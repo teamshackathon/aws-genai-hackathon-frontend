@@ -6,7 +6,6 @@ import {
 	CardBody,
 	CardHeader,
 	Container,
-	FaClipboardList,
 	Flex,
 	Grid,
 	GridItem,
@@ -29,6 +28,7 @@ import { useEffect, useState } from "react";
 import {
 	FaArrowLeft,
 	FaBookmark,
+	FaClipboardList,
 	FaClock,
 	FaCookieBite,
 	FaExternalLinkAlt,
