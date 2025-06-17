@@ -14,8 +14,12 @@ import {
 	InputGroup,
 	InputRightElement,
 	SimpleGrid,
+	Tag,
+	TagLabel,
 	Text,
 	VStack,
+	Wrap,
+	WrapItem,
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
@@ -337,7 +341,39 @@ export default function MainPage() {
 											<Heading size="md" noOfLines={2} lineHeight={1.3}>
 												{recipe.recipeName}
 											</Heading>
+
+											{/* Genre Badge */}
+											{recipe.genrue && (
+												<Badge
+													colorScheme="purple"
+													variant="subtle"
+													fontSize="xs"
+													px={2}
+													py={1}
+													rounded="md"
+												>
+													{recipe.genrue}
+												</Badge>
+											)}
 										</VStack>
+
+										{/* Keywords Tags */}
+										{recipe.keyword && (
+											<Wrap spacing={1}>
+												{recipe.keyword.split(",").map((tag, tagIndex) => (
+													<WrapItem key={tagIndex}>
+														<Tag
+															size="sm"
+															colorScheme="orange"
+															variant="subtle"
+															rounded="full"
+														>
+															<TagLabel>{tag.trim()}</TagLabel>
+														</Tag>
+													</WrapItem>
+												))}
+											</Wrap>
+										)}
 
 										<HStack justify="space-between" w="full">
 											<VStack align="start" spacing={1}>
