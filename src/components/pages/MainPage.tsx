@@ -14,27 +14,36 @@ import {
 	InputGroup,
 	InputRightElement,
 	SimpleGrid,
-	Spinner,
+	Tag,
+	TagLabel,
 	Text,
 	VStack,
+	Wrap,
+	WrapItem,
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FaBookmark, FaCookieBite, FaSearch, FaVideo } from "react-icons/fa";
+import {
+	FaBookmark,
+	FaChevronLeft,
+	FaChevronRight,
+	FaCookieBite,
+	FaSearch,
+	FaVideo,
+} from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { useNavigate } from "react-router";
 
 import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
-import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
 import {
 	externalServiceAtomLoadable,
 	recipeListAtomLoadable,
+	recipeQueryParamAtom,
 	recipeUrlAtom,
 } from "@/lib/atom/RecipeAtom";
-import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
@@ -47,8 +56,7 @@ const MotionCard = motion(Card);
 export default function MainPage() {
 	const navigate = useNavigate();
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
-	const [isProcessing, setIsProcessing] = useState(false);
-	const [isChatOpen, setIsChatOpen] = useState(false);
+	const [recipeQueryParam, setRecipeQueryParam] = useAtom(recipeQueryParamAtom);
 
 	const toast = useToast();
 
@@ -60,11 +68,17 @@ export default function MainPage() {
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
-	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
 	const [userRecipe, setUserRecipe] = useState<UserRecipe[]>([]);
+
+	const handlePageChange = (newPage: number) => {
+		setRecipeQueryParam((prev) => ({
+			...prev,
+			page: newPage,
+		}));
+	};
 
 	const handleUrlSubmit = () => {
 		//youtube shorts以外を受け付けない→
@@ -93,10 +107,10 @@ export default function MainPage() {
 			});
 			return;
 		}
-		// チャットを開く
-		setIsChatOpen(true);
-		setIsProcessing(true);
-		// setUrlInput("");
+
+		// AI解析ページに遷移
+		const encodedUrl = encodeURIComponent(urlInput);
+		navigate(`/home/ai-gen?url=${encodedUrl}`);
 	};
 
 	const fetchData = async () => {
@@ -135,13 +149,6 @@ export default function MainPage() {
 			});
 		}
 	};
-
-	useEffect(() => {
-		if (session) {
-			setIsChatOpen(true);
-			setIsProcessing(true);
-		}
-	}, [session]);
 
 	useEffect(() => {
 		fetchData();
@@ -213,6 +220,7 @@ export default function MainPage() {
 
 							<HStack w="full" spacing={4}>
 								<InputGroup flex={1}>
+									{" "}
 									<Input
 										placeholder="https://youtube.com/shorts/..."
 										value={urlInput}
@@ -225,13 +233,11 @@ export default function MainPage() {
 											borderColor: "orange.400",
 											boxShadow: "0 0 0 1px var(--chakra-colors-orange-400)",
 										}}
-										isDisabled={isProcessing}
 									/>
 									<InputRightElement height="100%">
 										<Icon as={FaSearch} color="gray.400" />
 									</InputRightElement>
-								</InputGroup>
-
+								</InputGroup>{" "}
 								<Button
 									size="lg"
 									bgGradient="linear(to-r, orange.400, pink.400)"
@@ -241,16 +247,8 @@ export default function MainPage() {
 										transform: "translateY(-2px)",
 										shadow: "lg",
 									}}
-									leftIcon={
-										isProcessing ? (
-											<Spinner size="sm" />
-										) : (
-											<Icon as={HiSparkles} />
-										)
-									}
+									leftIcon={<Icon as={HiSparkles} />}
 									onClick={handleUrlSubmit}
-									isLoading={isProcessing}
-									loadingText="解析中..."
 									transition="all 0.3s"
 									px={8}
 								>
@@ -274,140 +272,252 @@ export default function MainPage() {
 							</Heading>
 							<Text color={textColor}>
 								{recipes?.total}個のレシピが保存されています
+								{recipeQueryParam.keyword && (
+									<Text as="span" color="orange.500" fontWeight="medium" ml={2}>
+										「{recipeQueryParam.keyword}」で検索中
+									</Text>
+								)}
 							</Text>
 						</VStack>
 					</Flex>
 
 					<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-						{recipes?.items.map((recipe, index) => (
-							<MotionCard
-								key={recipe.id}
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.5, delay: index * 0.1 }}
-								whileHover={{ y: -8, transition: { duration: 0.2 } }}
-								bg={cardBg}
-								shadow="lg"
-								rounded="xl"
-								overflow="hidden"
-								border="1px"
-								borderColor={borderColor}
-								_hover={{
-									shadow: "2xl",
-									borderColor: "orange.300",
-								}}
-								cursor="pointer"
-								onClick={() => navigate(`/home/recipe/${recipe.id}`)}
-							>
-								<Box position="relative">
-									<YouTubeThumbnail
-										url={recipe.url}
-										alt={recipe.recipeName}
-										height="200px"
-										width="full"
-										objectFit="cover"
-										onClick={() => {
-											if (recipe.url) {
-												window.open(
-													recipe.url,
-													"_blank",
-													"noopener,noreferrer",
-												);
+						{recipes?.items && recipes.items.length > 0 ? (
+							recipes.items.map((recipe, index) => (
+								<MotionCard
+									key={recipe.id}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ duration: 0.5, delay: index * 0.1 }}
+									whileHover={{ y: -8, transition: { duration: 0.2 } }}
+									bg={cardBg}
+									shadow="lg"
+									rounded="xl"
+									overflow="hidden"
+									border="1px"
+									borderColor={borderColor}
+									_hover={{
+										shadow: "2xl",
+										borderColor: "orange.300",
+									}}
+									cursor="pointer"
+									onClick={() => navigate(`/home/recipe/${recipe.id}`)}
+								>
+									<Box position="relative">
+										<YouTubeThumbnail
+											url={recipe.url}
+											alt={recipe.recipeName}
+											height="200px"
+											width="full"
+											objectFit="cover"
+											onClick={() => {
+												if (recipe.url) {
+													window.open(
+														recipe.url,
+														"_blank",
+														"noopener,noreferrer",
+													);
+												}
+											}}
+										/>
+										<IconButton
+											aria-label="ブックマーク"
+											icon={
+												<Icon
+													as={FaBookmark}
+													color={
+														userRecipe.find(
+															(ur) =>
+																ur.recipeId === recipe.id && ur.isFavorite,
+														)
+															? "orange.400"
+															: "gray.400"
+													}
+												/>
 											}
-										}}
-									/>
-									<IconButton
-										aria-label="ブックマーク"
-										icon={
-											<Icon
-												as={FaBookmark}
-												color={
+											position="absolute"
+											top={3}
+											right={3}
+											size="sm"
+											bg="white"
+											shadow="md"
+											rounded="full"
+											_hover={{
+												transform: "scale(1.1)",
+												shadow: "lg",
+											}}
+											transition="all 0.2s"
+											onClick={(e) => {
+												e.stopPropagation();
+												toggleBookmark(
+													recipe.id,
 													userRecipe.find(
 														(ur) => ur.recipeId === recipe.id && ur.isFavorite,
-													)
-														? "orange.400"
-														: "gray.400"
-												}
-											/>
-										}
-										position="absolute"
-										top={3}
-										right={3}
-										size="sm"
-										bg="white"
-										shadow="md"
-										rounded="full"
-										_hover={{
-											transform: "scale(1.1)",
-											shadow: "lg",
-										}}
-										transition="all 0.2s"
-										onClick={(e) => {
-											e.stopPropagation();
-											toggleBookmark(
-												recipe.id,
-												userRecipe.find(
-													(ur) => ur.recipeId === recipe.id && ur.isFavorite,
-												)?.isFavorite || false,
-											);
-										}}
-									/>
-								</Box>
+													)?.isFavorite || false,
+												);
+											}}
+										/>
+									</Box>
+									<CardBody p={6}>
+										<VStack align="start" spacing={4}>
+											<VStack align="start" spacing={2} w="full">
+												<Heading size="md" noOfLines={2} lineHeight={1.3}>
+													{recipe.recipeName}
+												</Heading>
 
-								<CardBody p={6}>
-									<VStack align="start" spacing={4}>
-										<VStack align="start" spacing={2} w="full">
-											<Heading size="md" noOfLines={2} lineHeight={1.3}>
-												{recipe.recipeName}
-											</Heading>
+												{/* Genre Badge */}
+												{recipe.genrue && (
+													<Badge
+														colorScheme="purple"
+														variant="subtle"
+														fontSize="xs"
+														px={2}
+														py={1}
+														rounded="md"
+													>
+														{recipe.genrue}
+													</Badge>
+												)}
+											</VStack>
+
+											{/* Keywords Tags */}
+											{recipe.keyword && (
+												<Wrap spacing={1}>
+													{recipe.keyword.split(",").map((tag, tagIndex) => (
+														<WrapItem key={tagIndex}>
+															<Tag
+																size="sm"
+																colorScheme="orange"
+																variant="subtle"
+																rounded="full"
+															>
+																<TagLabel>{tag.trim()}</TagLabel>
+															</Tag>
+														</WrapItem>
+													))}
+												</Wrap>
+											)}
+
+											<HStack justify="space-between" w="full">
+												<VStack align="start" spacing={1}>
+													<Badge
+														colorScheme={"green"}
+														variant="subtle"
+														fontSize="xs"
+													>
+														{externalServices?.find(
+															(service) =>
+																service.id === recipe.externalServiceId,
+														)?.serviceName || "不明なサービス"}
+													</Badge>
+												</VStack>
+
+												<VStack align="end" spacing={1}>
+													<Text fontSize="xs" color={textColor}>
+														{recipe?.createdDate
+															? new Date(recipe.createdDate).toLocaleDateString(
+																	"ja-JP",
+																	{
+																		year: "numeric",
+																		month: "2-digit",
+																		day: "2-digit",
+																	},
+																)
+															: "不明な日付"}
+													</Text>
+												</VStack>
+											</HStack>
 										</VStack>
-
-										<HStack justify="space-between" w="full">
-											<VStack align="start" spacing={1}>
-												<Badge
-													colorScheme={"green"}
-													variant="subtle"
-													fontSize="xs"
-												>
-													{externalServices?.find(
-														(service) =>
-															service.id === recipe.externalServiceId,
-													)?.serviceName || "不明なサービス"}
-												</Badge>
-											</VStack>
-
-											<VStack align="end" spacing={1}>
-												<Text fontSize="xs" color={textColor}>
-													{recipe?.createdDate
-														? new Date(recipe.createdDate).toLocaleDateString(
-																"ja-JP",
-																{
-																	year: "numeric",
-																	month: "2-digit",
-																	day: "2-digit",
-																},
-															)
-														: "不明な日付"}
-												</Text>
-											</VStack>
-										</HStack>
-									</VStack>
-								</CardBody>
-							</MotionCard>
-						))}
+									</CardBody>
+								</MotionCard>
+							))
+						) : (
+							<Box gridColumn="1 / -1" textAlign="center" py={16}>
+								<VStack spacing={4}>
+									<Icon as={FaCookieBite} boxSize={16} color="gray.300" />
+									<Heading size="md" color={textColor}>
+										{recipeQueryParam.keyword
+											? `「${recipeQueryParam.keyword}」に一致するレシピが見つかりません`
+											: "まだレシピがありません"}
+									</Heading>
+									<Text color={textColor}>
+										{recipeQueryParam.keyword
+											? "別のキーワードで検索してみてください"
+											: "YouTube ShortsのURLを入力してAIでレシピを生成しましょう！"}
+									</Text>
+								</VStack>
+							</Box>
+						)}
 					</SimpleGrid>
+
+					{/* Pagination */}
+					{recipes && recipes.pages > 1 && (
+						<MotionBox
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.6, delay: 0.6 }}
+							mt={12}
+						>
+							<Flex justify="center" align="center">
+								<HStack spacing={2}>
+									{/* Previous Page Button */}
+									<IconButton
+										aria-label="前のページ"
+										icon={<Icon as={FaChevronLeft} />}
+										isDisabled={recipeQueryParam.page === 1}
+										onClick={() => handlePageChange(recipeQueryParam.page - 1)}
+										variant="outline"
+										colorScheme="orange"
+									/>
+
+									{/* Page Numbers */}
+									{Array.from(
+										{ length: Math.min(5, recipes.pages) },
+										(_, i) => {
+											const startPage = Math.max(1, recipeQueryParam.page - 2);
+											const pageNum = startPage + i;
+											if (pageNum > recipes.pages) return null;
+
+											return (
+												<Button
+													key={pageNum}
+													onClick={() => handlePageChange(pageNum)}
+													variant={
+														pageNum === recipeQueryParam.page
+															? "solid"
+															: "outline"
+													}
+													colorScheme="orange"
+													size="sm"
+													minW="40px"
+												>
+													{pageNum}
+												</Button>
+											);
+										},
+									)}
+
+									{/* Next Page Button */}
+									<IconButton
+										aria-label="次のページ"
+										icon={<Icon as={FaChevronRight} />}
+										isDisabled={recipeQueryParam.page === recipes.pages}
+										onClick={() => handlePageChange(recipeQueryParam.page + 1)}
+										variant="outline"
+										colorScheme="orange"
+									/>
+								</HStack>
+							</Flex>
+
+							{/* Page Info */}
+							<Text textAlign="center" fontSize="sm" color={textColor} mt={4}>
+								ページ {recipeQueryParam.page} / {recipes.pages}
+								（全 {recipes.total} 件）
+							</Text>
+						</MotionBox>
+					)}
 				</MotionBox>
 			</Container>
-
-			{/* AI処理チャット */}
-			{isChatOpen && (
-				<AIProcessChat
-					isOpen={isChatOpen}
-					isProcessing={isProcessing}
-					setIsProcessing={setIsProcessing}
-					onClose={() => setIsChatOpen(false)}
-				/>
-			)}
 		</Box>
 	);
 }

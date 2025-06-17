@@ -16,8 +16,12 @@ import {
 	ListItem,
 	Skeleton,
 	SkeletonText,
+	Tag,
+	TagLabel,
 	Text,
 	VStack,
+	Wrap,
+	WrapItem,
 	useColorModeValue,
 	useDisclosure,
 	useToast,
@@ -287,6 +291,50 @@ export default function RecipePage() {
 										>
 											{currentRecipe.recipeName}
 										</Heading>
+
+										{/* Genre Badge */}
+										{currentRecipe.genrue && (
+											<Badge
+												colorScheme="purple"
+												variant="subtle"
+												fontSize="md"
+												px={3}
+												py={1}
+												rounded="md"
+											>
+												{currentRecipe.genrue}
+											</Badge>
+										)}
+
+										{/* Keywords Tags */}
+										{currentRecipe.keyword && (
+											<Box w="full">
+												<Text
+													fontSize="sm"
+													color={textColor}
+													mb={2}
+													fontWeight="medium"
+												>
+													キーワード:
+												</Text>
+												<Wrap spacing={2}>
+													{currentRecipe.keyword
+														.split(",")
+														.map((tag, tagIndex) => (
+															<WrapItem key={tagIndex}>
+																<Tag
+																	size="md"
+																	colorScheme="orange"
+																	variant="subtle"
+																	rounded="full"
+																>
+																	<TagLabel>{tag.trim()}</TagLabel>
+																</Tag>
+															</WrapItem>
+														))}
+												</Wrap>
+											</Box>
+										)}
 
 										<HStack spacing={4} flexWrap="wrap">
 											<Badge
