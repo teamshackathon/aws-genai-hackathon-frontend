@@ -84,7 +84,7 @@ export default function MainPage() {
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
 
-	const handleUrlSubmit = async () => {
+	const handleUrlSubmit = () => {
 		//youtube shorts以外を受け付けない→
 		// YouTube ShortsのURLパターンをチェックする正規表現
 		// youtube.com/shorts/ または youtu.be/ に続く11桁の英数字（動画ID）をチェックします。
@@ -393,12 +393,14 @@ export default function MainPage() {
 			</Container>
 
 			{/* AI処理チャット */}
-			<AIProcessChat
-				isOpen={isChatOpen}
-				isProcessing={isProcessing}
-				setIsProcessing={setIsProcessing}
-				onClose={() => setIsChatOpen(false)}
-			/>
+			{isChatOpen && (
+				<AIProcessChat
+					isOpen={isChatOpen}
+					isProcessing={isProcessing}
+					setIsProcessing={setIsProcessing}
+					onClose={() => setIsChatOpen(false)}
+				/>
+			)}
 		</Box>
 	);
 }

@@ -14,7 +14,6 @@ import {
 	Icon,
 	List,
 	ListItem,
-	OrderedList,
 	Skeleton,
 	SkeletonText,
 	Text,
@@ -417,7 +416,7 @@ export default function RecipePage() {
 						</CardHeader>
 						<CardBody pt={0}>
 							{processes.length >= 0 ? (
-								<OrderedList spacing={4}>
+								<List spacing={4}>
 									{processes
 										.sort((a, b) => a.processNumber - b.processNumber)
 										.map((process) => (
@@ -457,7 +456,7 @@ export default function RecipePage() {
 												</Text>
 											</ListItem>
 										))}
-								</OrderedList>
+								</List>
 							) : (
 								<Text color={textColor} textAlign="center" py={8}>
 									調理手順が読み込み中です...

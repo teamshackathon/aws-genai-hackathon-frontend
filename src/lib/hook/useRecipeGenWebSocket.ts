@@ -18,7 +18,6 @@ export const useRecipeGenWebSocket = ({
 	const authToken = useAtomValue(authTokenAtom);
 	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipeUrl = useAtomValue(recipeUrlAtom);
-
 	const [connectionStatus, setConnectionStatus] =
 		useState<string>("Uninstantiated");
 
