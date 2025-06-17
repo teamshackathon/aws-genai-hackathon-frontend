@@ -44,24 +44,6 @@ import { useAtom, useSetAtom } from "jotai";
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 
-// モックデータ - 実際のデータはAPIから取得
-
-// 難易度に応じた色
-// const getDifficultyColor = (difficulty: string) => {
-// 	switch (difficulty) {
-// 		case "簡単":
-// 			return "green";
-// 		case "普通":
-// 			return "blue";
-// 		case "やや難しい":
-// 			return "orange";
-// 		case "難しい":
-// 			return "red";
-// 		default:
-// 			return "gray";
-// 	}
-// };
-
 export default function MainPage() {
 	const navigate = useNavigate();
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
