@@ -11,8 +11,8 @@ import RegisterPage from "@/components/pages/RegisterPage";
 import SettingPage from "@/components/pages/SettingPage";
 import HistoryPage from "./components/pages/HistroyPage";
 
-import ShoppingListDetailPage from "@/components/pages/ShoppingListDetailPage"; // これから作成するファイル
-import ShoppingListPage from "@/components/pages/ShoppingListPage"; // これから作成するファイル
+import ShoppingListDetailPage from "@/components/pages/ShoppingListDetailPage";
+import ShoppingListPage from "@/components/pages/ShoppingListPage";
 
 function App() {
 	return (

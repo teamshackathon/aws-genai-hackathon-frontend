@@ -6,6 +6,7 @@ import {
 	CardBody,
 	CardHeader,
 	Container,
+	FaClipboardList,
 	Flex,
 	Grid,
 	GridItem,
@@ -14,6 +15,7 @@ import {
 	Icon,
 	List,
 	ListItem,
+	OrderedList,
 	Skeleton,
 	SkeletonText,
 	Text,
@@ -61,6 +63,7 @@ export default function RecipePage() {
 	const toast = useToast();
 
 	const [isBookmarked, setIsBookmarked] = useState(false);
+	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
 	const [, getIngredients] = useAtom(getIngridientsAtom);
 	const [, getProcesses] = useAtom(getProcessesAtom);
 	const [, getCurrentRecipe] = useAtom(getRecipeByIdAtom);
@@ -127,22 +130,68 @@ export default function RecipePage() {
 			window.open(currentRecipe.url, "_blank");
 		}
 	};
+
+	// ★新しい関数: 買い物リスト作成ボタンのハンドラ
+	const handleCreateShoppingList = async () => {
+		if (!recipeId || !currentRecipe) {
+			toast({
+				title: "エラー",
+				description: "レシピ情報が不足しています。",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			});
+			return;
+		}
+
+		setIsCreatingShoppingList(true); // ローディング開始
+		const userId = getUserId(); // 仮のユーザーIDを取得
+
+		try {
+			const data = await createShoppingList(
+				Number(recipeId),
+				userId,
+				currentRecipe.recipeName, // レシピ名を渡す
+			);
+			toast({
+				title: "買い物リストを作成しました",
+				description: "買い物リストページへ移動します。",
+				status: "success",
+				duration: 2000,
+				isClosable: true,
+			});
+			navigate(`/home/shopping_list/${data.shoppingListId}`); // 新しい買い物リストページへ遷移
+		} catch (error: any) {
+			// エラーの型を any にする
+			toast({
+				title: "買い物リストの作成に失敗しました",
+				description: error.message || "予期せぬエラーが発生しました。",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			});
+		} finally {
+			setIsCreatingShoppingList(false); // ローディング終了
+		}
+	};
+
 	// Loading state
 	if (!currentRecipe) {
+		// データがロード中の場合
 		return (
 			<Box minH="100vh" bgGradient={bgGradient}>
 				<Header />
 				<Container maxW="6xl" py={8}>
 					<VStack spacing={8}>
-						<Skeleton height="40px" />
-						<Skeleton height="300px" />
+						<Skeleton height="40px" width="80%" />
+						<Skeleton height="300px" width="100%" />
 						<Grid
 							templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
 							gap={8}
 							w="full"
 						>
-							<SkeletonText noOfLines={10} spacing="4" />
-							<SkeletonText noOfLines={10} spacing="4" />
+							<SkeletonText noOfLines={10} spacing="4" skeletonHeight="20px" />
+							<SkeletonText noOfLines={10} spacing="4" skeletonHeight="20px" />
 						</Grid>
 					</VStack>
 				</Container>
@@ -295,6 +344,20 @@ export default function RecipePage() {
 												元動画を見る
 											</MotionButton>
 										)}
+										{/* ★「買い物リストを作成」ボタンを追加 */}
+										<MotionButton
+											leftIcon={<Icon as={FaClipboardList} />}
+											variant="solid" // solid スタイルを使用
+											colorScheme="teal" // teal スタイルを使用
+											onClick={handleCreateShoppingList}
+											isLoading={isCreatingShoppingList} // ローディング状態を反映
+											loadingText="作成中"
+											spinnerPlacement="start"
+											whileHover={{ scale: 1.05 }}
+											whileTap={{ scale: 0.95 }}
+										>
+											買い物リストを作成
+										</MotionButton>
 									</HStack>
 								</VStack>
 							</GridItem>
