@@ -7,6 +7,8 @@ export class Recipe {
 		public url: string,
 		public status_id: number,
 		public externalServiceId: number,
+		public keyword: string,
+		public genrue: string,
 		public createdDate: Date,
 		public updatedDate: Date,
 	) {}
@@ -68,7 +70,8 @@ export interface RecipeResponse {
 	url: string;
 	status_id: number;
 	external_service_id: number;
-	is_favorite: boolean;
+	keyword: string;
+	genrue: string;
 	created_date: string; // ISO 8601形式の文字列
 	updated_date: string; // ISO 8601形式の文字列
 }
@@ -127,6 +130,8 @@ export function createRecipe(res: RecipeResponse): Recipe {
 		res.url,
 		res.status_id,
 		res.external_service_id,
+		res.keyword,
+		res.genrue,
 		new Date(res.created_date),
 		new Date(res.updated_date),
 	);

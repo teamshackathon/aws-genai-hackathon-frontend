@@ -14,7 +14,6 @@ import {
 	InputGroup,
 	InputRightElement,
 	SimpleGrid,
-	Spinner,
 	Text,
 	VStack,
 	useColorModeValue,
@@ -27,14 +26,12 @@ import { HiSparkles } from "react-icons/hi2";
 import { useNavigate } from "react-router";
 
 import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
-import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
 import {
 	externalServiceAtomLoadable,
 	recipeListAtomLoadable,
 	recipeUrlAtom,
 } from "@/lib/atom/RecipeAtom";
-import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
@@ -47,8 +44,6 @@ const MotionCard = motion(Card);
 export default function MainPage() {
 	const navigate = useNavigate();
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
-	const [isProcessing, setIsProcessing] = useState(false);
-	const [isChatOpen, setIsChatOpen] = useState(false);
 
 	const toast = useToast();
 
@@ -60,7 +55,6 @@ export default function MainPage() {
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
-	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
@@ -93,10 +87,10 @@ export default function MainPage() {
 			});
 			return;
 		}
-		// チャットを開く
-		setIsChatOpen(true);
-		setIsProcessing(true);
-		// setUrlInput("");
+
+		// AI解析ページに遷移
+		const encodedUrl = encodeURIComponent(urlInput);
+		navigate(`/home/ai-gen?url=${encodedUrl}`);
 	};
 
 	const fetchData = async () => {
@@ -135,13 +129,6 @@ export default function MainPage() {
 			});
 		}
 	};
-
-	useEffect(() => {
-		if (session) {
-			setIsChatOpen(true);
-			setIsProcessing(true);
-		}
-	}, [session]);
 
 	useEffect(() => {
 		fetchData();
@@ -213,6 +200,7 @@ export default function MainPage() {
 
 							<HStack w="full" spacing={4}>
 								<InputGroup flex={1}>
+									{" "}
 									<Input
 										placeholder="https://youtube.com/shorts/..."
 										value={urlInput}
@@ -225,13 +213,11 @@ export default function MainPage() {
 											borderColor: "orange.400",
 											boxShadow: "0 0 0 1px var(--chakra-colors-orange-400)",
 										}}
-										isDisabled={isProcessing}
 									/>
 									<InputRightElement height="100%">
 										<Icon as={FaSearch} color="gray.400" />
 									</InputRightElement>
-								</InputGroup>
-
+								</InputGroup>{" "}
 								<Button
 									size="lg"
 									bgGradient="linear(to-r, orange.400, pink.400)"
@@ -241,16 +227,8 @@ export default function MainPage() {
 										transform: "translateY(-2px)",
 										shadow: "lg",
 									}}
-									leftIcon={
-										isProcessing ? (
-											<Spinner size="sm" />
-										) : (
-											<Icon as={HiSparkles} />
-										)
-									}
+									leftIcon={<Icon as={HiSparkles} />}
 									onClick={handleUrlSubmit}
-									isLoading={isProcessing}
-									loadingText="解析中..."
 									transition="all 0.3s"
 									px={8}
 								>
@@ -353,7 +331,6 @@ export default function MainPage() {
 										}}
 									/>
 								</Box>
-
 								<CardBody p={6}>
 									<VStack align="start" spacing={4}>
 										<VStack align="start" spacing={2} w="full">
@@ -392,22 +369,12 @@ export default function MainPage() {
 											</VStack>
 										</HStack>
 									</VStack>
-								</CardBody>
+								</CardBody>{" "}
 							</MotionCard>
 						))}
 					</SimpleGrid>
 				</MotionBox>
 			</Container>
-
-			{/* AI処理チャット */}
-			{isChatOpen && (
-				<AIProcessChat
-					isOpen={isChatOpen}
-					isProcessing={isProcessing}
-					setIsProcessing={setIsProcessing}
-					onClose={() => setIsChatOpen(false)}
-				/>
-			)}
 		</Box>
 	);
 }
