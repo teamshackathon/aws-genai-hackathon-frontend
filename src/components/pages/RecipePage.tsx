@@ -19,6 +19,7 @@ import {
 	Text,
 	VStack,
 	useColorModeValue,
+	useDisclosure,
 	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -30,12 +31,14 @@ import {
 	FaClock,
 	FaCookieBite,
 	FaExternalLinkAlt,
+	FaPlay,
 	FaShoppingCart,
 	FaTag,
 	FaUser,
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router";
 
+import CookingModal from "@/components/organisms/CookingModal";
 import Header from "@/components/organisms/Header";
 import {
 	currentRecipeAtom,
@@ -57,8 +60,12 @@ export default function RecipePage() {
 	const { recipeId } = useParams<{ recipeId: string }>();
 	const navigate = useNavigate();
 	const toast = useToast();
-
 	const [isBookmarked, setIsBookmarked] = useState(false);
+	const {
+		isOpen: isCookingModalOpen,
+		onOpen: onCookingModalOpen,
+		onClose: onCookingModalClose,
+	} = useDisclosure();
 	const [, getIngredients] = useAtom(getIngridientsAtom);
 	const [, getProcesses] = useAtom(getProcessesAtom);
 	const [, getCurrentRecipe] = useAtom(getRecipeByIdAtom);
@@ -166,7 +173,6 @@ export default function RecipePage() {
 	return (
 		<Box minH="100vh" bgGradient={bgGradient}>
 			<Header />
-
 			<Container maxW="6xl" py={8}>
 				{/* Back button */}
 				<MotionButton
@@ -403,15 +409,33 @@ export default function RecipePage() {
 						animate={{ opacity: 1, x: 0 }}
 						transition={{ duration: 0.6, delay: 0.4 }}
 					>
+						{" "}
 						<CardHeader pb={4}>
-							<HStack spacing={3}>
-								<Icon as={FaCookieBite} boxSize={6} color="purple.500" />
-								<Heading size="lg" color={headingColor}>
-									調理手順
-								</Heading>
-								<Badge colorScheme="purple" variant="subtle">
-									{processes.length}ステップ
-								</Badge>
+							<HStack justify="space-between" w="100%">
+								<HStack spacing={3}>
+									<Icon as={FaCookieBite} boxSize={6} color="purple.500" />
+									<Heading size="lg" color={headingColor}>
+										調理手順
+									</Heading>
+									<Badge colorScheme="purple" variant="subtle">
+										{processes.length}ステップ
+									</Badge>
+								</HStack>
+								{processes.length > 0 && (
+									<Button
+										leftIcon={<Icon as={FaPlay} />}
+										colorScheme="purple"
+										size="lg"
+										onClick={onCookingModalOpen}
+										rounded="full"
+										px={8}
+										shadow="lg"
+										_hover={{ transform: "translateY(-2px)", shadow: "xl" }}
+										transition="all 0.2s"
+									>
+										料理開始
+									</Button>
+								)}
 							</HStack>
 						</CardHeader>
 						<CardBody pt={0}>
@@ -521,9 +545,24 @@ export default function RecipePage() {
 								</VStack>
 							</Grid>
 						</VStack>
-					</CardBody>
+					</CardBody>{" "}
 				</MotionCard>
 			</Container>
+			{/* CookingModal */}{" "}
+			<CookingModal
+				isOpen={isCookingModalOpen}
+				onClose={onCookingModalClose}
+				processes={processes.map((process) => ({
+					id: process.id,
+					recipeId: process.recipeId,
+					stepNumber: process.processNumber,
+					instruction: process.process,
+					estimatedTime: undefined, // processにestimatedTimeフィールドがない場合
+					createdAt: process.createdDate,
+					updatedAt: process.updatedDate,
+				}))}
+				recipeName={currentRecipe?.recipeName || "レシピ"}
+			/>
 		</Box>
 	);
 }
