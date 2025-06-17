@@ -16,20 +16,26 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	Progress,
+	Spinner,
 	Text,
 	VStack,
 	useColorModeValue,
+	useToast,
 } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	FaArrowLeft,
 	FaArrowRight,
 	FaCheck,
 	FaClock,
+	FaPause,
 	FaUtensils,
+	FaVolumeUp,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
+
+import { type ChatVoice, generateVoice } from "@/lib/domain/VoiceQuery";
 
 // Motion components
 const MotionBox = motion(Box);
@@ -59,6 +65,10 @@ export default function CookingModal({
 	recipeName,
 }: CookingModalProps) {
 	const [currentStep, setCurrentStep] = useState(0);
+	const [currentVoice, setCurrentVoice] = useState<ChatVoice | null>(null);
+	const [isVoiceLoading, setIsVoiceLoading] = useState(false);
+	const [isVoicePlaying, setIsVoicePlaying] = useState(false);
+	const toast = useToast();
 
 	// Color values
 	const bgGradient = useColorModeValue(
@@ -88,7 +98,71 @@ export default function CookingModal({
 	};
 	const handleStepJump = (stepIndex: number) => {
 		setCurrentStep(stepIndex);
+		// 音声を停止
+		if (currentVoice) {
+			currentVoice.stop();
+			setIsVoicePlaying(false);
+		}
 	};
+
+	// 音声生成・再生のハンドラー
+	const handleVoicePlay = async () => {
+		const currentProcess = processes[currentStep];
+		if (!currentProcess) return;
+
+		try {
+			setIsVoiceLoading(true);
+
+			// 既存の音声を停止
+			if (currentVoice) {
+				currentVoice.stop();
+			}
+
+			const voice = await generateVoice(
+				"cooking-assistant",
+				currentProcess.instruction,
+			);
+			setCurrentVoice(voice);
+
+			setIsVoicePlaying(true);
+			await voice.play();
+			setIsVoicePlaying(false);
+		} catch (error) {
+			console.error("音声生成・再生エラー:", error);
+			toast({
+				title: "音声の生成に失敗しました",
+				description: "もう一度お試しください",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			});
+		} finally {
+			setIsVoiceLoading(false);
+		}
+	};
+
+	const handleVoiceStop = () => {
+		if (currentVoice) {
+			currentVoice.stop();
+			setIsVoicePlaying(false);
+		}
+	};
+
+	// ステップ変更時に音声を停止
+	useEffect(() => {
+		if (currentVoice) {
+			currentVoice.stop();
+			setIsVoicePlaying(false);
+		}
+	}, [currentStep]);
+
+	// モーダルクローズ時に音声を停止
+	useEffect(() => {
+		if (!isOpen && currentVoice) {
+			currentVoice.stop();
+			setIsVoicePlaying(false);
+		}
+	}, [isOpen, currentVoice]);
 
 	if (!currentProcess) {
 		return null;
@@ -235,7 +309,6 @@ export default function CookingModal({
 											animate={{ scale: 1 }}
 											transition={{ duration: 0.2, delay: 0.1 }}
 										>
-											{" "}
 											<Text
 												fontSize="xl"
 												lineHeight="1.8"
@@ -251,6 +324,31 @@ export default function CookingModal({
 												{currentProcess.instruction}
 											</Text>
 										</MotionBox>
+
+										{/* Voice control buttons */}
+										<HStack spacing={4}>
+											<Button
+												leftIcon={
+													isVoiceLoading ? (
+														<Spinner size="sm" />
+													) : isVoicePlaying ? (
+														<Icon as={FaPause} />
+													) : (
+														<Icon as={FaVolumeUp} />
+													)
+												}
+												onClick={
+													isVoicePlaying ? handleVoiceStop : handleVoicePlay
+												}
+												colorScheme="blue"
+												variant="outline"
+												isLoading={isVoiceLoading}
+												loadingText="生成中"
+												size="lg"
+											>
+												{isVoicePlaying ? "停止" : "音声で聞く"}
+											</Button>
+										</HStack>
 									</VStack>
 								</CardBody>
 							</MotionCard>
