@@ -7,7 +7,6 @@ export class Recipe {
 		public url: string,
 		public status_id: number,
 		public externalServiceId: number,
-		public isFavorite: boolean,
 		public createdDate: Date,
 		public updatedDate: Date,
 	) {}
@@ -128,7 +127,6 @@ export function createRecipe(res: RecipeResponse): Recipe {
 		res.url,
 		res.status_id,
 		res.external_service_id,
-		res.is_favorite,
 		new Date(res.created_date),
 		new Date(res.updated_date),
 	);

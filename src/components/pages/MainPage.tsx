@@ -1,5 +1,5 @@
 import {
-	// Badge,
+	Badge,
 	Box,
 	Button,
 	Card,
@@ -10,7 +10,6 @@ import {
 	Heading,
 	Icon,
 	IconButton,
-	Image,
 	Input,
 	InputGroup,
 	InputRightElement,
@@ -23,46 +22,27 @@ import {
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import {
-	FaBookmark,
-	FaClock,
-	FaCookieBite,
-	// FaHeart,
-	FaSearch,
-	FaVideo,
-} from "react-icons/fa";
+import { FaBookmark, FaCookieBite, FaSearch, FaVideo } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { useNavigate } from "react-router";
 
+import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
 import AIProcessChat from "@/components/organisms/AIProcessChat";
 import Header from "@/components/organisms/Header";
-import { recipeListAtomLoadable, recipeUrlAtom } from "@/lib/atom/RecipeAtom";
+import {
+	externalServiceAtomLoadable,
+	recipeListAtomLoadable,
+	recipeUrlAtom,
+} from "@/lib/atom/RecipeAtom";
 import { sessionAtomLoadable } from "@/lib/atom/SessionAtom";
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
+import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 import { useAtom, useSetAtom } from "jotai";
 
 // Motion components
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
-
-// モックデータ - 実際のデータはAPIから取得
-
-// 難易度に応じた色
-// const getDifficultyColor = (difficulty: string) => {
-// 	switch (difficulty) {
-// 		case "簡単":
-// 			return "green";
-// 		case "普通":
-// 			return "blue";
-// 		case "やや難しい":
-// 			return "orange";
-// 		case "難しい":
-// 			return "red";
-// 		default:
-// 			return "gray";
-// 	}
-// };
 
 export default function MainPage() {
 	const navigate = useNavigate();
@@ -82,7 +62,9 @@ export default function MainPage() {
 
 	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
+	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
+	const [userRecipe, setUserRecipe] = useState<UserRecipe[]>([]);
 
 	const handleUrlSubmit = () => {
 		//youtube shorts以外を受け付けない→
@@ -117,10 +99,24 @@ export default function MainPage() {
 		// setUrlInput("");
 	};
 
+	const fetchData = async () => {
+		if (recipes?.items) {
+			const recipeIds = recipes.items.map((recipe) => recipe.id).join(",");
+			const userRecipes = await getUserRecipes(recipeIds);
+			setUserRecipe(userRecipes);
+		}
+	};
+
 	const toggleBookmark = (recipeId: number, isFavorite: boolean) => {
 		updateUserRecipe(recipeId, {
 			is_favorite: !isFavorite,
 		});
+		// ローカルのuserRecipeを更新
+		setUserRecipe((prev) =>
+			prev.map((ur) =>
+				ur.recipeId === recipeId ? { ...ur, isFavorite: !isFavorite } : ur,
+			),
+		);
 		if (isFavorite) {
 			// 既にブックマークされている場合は解除
 			toast({
@@ -146,6 +142,10 @@ export default function MainPage() {
 			setIsProcessing(true);
 		}
 	}, [session]);
+
+	useEffect(() => {
+		fetchData();
+	}, [recipes]);
 
 	return (
 		<Box minH="100vh" bgGradient={bgGradient}>
@@ -300,19 +300,34 @@ export default function MainPage() {
 								onClick={() => navigate(`/home/recipe/${recipe.id}`)}
 							>
 								<Box position="relative">
-									<Image
-										// src={recipe.thumbnail}
+									<YouTubeThumbnail
+										url={recipe.url}
 										alt={recipe.recipeName}
-										h="200px"
-										w="full"
+										height="200px"
+										width="full"
 										objectFit="cover"
+										onClick={() => {
+											if (recipe.url) {
+												window.open(
+													recipe.url,
+													"_blank",
+													"noopener,noreferrer",
+												);
+											}
+										}}
 									/>
 									<IconButton
 										aria-label="ブックマーク"
 										icon={
 											<Icon
 												as={FaBookmark}
-												color={recipe.isFavorite ? "orange.400" : "gray.400"}
+												color={
+													userRecipe.find(
+														(ur) => ur.recipeId === recipe.id && ur.isFavorite,
+													)
+														? "orange.400"
+														: "gray.400"
+												}
 											/>
 										}
 										position="absolute"
@@ -329,7 +344,12 @@ export default function MainPage() {
 										transition="all 0.2s"
 										onClick={(e) => {
 											e.stopPropagation();
-											toggleBookmark(recipe.id, recipe.isFavorite);
+											toggleBookmark(
+												recipe.id,
+												userRecipe.find(
+													(ur) => ur.recipeId === recipe.id && ur.isFavorite,
+												)?.isFavorite || false,
+											);
 										}}
 									/>
 								</Box>
@@ -340,48 +360,35 @@ export default function MainPage() {
 											<Heading size="md" noOfLines={2} lineHeight={1.3}>
 												{recipe.recipeName}
 											</Heading>
-
-											{/* <HStack spacing={2} flexWrap="wrap">
-												{recipe.tags.slice(0, 2).map((tag) => (
-													<Badge
-														key={tag}
-														colorScheme="orange"
-														variant="subtle"
-														fontSize="xs"
-													>
-														{tag}
-													</Badge>
-												))}
-											</HStack> */}
 										</VStack>
 
 										<HStack justify="space-between" w="full">
 											<VStack align="start" spacing={1}>
-												<HStack spacing={1}>
-													<Icon as={FaClock} boxSize={3} color="gray.500" />
-													{/* <Text fontSize="sm" color={textColor}>
-														{recipe.cookingTime}
-													</Text> */}
-												</HStack>
-												{/* <Badge
-													colorScheme={getDifficultyColor(recipe.difficulty)}
+												<Badge
+													colorScheme={"green"}
 													variant="subtle"
 													fontSize="xs"
 												>
-													{recipe.difficulty}
-												</Badge> */}
+													{externalServices?.find(
+														(service) =>
+															service.id === recipe.externalServiceId,
+													)?.serviceName || "不明なサービス"}
+												</Badge>
 											</VStack>
 
 											<VStack align="end" spacing={1}>
-												{/* <HStack spacing={1}>
-													<Icon as={FaHeart} boxSize={3} color="red.400" />
-													<Text fontSize="sm" color={textColor}>
-														{recipe.likes}
-													</Text>
-												</HStack> */}
-												{/* <Text fontSize="xs" color={textColor}>
-													{recipe?.createdDate}
-												</Text> */}
+												<Text fontSize="xs" color={textColor}>
+													{recipe?.createdDate
+														? new Date(recipe.createdDate).toLocaleDateString(
+																"ja-JP",
+																{
+																	year: "numeric",
+																	month: "2-digit",
+																	day: "2-digit",
+																},
+															)
+														: "不明な日付"}
+												</Text>
 											</VStack>
 										</HStack>
 									</VStack>
