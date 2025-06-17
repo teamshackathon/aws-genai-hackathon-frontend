@@ -234,3 +234,16 @@ export async function getProcesses(recipeId: number): Promise<Process[]> {
 	);
 	return response.data.map(createProcess);
 }
+
+// 新しい買い物リスト作成APIのレスポンス型
+export type CreateShoppingListResponse = {
+	shoppingListId: string; // バックエンドから返される買い物リストのID
+	message: string;
+};
+
+// 仮のユーザーID取得関数（実際は認証コンテキストなどから取得）
+export const getUserId = (): string => {
+	// TODO: 実際の認証システムからユーザーIDを取得するように変更
+	// 例: return authContext.user.id;
+	return "user-123"; // 仮のユーザーID
+};
