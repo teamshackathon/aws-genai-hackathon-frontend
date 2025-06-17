@@ -60,6 +60,15 @@ export class AxiosClient {
 		return response;
 	}
 
+	async postBlob<T, U>(url: string, data: T): Promise<AxiosResponse<U>> {
+		const response = await this.axiosInstance.post<U>(
+			url,
+			data,
+			this.requestConfigWithBlob,
+		);
+		return response;
+	}
+
 	private baseURL: string =
 		import.meta.env.VITE_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -78,6 +87,18 @@ export class AxiosClient {
 			baseURL: this.baseURL,
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
+			},
+		};
+	}
+
+	private get requestConfigWithBlob(): AxiosRequestConfig {
+		return {
+			baseURL: this.baseURL,
+			responseType: "blob", // Blobレスポンスを受け取るための設定
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "*/*",
+				"X-Voice-Enabled": "true", // 音声機能を有効にするためのヘッダー
 			},
 		};
 	}
