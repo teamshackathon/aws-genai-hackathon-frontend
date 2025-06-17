@@ -47,7 +47,9 @@ import {
 	processesAtom,
 	recipeStatusAtomLoadable,
 } from "@/lib/atom/RecipeAtom";
+import { getUserId } from "@/lib/auth/authUtils";
 import type { ExternalService, RecipeStatus } from "@/lib/domain/RecipeQuery";
+import { createShoppingList } from "@/lib/domain/ShoppingListQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
 const MotionCard = motion(Card);

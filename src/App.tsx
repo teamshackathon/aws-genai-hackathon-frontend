@@ -1,5 +1,5 @@
 import { ProtectedRoute } from "@/lib/route/ProtectedRoute";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import CallbackPage from "@/components/pages/CallbackPage";
 import LandingPage from "@/components/pages/LandingPage";
@@ -10,6 +10,9 @@ import RecipePage from "@/components/pages/RecipePage";
 import RegisterPage from "@/components/pages/RegisterPage";
 import SettingPage from "@/components/pages/SettingPage";
 import HistoryPage from "./components/pages/HistroyPage";
+
+import ShoppingListDetailPage from "@/components/pages/ShoppingListDetailPage"; // これから作成するファイル
+import ShoppingListPage from "@/components/pages/ShoppingListPage"; // これから作成するファイル
 
 function App() {
 	return (
@@ -32,6 +35,14 @@ function App() {
 					<Route path="/home/setting" element={<SettingPage />} />
 					<Route path="/home/profile" element={<ProfilePage />} />
 					<Route path="/home/history" element={<HistoryPage />} />
+
+					{/* ★ここから追加する買い物リスト関連のルート */}
+					<Route path="/home/shopping_list" element={<ShoppingListPage />} />
+					<Route
+						path="/home/shopping_list/:shoppingListId"
+						element={<ShoppingListDetailPage />}
+					/>
+					{/* ★ここまで追加 */}
 				</Route>
 			</Routes>
 		</BrowserRouter>

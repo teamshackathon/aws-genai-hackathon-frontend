@@ -23,6 +23,7 @@ import { motion } from "framer-motion";
 import {
 	FaBars,
 	FaBook,
+	FaClipboardList,
 	FaCog,
 	FaCookieBite,
 	FaHistory,
@@ -46,6 +47,12 @@ const SiderDrawer = () => {
 	const sidebarItems = [
 		{ icon: FaHome, label: "ホーム", href: "/home", badge: null },
 		{ icon: FaHistory, label: "履歴", href: "/home/history", badge: null },
+		{
+			icon: FaClipboardList,
+			label: "買い物リスト",
+			href: "/home/shopping_list",
+			badge: null,
+		},
 		{ icon: FaUser, label: "プロフィール", href: "/home/profile", badge: null },
 		{ icon: FaCog, label: "設定", href: "/home/setting", badge: null },
 	];
@@ -128,8 +135,17 @@ const SiderDrawer = () => {
 										transition="all 0.2s"
 										onClick={handleNavigate.bind(null, item.href)}
 									>
-										<Icon as={item.icon} boxSize={5} color="gray.600" mr={4} />
-										<Text fontWeight="medium" flex={1}>
+										<Icon
+											as={item.icon}
+											boxSize={5}
+											color={useColorModeValue("gray.600", "gray.300")}
+											mr={4}
+										/>
+										<Text
+											fontWeight="medium"
+											flex={1}
+											color={useColorModeValue("gray.800", "white")}
+										>
 											{item.label}
 										</Text>
 										{item.badge && (
