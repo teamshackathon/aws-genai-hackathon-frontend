@@ -11,18 +11,23 @@ import {
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { FaCookieBite, FaSearch } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 
 import SiderDrawer from "@/components/molecules/SiderDrawer";
+import { recipeQueryParamAtom } from "@/lib/atom/RecipeAtom";
 import AvatarIconMenu from "../atoms/AvatarIconMenu";
 
 // Motion components
 const MotionBox = motion(Box);
 
 export default function Header() {
-	const [searchValue, setSearchValue] = useState("");
+	const [recipeQueryParam, setRecipeQueryParam] = useAtom(recipeQueryParamAtom);
+	const [searchValue, setSearchValue] = useState(
+		recipeQueryParam.keyword || "",
+	);
 
 	const bgGradient = useColorModeValue(
 		"linear(to-r, orange.400, pink.400)",
@@ -31,6 +36,19 @@ export default function Header() {
 	const textColor = "white";
 	const searchBg = useColorModeValue("whiteAlpha.200", "whiteAlpha.300");
 	const searchBorder = useColorModeValue("whiteAlpha.300", "whiteAlpha.400");
+
+	// デバウンス処理で検索を実行
+	useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			setRecipeQueryParam((prev) => ({
+				...prev,
+				keyword: searchValue,
+				page: 1, // 検索時はページを1に戻す
+			}));
+		}, 500); // 500ms後に検索実行
+
+		return () => clearTimeout(timeoutId);
+	}, [searchValue, setRecipeQueryParam]);
 
 	return (
 		<>
