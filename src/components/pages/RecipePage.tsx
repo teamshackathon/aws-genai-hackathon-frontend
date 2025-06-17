@@ -63,15 +63,12 @@ export default function RecipePage() {
 	const navigate = useNavigate();
 	const toast = useToast();
 	const [isBookmarked, setIsBookmarked] = useState(false);
-<<<<<<< ASJ-66_create_kaimonorisuto_page
 	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
-=======
 	const {
 		isOpen: isCookingModalOpen,
 		onOpen: onCookingModalOpen,
 		onClose: onCookingModalClose,
 	} = useDisclosure();
->>>>>>> stg
 	const [, getIngredients] = useAtom(getIngridientsAtom);
 	const [, getProcesses] = useAtom(getProcessesAtom);
 	const [, getCurrentRecipe] = useAtom(getRecipeByIdAtom);
