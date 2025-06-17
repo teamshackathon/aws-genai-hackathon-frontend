@@ -11,6 +11,17 @@ export class User {
 	) {}
 }
 
+export class UserRecipe {
+	constructor(
+		public id: number, // ユーザーのレシピID
+		public userId: number, // ユーザーID
+		public recipeId: number,
+		public isFavorite: boolean, // レシピのお気に入り状態
+		public createdAt: Date, // 作成日時
+		public updatedAt: Date, // 更新日時
+	) {}
+}
+
 export interface UserResponse {
 	id: number;
 	name: string | null;
@@ -18,6 +29,15 @@ export interface UserResponse {
 	avatar_url?: string | null;
 	last_login_at?: string | null; // ISO 8601形式の文字列
 	bio?: string | null; // ユーザーの自己紹介やプロフィール情報
+}
+
+export interface UserRecipeResponse {
+	id: number; // ユーザーのレシピID
+	user_id: number; // ユーザーID
+	recipe_id: number; // レシピID
+	is_favorite: boolean; // レシピのお気に入り状態
+	created_date: string; // 作成日時 (ISO 8601形式)
+	updated_date: string; // 更新日時 (ISO 8601形式)
 }
 
 export interface UserCreateRequest {
@@ -50,6 +70,17 @@ function createUser(res: UserResponse): User {
 	);
 }
 
+function createUserRecipe(res: UserRecipeResponse): UserRecipe {
+	return new UserRecipe(
+		res.id,
+		res.user_id,
+		res.recipe_id,
+		res.is_favorite,
+		new Date(res.created_date),
+		new Date(res.updated_date),
+	);
+}
+
 export async function getUser(): Promise<User> {
 	const axiosClient = createAxiosClient();
 	const response = await axiosClient.get<UserResponse>("/users/me");
@@ -63,6 +94,14 @@ export async function updateUser(request: UserUpdateRequest): Promise<User> {
 		request,
 	);
 	return createUser(response.data);
+}
+
+export async function getUserRecipes(ids: string): Promise<UserRecipe[]> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<UserRecipeResponse[]>(
+		`/users/me/recipes?ids=${ids}`,
+	);
+	return response.data.map(createUserRecipe);
 }
 
 export async function updateUserRecipe(
