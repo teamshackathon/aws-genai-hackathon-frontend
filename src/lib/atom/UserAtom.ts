@@ -7,7 +7,6 @@ import {
 	updateUserRecipe,
 } from "@/lib/domain/UserQuery";
 import { atom } from "jotai";
-import { recipeListAtomAsync } from "./RecipeAtom";
 
 export const userAtom = atom<User | null | undefined>(undefined);
 
@@ -44,10 +43,10 @@ export const updateUserAtom = atom(
 
 export const updateUserRecipeAtom = atom(
 	null,
-	async (_, set, recipeId: number, userRecipe: UserRecipeRequest) => {
+	async (_, __, recipeId: number, userRecipe: UserRecipeRequest) => {
 		try {
-			await updateUserRecipe(recipeId, userRecipe);
-			set(recipeListAtomAsync);
+			const data = await updateUserRecipe(recipeId, userRecipe);
+			return data;
 		} catch (error) {
 			console.error("Failed to update user recipe:", error);
 		}

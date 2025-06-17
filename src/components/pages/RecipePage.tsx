@@ -39,6 +39,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router";
 
+import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
 import CookingModal from "@/components/organisms/CookingModal";
 import Header from "@/components/organisms/Header";
 import {
@@ -52,7 +53,9 @@ import {
 	recipeStatusAtomLoadable,
 } from "@/lib/atom/RecipeAtom";
 import { postShoppingListAtom } from "@/lib/atom/ShoppingAtom";
+import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import type { ExternalService, RecipeStatus } from "@/lib/domain/RecipeQuery";
+import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
 const MotionCard = motion(Card);
@@ -62,7 +65,7 @@ export default function RecipePage() {
 	const { recipeId } = useParams<{ recipeId: string }>();
 	const navigate = useNavigate();
 	const toast = useToast();
-	const [isBookmarked, setIsBookmarked] = useState(false);
+	const [userRecipe, setUserRecipe] = useState<UserRecipe[]>([]);
 	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
 	const {
 		isOpen: isCookingModalOpen,
@@ -76,6 +79,7 @@ export default function RecipePage() {
 	const processes = useAtomValue(processesAtom);
 	const currentRecipe = useAtomValue(currentRecipeAtom);
 	const postShoppingList = useSetAtom(postShoppingListAtom);
+	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
 
 	// Color values
 	const bgGradient = useColorModeValue(
@@ -110,25 +114,50 @@ export default function RecipePage() {
 		}
 		return "読み込み中...";
 	};
+
+	const fetchData = async () => {
+		if (currentRecipe) {
+			const userRecipes = await getUserRecipes(String(currentRecipe.id));
+			setUserRecipe(userRecipes);
+		}
+	};
 	// Load recipe data on mount
 	useEffect(() => {
 		if (recipeId) {
 			getCurrentRecipe(Number(recipeId));
 			getIngredients(Number(recipeId));
 			getProcesses(Number(recipeId));
+			fetchData();
 		}
 	}, [recipeId, getCurrentRecipe, getIngredients, getProcesses]);
 
-	const handleBookmark = () => {
-		setIsBookmarked(!isBookmarked);
-		toast({
-			title: isBookmarked
-				? "ブックマークを解除しました"
-				: "ブックマークに追加しました",
-			status: isBookmarked ? "info" : "success",
-			duration: 2000,
-			isClosable: true,
+	const toggleBookmark = (recipeId: number, isFavorite: boolean) => {
+		updateUserRecipe(recipeId, {
+			is_favorite: !isFavorite,
 		});
+		// ローカルのuserRecipeを更新
+		setUserRecipe((prev) =>
+			prev.map((ur) =>
+				ur.recipeId === recipeId ? { ...ur, isFavorite: !isFavorite } : ur,
+			),
+		);
+		if (isFavorite) {
+			// 既にブックマークされている場合は解除
+			toast({
+				title: "ブックマークを解除しました",
+				status: "info",
+				duration: 2000,
+				isClosable: true,
+			});
+		} else {
+			// ブックマークされていない場合は追加
+			toast({
+				title: "ブックマークに追加しました",
+				status: "success",
+				duration: 2000,
+				isClosable: true,
+			});
+		}
 	};
 
 	const handleOpenOriginal = () => {
@@ -315,21 +344,43 @@ export default function RecipePage() {
 									</VStack>
 
 									{/* Action buttons */}
-									<HStack spacing={4} w="full">
+									<HStack spacing={4} w="full" flexWrap="wrap">
 										<MotionButton
 											leftIcon={
 												<Icon
 													as={FaBookmark}
-													color={isBookmarked ? "orange.400" : "gray.400"}
+													color={
+														userRecipe.find(
+															(ur) => ur.recipeId === currentRecipe.id,
+														)?.isFavorite
+															? "orange.400"
+															: "gray.400"
+													}
 												/>
 											}
-											variant={isBookmarked ? "solid" : "outline"}
+											variant={
+												userRecipe.find(
+													(ur) => ur.recipeId === currentRecipe.id,
+												)?.isFavorite
+													? "solid"
+													: "outline"
+											}
 											colorScheme="orange"
-											onClick={handleBookmark}
+											onClick={() =>
+												toggleBookmark(
+													currentRecipe.id,
+													userRecipe.find(
+														(ur) => ur.recipeId === currentRecipe.id,
+													)?.isFavorite || false,
+												)
+											}
 											whileHover={{ scale: 1.05 }}
 											whileTap={{ scale: 0.95 }}
 										>
-											{isBookmarked ? "ブックマーク済み" : "ブックマーク"}
+											{userRecipe.find((ur) => ur.recipeId === currentRecipe.id)
+												?.isFavorite
+												? "ブックマーク済み"
+												: "ブックマーク"}
 										</MotionButton>
 
 										{currentRecipe.url && (
@@ -358,6 +409,19 @@ export default function RecipePage() {
 										>
 											買い物リストを作成
 										</MotionButton>
+										{/* ★「料理開始」ボタンを追加 */}
+										{processes.length > 0 && (
+											<MotionButton
+												leftIcon={<Icon as={FaPlay} />}
+												variant="solid"
+												colorScheme="purple"
+												onClick={onCookingModalOpen}
+												whileHover={{ scale: 1.05 }}
+												whileTap={{ scale: 0.95 }}
+											>
+												料理開始
+											</MotionButton>
+										)}
 									</HStack>
 								</VStack>
 							</GridItem>
@@ -365,21 +429,29 @@ export default function RecipePage() {
 							{/* Recipe image placeholder */}
 							<GridItem>
 								<Box
-									bg={useColorModeValue("gray.100", "gray.700")}
 									rounded="xl"
 									h="300px"
-									display="flex"
-									alignItems="center"
-									justifyContent="center"
-									position="relative"
 									overflow="hidden"
+									shadow="lg"
+									border="1px"
+									borderColor={borderColor}
 								>
-									<VStack spacing={3}>
-										<Icon as={FaCookieBite} boxSize={12} color={textColor} />
-										<Text color={textColor} fontWeight="semibold">
-											レシピ画像
-										</Text>
-									</VStack>
+									<YouTubeThumbnail
+										url={currentRecipe.url}
+										alt={currentRecipe.recipeName}
+										height="300px"
+										width="full"
+										objectFit="cover"
+										onClick={() => {
+											if (currentRecipe.url) {
+												window.open(
+													currentRecipe.url,
+													"_blank",
+													"noopener,noreferrer",
+												);
+											}
+										}}
+									/>
 								</Box>
 							</GridItem>
 						</Grid>
@@ -470,31 +542,14 @@ export default function RecipePage() {
 					>
 						{" "}
 						<CardHeader pb={4}>
-							<HStack justify="space-between" w="100%">
-								<HStack spacing={3}>
-									<Icon as={FaCookieBite} boxSize={6} color="purple.500" />
-									<Heading size="lg" color={headingColor}>
-										調理手順
-									</Heading>
-									<Badge colorScheme="purple" variant="subtle">
-										{processes.length}ステップ
-									</Badge>
-								</HStack>
-								{processes.length > 0 && (
-									<Button
-										leftIcon={<Icon as={FaPlay} />}
-										colorScheme="purple"
-										size="lg"
-										onClick={onCookingModalOpen}
-										rounded="full"
-										px={8}
-										shadow="lg"
-										_hover={{ transform: "translateY(-2px)", shadow: "xl" }}
-										transition="all 0.2s"
-									>
-										料理開始
-									</Button>
-								)}
+							<HStack spacing={3}>
+								<Icon as={FaCookieBite} boxSize={6} color="purple.500" />
+								<Heading size="lg" color={headingColor}>
+									調理手順
+								</Heading>
+								<Badge colorScheme="purple" variant="subtle">
+									{processes.length}ステップ
+								</Badge>
 							</HStack>
 						</CardHeader>
 						<CardBody pt={0}>
