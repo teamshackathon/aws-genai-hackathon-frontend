@@ -1,5 +1,12 @@
 import { createAxiosClient } from "@/lib/infrastructure/AxiosClient";
 
+import {
+	WebSocketHistory,
+	WebSocketHistoryList,
+	type WebSocketHistoryListResponse,
+	type WebSocketHistoryResponse,
+} from "../type/websocket";
+
 class WebSocketSession {
 	constructor(
 		public id: string,
@@ -33,6 +40,29 @@ export function createWebSocketSession(
 	);
 }
 
+export function createWebSocketHistory(
+	res: WebSocketHistoryResponse,
+): WebSocketHistory {
+	return new WebSocketHistory(
+		res.message_type,
+		res.message_id,
+		res.content,
+		res.metadata,
+		new Date(res.timestamp),
+	);
+}
+
+export function createWebSocketHistoryList(
+	res: WebSocketHistoryListResponse,
+): WebSocketHistoryList {
+	return new WebSocketHistoryList(
+		res.session_id,
+		res.messages.map(createWebSocketHistory),
+		new Date(res.created_at),
+		new Date(res.updated_at),
+	);
+}
+
 export async function getWebSocketSession(): Promise<WebSocketSession | null> {
 	const axiosClient = createAxiosClient();
 	const response =
@@ -41,4 +71,17 @@ export async function getWebSocketSession(): Promise<WebSocketSession | null> {
 		return null;
 	}
 	return createWebSocketSession(response.data);
+}
+
+export async function getWebSocketHistoryList(): Promise<
+	WebSocketHistoryList[]
+> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<WebSocketHistoryListResponse[]>(
+		"/ws/session-history",
+	);
+	if (!response.data) {
+		return [];
+	}
+	return response.data.map(createWebSocketHistoryList);
 }

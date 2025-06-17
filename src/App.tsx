@@ -9,6 +9,7 @@ import ProfilePage from "@/components/pages/ProfilePage";
 import RecipePage from "@/components/pages/RecipePage";
 import RegisterPage from "@/components/pages/RegisterPage";
 import SettingPage from "@/components/pages/SettingPage";
+import HistoryPage from "./components/pages/HistroyPage";
 
 function App() {
 	return (
@@ -30,6 +31,7 @@ function App() {
 					<Route path="/home/recipe/:recipeId" element={<RecipePage />} />
 					<Route path="/home/setting" element={<SettingPage />} />
 					<Route path="/home/profile" element={<ProfilePage />} />
+					<Route path="/home/history" element={<HistoryPage />} />
 				</Route>
 			</Routes>
 		</BrowserRouter>
