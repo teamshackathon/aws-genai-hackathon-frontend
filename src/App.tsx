@@ -1,5 +1,5 @@
 import { ProtectedRoute } from "@/lib/route/ProtectedRoute";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router";
 
 import CallbackPage from "@/components/pages/CallbackPage";
 import LandingPage from "@/components/pages/LandingPage";

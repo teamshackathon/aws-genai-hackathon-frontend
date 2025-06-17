@@ -3,7 +3,6 @@ import {
 	Box,
 	Button,
 	Card,
-	CardBody,
 	Checkbox,
 	Container,
 	Divider,
@@ -19,7 +18,7 @@ import {
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	FaArrowLeft,
 	FaCalendarAlt,
@@ -27,93 +26,110 @@ import {
 	FaShareAlt, // 共有アイコン
 	FaUtensils,
 } from "react-icons/fa"; // 新しいアイコンをインポート
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 
 import Header from "@/components/organisms/Header";
-import { getUserId } from "@/lib/auth/authUtils";
+import { updatedShoppingListItemAtom } from "@/lib/atom/ShoppingAtom";
 import {
-	getShoppingListDetail,
-	updateShoppingListItem,
+	type Ingridient,
+	type Recipe,
+	getIngridients,
+	getRecipeById,
+} from "@/lib/domain/RecipeQuery";
+import {
+	type ShoppingList,
+	type ShoppingListItem,
+	getShoppingList,
+	getShoppingListItems,
 } from "@/lib/domain/ShoppingListQuery";
-import type {
-	ShoppingListDetail,
-	ShoppingListItem,
-} from "@/lib/domain/ShoppingListQuery";
+import { useSetAtom } from "jotai";
 
 export default function ShoppingListDetailPage() {
 	const { shoppingListId } = useParams<{ shoppingListId: string }>();
 	const navigate = useNavigate();
 	const toast = useToast();
 
-	const [shoppingList, setShoppingList] = useState<ShoppingListDetail | null>(
-		null,
+	const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
+	const [shoppingListItems, setShoppingListItem] = useState<ShoppingListItem[]>(
+		[],
 	);
+	const [recipe, setRecipe] = useState<Recipe | null>(null);
+	const [ingredients, setIngredients] = useState<Ingridient[]>([]); // 材料のリスト
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+
+	const updateShippingListItem = useSetAtom(updatedShoppingListItemAtom);
 
 	const cardBg = useColorModeValue("white", "gray.800");
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const headingColor = useColorModeValue("gray.800", "white");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
-	const fetchShoppingList = useCallback(async () => {
+	const fetchShoppingList = async () => {
+		setIsLoading(true);
 		if (!shoppingListId) {
 			setError("買い物リストIDが指定されていません。");
 			setIsLoading(false);
-			return;
+		} else {
+			setError(null);
+			const shoppingListData = await getShoppingList(Number(shoppingListId));
+			if (shoppingListData) {
+				setShoppingList(shoppingListData);
+			} else {
+				setError("買い物リストの取得に失敗しました。");
+			}
+			const shoppingListItemsData = await getShoppingListItems(shoppingListId);
+			if (shoppingListItems) {
+				setShoppingListItem(shoppingListItemsData);
+			} else {
+				setError("買い物リストの取得に失敗しました。");
+			}
+			const recipeData = await getRecipeById(shoppingListData.recipeId);
+			if (recipeData) {
+				setRecipe(recipeData);
+				const IngridientsData = await getIngridients(recipeData.id);
+				if (IngridientsData) {
+					setIngredients(IngridientsData);
+				} else {
+					setError("材料の取得に失敗しました。");
+				}
+			} else {
+				setError("レシピの取得に失敗しました。");
+			}
 		}
-
-		setIsLoading(true);
-		setError(null);
-		const userId = getUserId(); // 仮のユーザーIDを取得
-
-		try {
-			const data = await getShoppingListDetail(shoppingListId, userId);
-			setShoppingList(data);
-		} catch (err: any) {
-			setError(err.message || "買い物リストの詳細読み込みに失敗しました。");
-			console.error("Failed to fetch shopping list detail:", err);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [shoppingListId]);
+	};
 
 	useEffect(() => {
 		fetchShoppingList();
 	}, [fetchShoppingList]);
 
 	// 材料のチェック状態を切り替えるハンドラ
-	const handleItemCheck = async (itemId: string, currentIsChecked: boolean) => {
+	const handleItemCheck = async (itemId: number, currentIsChecked: boolean) => {
 		if (!shoppingListId) return;
 
-		const userId = getUserId();
-
 		// UIを先に更新して、ユーザー体験を向上させる（Optimistic Update）
-		setShoppingList((prevList) => {
-			if (!prevList) return null;
+		setShoppingListItem((prevItem) => {
+			if (!prevItem) return [];
 			return {
-				...prevList,
-				items: prevList.items.map((item) =>
+				...prevItem,
+				items: prevItem.map((item) =>
 					item.id === itemId ? { ...item, isChecked: !currentIsChecked } : item,
 				),
 			};
 		});
 
 		try {
-			await updateShoppingListItem(
-				shoppingListId,
-				itemId,
-				{ isChecked: !currentIsChecked },
-				userId,
-			);
+			await updateShippingListItem(shoppingListId, {
+				is_checked: !currentIsChecked,
+			});
 			// 成功トーストは不要（UIが既に更新されているため）
 		} catch (err: any) {
 			// エラーが発生した場合、UIを元の状態に戻す（Rollback）
-			setShoppingList((prevList) => {
-				if (!prevList) return null;
+			setShoppingListItem((prevList) => {
+				if (!prevList) return [];
 				return {
 					...prevList,
-					items: prevList.items.map((item) =>
+					items: prevList.map((item) =>
 						item.id === itemId
 							? { ...item, isChecked: currentIsChecked }
 							: item,
@@ -144,13 +160,8 @@ export default function ShoppingListDetailPage() {
 			return;
 		}
 
-		const checkedItems = shoppingList.items
-			.filter((item) => item.isChecked)
-			.map((item) => `- ${item.ingredientName} ${item.amount}`)
-			.join("\n");
-
 		const shareTitle = shoppingList.listName;
-		const shareText = `【${shareTitle}】\n\n${checkedItems}\n\n買い物リストはこちら: ${window.location.href}`;
+		const shareText = `【${shareTitle}】\n\n${shoppingListItems.filter((item) => item.isChecked)}\n\n買い物リストはこちら: ${window.location.href}`;
 
 		if (navigator.share) {
 			try {
@@ -319,10 +330,10 @@ export default function ShoppingListDetailPage() {
 									{shoppingList.listName}
 								</Heading>
 							</HStack>
-							{shoppingList.recipeName && (
+							{recipe?.recipeName && (
 								<HStack fontSize="md" color={textColor}>
 									<Icon as={FaUtensils} />
-									<Text>関連レシピ: {shoppingList.recipeName}</Text>
+									<Text>関連レシピ: {recipe?.recipeName}</Text>
 								</HStack>
 							)}
 							<HStack fontSize="md" color={textColor}>
@@ -336,16 +347,16 @@ export default function ShoppingListDetailPage() {
 
 							<Heading size="lg" color={headingColor}>
 								アイテム (
-								{shoppingList.items.filter((item) => item.isChecked).length} /{" "}
-								{shoppingList.items.length})
+								{shoppingListItems.filter((item) => item.isChecked).length} /{" "}
+								{shoppingListItems.length})
 							</Heading>
-							{shoppingList.items.length === 0 ? (
+							{shoppingListItems.length === 0 ? (
 								<Text color={textColor} fontStyle="italic">
 									このリストにはアイテムがありません。
 								</Text>
 							) : (
 								<List spacing={3} width="full">
-									{shoppingList.items.map((item) => (
+									{shoppingListItems.map((item) => (
 										<ListItem
 											key={item.id}
 											p={3}
@@ -371,7 +382,11 @@ export default function ShoppingListDetailPage() {
 															}
 															opacity={item.isChecked ? 0.7 : 1}
 														>
-															{item.ingredientName}
+															{
+																ingredients.find(
+																	(ing) => ing.id === item.ingredientId,
+																)?.ingredient
+															}
 														</Text>
 													</Checkbox>
 												</HStack>
@@ -383,7 +398,11 @@ export default function ShoppingListDetailPage() {
 													}
 													opacity={item.isChecked ? 0.7 : 1}
 												>
-													{item.amount}
+													{
+														ingredients.find(
+															(ing) => ing.id === item.ingredientId,
+														)?.amount
+													}
 												</Text>
 											</Flex>
 										</ListItem>

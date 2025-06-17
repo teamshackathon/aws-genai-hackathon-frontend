@@ -46,7 +46,6 @@ const SiderDrawer = () => {
 
 	const sidebarItems = [
 		{ icon: FaHome, label: "ホーム", href: "/home", badge: null },
-		{ icon: FaHistory, label: "履歴", href: "/home/history", badge: null },
 		{
 			icon: FaClipboardList,
 			label: "買い物リスト",
@@ -54,6 +53,7 @@ const SiderDrawer = () => {
 			badge: null,
 		},
 		{ icon: FaUser, label: "プロフィール", href: "/home/profile", badge: null },
+		{ icon: FaHistory, label: "履歴", href: "/home/history", badge: null },
 		{ icon: FaCog, label: "設定", href: "/home/setting", badge: null },
 	];
 

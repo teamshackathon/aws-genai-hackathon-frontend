@@ -1,109 +1,176 @@
 import { createAxiosClient } from "@/lib/infrastructure/AxiosClient";
 
-// 買い物リスト一覧の各アイテムの型
-export type ShoppingListSummary = {
-	id: string; // 買い物リストのID (UUIDを想定)
-	listName: string; // リスト名 (例: "ワンタンスープ 買い物リスト (2025/06/17)")
-	recipeId?: number; // 関連するレシピのID (存在しない場合もあるためオプション)
-	recipeName?: string; // 関連するレシピ名 (存在しない場合もあるためオプション)
-	createdAt: string; // 作成日時 (ISO 8601形式の文字列)
-	updatedAt: string; // 更新日時 (ISO 8601形式の文字列)
-};
+export class ShoppingListList {
+	constructor(
+		public items: ShoppingList[],
+		public total: number,
+		public page: number,
+		public perPage: number,
+		public pages: number,
+	) {}
+}
 
-// 買い物リスト一覧APIのレスポンス型
-export type GetShoppingListsResponse = ShoppingListSummary[];
+export class ShoppingList {
+	constructor(
+		public id: number, // 買い物リストのID (UUIDを想定)
+		public recipeId: number, // 関連するレシピのID (存在しない場合もあるためオプション)
+		public listName: string,
+		public listId: string, // 買い物リストのアイテム
+		public createdAt: string, // 作成日時 (ISO 8601形式)
+		public updatedAt: string, // 更新日時 (ISO 8601形式)
+	) {}
+}
 
-// 買い物リストアイテムの型
-export type ShoppingListItem = {
-	id: string; // shopping_list_items テーブルのID (UUIDを想定)
-	ingredientId: number; // ingredients テーブルのID
-	ingredientName: string; // 材料名
-	amount: string; // 分量
-	isChecked: boolean; // チェック状態
-	// quantity?: string; // もしDBにquantityカラムを設けるなら追加
-};
+export class ShoppingListItem {
+	constructor(
+		public id: number, // アイテムのID
+		public ingredientId: number, // ingredients テーブルのID
+		public isChecked: boolean, // チェック状態
+		public createdAt: string, // 作成日時 (ISO 8601形式)
+		public updatedAt: string, // 更新日時 (ISO 8601形式)
+	) {}
+}
 
-// 個別の買い物リスト詳細の型
-export type ShoppingListDetail = {
-	id: string; // shopping_lists テーブルのID (UUIDを想定)
-	listName: string;
-	recipeId?: number;
-	recipeName?: string;
-	createdAt: string;
-	updatedAt: string;
-	items: ShoppingListItem[]; // このリストに含まれるアイテム
-};
+export interface ShoppingListListResponse {
+	items: ShoppingListResponse[];
+	total: number;
+	page: number;
+	per_page: number;
+	pages: number;
+}
 
-// 買い物リストアイテムのチェック状態更新APIのリクエスト/レスポンス型
-export type UpdateShoppingListItemRequest = {
-	isChecked: boolean;
-};
+export interface ShoppingListResponse {
+	id: number;
+	recipe_id: number; // レシピID
+	list_name: string; // 買い物リストの名前
+	list_id: string; // 買い物リストのID (UUIDを想定)
+	created_at: string; // 作成日時 (ISO 8601形式)
+	updated_at: string; // 更新日時 (ISO 8601形式)
+}
 
-export type UpdateShoppingListItemResponse = {
-	id: string; // 更新されたアイテムのID
-	isChecked: boolean; // 更新後のチェック状態
-	message: string;
-};
+export interface ShoppingListItemResponse {
+	id: number; // アイテムのID
+	ingredient_id: number; // ingredients テーブルのID
+	is_checked: boolean; // チェック状態
+	created_at: string; // 作成日時 (ISO 8601形式)
+	updated_at: string; // 更新日時 (ISO 8601形式)
+}
 
-// 新しい買い物リスト作成APIのレスポンス型
-export type CreateShoppingListResponse = {
-	shoppingListId: string; // バックエンドから返される買い物リストのID (UUIDを想定)
-	message: string;
-};
+export interface ShoppingListCreateRequest {
+	recipe_id: number; // レシピID
+}
+
+export interface UpdateShoppingListItemRequest {
+	is_checked: boolean; // チェック状態
+}
+
+export interface ShoppingListQueryParams {
+	page: number;
+	par_page: number;
+	keyword?: string;
+}
+
+export function createShoppingList(res: ShoppingListResponse) {
+	return new ShoppingList(
+		res.id, // IDを文字列に変換
+		res.recipe_id,
+		res.list_name,
+		res.list_id,
+		res.created_at,
+		res.updated_at,
+	);
+}
+
+export function createShoppingListList(
+	res: ShoppingListListResponse,
+): ShoppingListList {
+	const items = res.items.map(createShoppingList);
+	return new ShoppingListList(
+		items,
+		res.total,
+		res.page,
+		res.per_page,
+		res.pages,
+	);
+}
+
+export function createShoppingListItem(
+	res: ShoppingListItemResponse,
+): ShoppingListItem {
+	return new ShoppingListItem(
+		res.id, // IDを文字列に変換
+		res.ingredient_id,
+		res.is_checked,
+		res.created_at,
+		res.updated_at,
+	);
+}
 
 // ----------------------------------------------------
 // API呼び出し関数
 // ----------------------------------------------------
 
 // 新しい買い物リストを作成するAPI呼び出し関数
-export async function createShoppingList(
+export async function postShoppingList(
 	recipeId: number,
-	userId: string, // <-- このuserIdはコンポーネントから渡されることを想定
-	recipeName: string,
-): Promise<CreateShoppingListResponse> {
+): Promise<ShoppingList> {
 	const axiosClient = createAxiosClient();
 	try {
-		const response = await axiosClient.post<CreateShoppingListResponse>(
-			"/shopping-lists",
-			{
-				recipeId: recipeId,
-				userId: userId, // バックエンドで認証トークンからユーザーIDを抽出するなら、このuserIdは不要になる
-				listName: `${recipeName} 買い物リスト (${new Date().toLocaleDateString()})`,
-			},
-		);
-		return response.data;
+		const response = await axiosClient.post<
+			ShoppingListCreateRequest,
+			ShoppingListResponse
+		>("/shopping-lists", {
+			recipe_id: recipeId,
+		});
+		return createShoppingList(response.data);
 	} catch (error) {
 		console.error("Error creating shopping list:", error);
 		throw error;
 	}
 }
 
-// ユーザーの買い物リスト一覧を取得するAPI呼び出し関数
-export async function getShoppingLists(
-	userId: string, // <-- このuserIdはコンポーネントから渡されることを想定
-): Promise<GetShoppingListsResponse> {
+export async function getShoppingList(
+	shoppingListId: number,
+): Promise<ShoppingList> {
 	const axiosClient = createAxiosClient();
 	try {
-		const response = await axiosClient.get<GetShoppingListsResponse>(
-			`/shopping-lists?userId=${userId}`,
+		const response = await axiosClient.get<ShoppingListResponse>(
+			`/shopping-lists/${shoppingListId}`,
 		);
-		return response.data;
+		return createShoppingList(response.data);
 	} catch (error) {
 		console.error("Error fetching shopping lists:", error);
 		throw error;
 	}
 }
 
-export async function getShoppingListDetail(
-	shoppingListId: string,
-	userId: string, // <-- このuserIdはコンポーネントから渡されることを想定
-): Promise<ShoppingListDetail> {
+// ユーザーの買い物リスト一覧を取得するAPI呼び出し関数
+export async function getShoppingLists(
+	page: number,
+	par_page: number,
+	keyword?: string,
+): Promise<ShoppingListList> {
 	const axiosClient = createAxiosClient();
 	try {
-		const response = await axiosClient.get<ShoppingListDetail>(
-			`/shopping-lists/${shoppingListId}?userId=${userId}`,
+		const response = await axiosClient.get<ShoppingListListResponse>(
+			`/shopping-lists?page=${page}&par_page=${par_page}&keyword=${keyword}`,
 		);
-		return response.data;
+		return createShoppingListList(response.data);
+	} catch (error) {
+		console.error("Error fetching shopping lists:", error);
+		throw error;
+	}
+}
+
+export async function getShoppingListItems(
+	shoppingListId: string,
+): Promise<ShoppingListItem[]> {
+	const axiosClient = createAxiosClient();
+	try {
+		const response = await axiosClient.get<ShoppingListItemResponse[]>(
+			`/shopping-lists/${shoppingListId}/items`,
+		);
+		return response.data.map(createShoppingListItem);
 	} catch (error) {
 		console.error(
 			`Error fetching shopping list detail for ${shoppingListId}:`,
@@ -114,21 +181,19 @@ export async function getShoppingListDetail(
 }
 
 export async function updateShoppingListItem(
-	shoppingListId: string,
 	shoppingListItemId: string,
 	data: UpdateShoppingListItemRequest,
-	userId: string, // <-- このuserIdはコンポーネントから渡されることを想定
-): Promise<UpdateShoppingListItemResponse> {
+): Promise<ShoppingListItem> {
 	const axiosClient = createAxiosClient();
 	try {
-		const response = await axiosClient.put<UpdateShoppingListItemResponse>(
-			`/shopping-lists/${shoppingListId}/items/${shoppingListItemId}?userId=${userId}`,
-			data,
-		);
-		return response.data;
+		const response = await axiosClient.put<
+			UpdateShoppingListItemRequest,
+			ShoppingListItemResponse
+		>(`/shopping-lists/item/${shoppingListItemId}`, data);
+		return createShoppingListItem(response.data);
 	} catch (error) {
 		console.error(
-			`Error updating shopping list item ${shoppingListItemId} for list ${shoppingListId}:`,
+			`Error updating shopping list item ${shoppingListItemId}`,
 			error,
 		);
 		throw error;

@@ -14,7 +14,6 @@ import {
 	Icon,
 	List,
 	ListItem,
-	OrderedList,
 	Skeleton,
 	SkeletonText,
 	Text,
@@ -23,7 +22,7 @@ import {
 	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import {
 	FaArrowLeft,
@@ -49,9 +48,8 @@ import {
 	processesAtom,
 	recipeStatusAtomLoadable,
 } from "@/lib/atom/RecipeAtom";
-import { getUserId } from "@/lib/auth/authUtils";
+import { postShoppingListAtom } from "@/lib/atom/ShoppingAtom";
 import type { ExternalService, RecipeStatus } from "@/lib/domain/RecipeQuery";
-import { createShoppingList } from "@/lib/domain/ShoppingListQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
 const MotionCard = motion(Card);
@@ -70,6 +68,7 @@ export default function RecipePage() {
 	const ingredients = useAtomValue(ingredientsAtom);
 	const processes = useAtomValue(processesAtom);
 	const currentRecipe = useAtomValue(currentRecipeAtom);
+	const postShoppingList = useSetAtom(postShoppingListAtom);
 
 	// Color values
 	const bgGradient = useColorModeValue(
@@ -145,14 +144,9 @@ export default function RecipePage() {
 		}
 
 		setIsCreatingShoppingList(true); // ローディング開始
-		const userId = getUserId(); // 仮のユーザーIDを取得
 
 		try {
-			const data = await createShoppingList(
-				Number(recipeId),
-				userId,
-				currentRecipe.recipeName, // レシピ名を渡す
-			);
+			const data = await postShoppingList(Number(recipeId));
 			toast({
 				title: "買い物リストを作成しました",
 				description: "買い物リストページへ移動します。",
@@ -160,7 +154,7 @@ export default function RecipePage() {
 				duration: 2000,
 				isClosable: true,
 			});
-			navigate(`/home/shopping_list/${data.shoppingListId}`); // 新しい買い物リストページへ遷移
+			navigate(`/home/shopping_list/${data.id}`); // 新しい買い物リストページへ遷移
 		} catch (error: any) {
 			// エラーの型を any にする
 			toast({
