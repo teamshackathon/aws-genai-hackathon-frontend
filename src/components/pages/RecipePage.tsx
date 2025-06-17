@@ -23,11 +23,12 @@ import {
 	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import {
 	FaArrowLeft,
 	FaBookmark,
+	FaClipboardList,
 	FaClock,
 	FaCookieBite,
 	FaExternalLinkAlt,
@@ -50,6 +51,7 @@ import {
 	processesAtom,
 	recipeStatusAtomLoadable,
 } from "@/lib/atom/RecipeAtom";
+import { postShoppingListAtom } from "@/lib/atom/ShoppingAtom";
 import type { ExternalService, RecipeStatus } from "@/lib/domain/RecipeQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 
@@ -61,6 +63,7 @@ export default function RecipePage() {
 	const navigate = useNavigate();
 	const toast = useToast();
 	const [isBookmarked, setIsBookmarked] = useState(false);
+	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
 	const {
 		isOpen: isCookingModalOpen,
 		onOpen: onCookingModalOpen,
@@ -72,6 +75,7 @@ export default function RecipePage() {
 	const ingredients = useAtomValue(ingredientsAtom);
 	const processes = useAtomValue(processesAtom);
 	const currentRecipe = useAtomValue(currentRecipeAtom);
+	const postShoppingList = useSetAtom(postShoppingListAtom);
 
 	// Color values
 	const bgGradient = useColorModeValue(
@@ -132,22 +136,63 @@ export default function RecipePage() {
 			window.open(currentRecipe.url, "_blank");
 		}
 	};
+
+	// ★新しい関数: 買い物リスト作成ボタンのハンドラ
+	const handleCreateShoppingList = async () => {
+		if (!recipeId || !currentRecipe) {
+			toast({
+				title: "エラー",
+				description: "レシピ情報が不足しています。",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			});
+			return;
+		}
+
+		setIsCreatingShoppingList(true); // ローディング開始
+
+		try {
+			const data = await postShoppingList(Number(recipeId));
+			toast({
+				title: "買い物リストを作成しました",
+				description: "買い物リストページへ移動します。",
+				status: "success",
+				duration: 2000,
+				isClosable: true,
+			});
+			navigate(`/home/shopping_list/${data.id}`); // 新しい買い物リストページへ遷移
+		} catch (error: any) {
+			// エラーの型を any にする
+			toast({
+				title: "買い物リストの作成に失敗しました",
+				description: error.message || "予期せぬエラーが発生しました。",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			});
+		} finally {
+			setIsCreatingShoppingList(false); // ローディング終了
+		}
+	};
+
 	// Loading state
 	if (!currentRecipe) {
+		// データがロード中の場合
 		return (
 			<Box minH="100vh" bgGradient={bgGradient}>
 				<Header />
 				<Container maxW="6xl" py={8}>
 					<VStack spacing={8}>
-						<Skeleton height="40px" />
-						<Skeleton height="300px" />
+						<Skeleton height="40px" width="80%" />
+						<Skeleton height="300px" width="100%" />
 						<Grid
 							templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
 							gap={8}
 							w="full"
 						>
-							<SkeletonText noOfLines={10} spacing="4" />
-							<SkeletonText noOfLines={10} spacing="4" />
+							<SkeletonText noOfLines={10} spacing="4" skeletonHeight="20px" />
+							<SkeletonText noOfLines={10} spacing="4" skeletonHeight="20px" />
 						</Grid>
 					</VStack>
 				</Container>
@@ -299,6 +344,20 @@ export default function RecipePage() {
 												元動画を見る
 											</MotionButton>
 										)}
+										{/* ★「買い物リストを作成」ボタンを追加 */}
+										<MotionButton
+											leftIcon={<Icon as={FaClipboardList} />}
+											variant="solid" // solid スタイルを使用
+											colorScheme="teal" // teal スタイルを使用
+											onClick={handleCreateShoppingList}
+											isLoading={isCreatingShoppingList} // ローディング状態を反映
+											loadingText="作成中"
+											spinnerPlacement="start"
+											whileHover={{ scale: 1.05 }}
+											whileTap={{ scale: 0.95 }}
+										>
+											買い物リストを作成
+										</MotionButton>
 									</HStack>
 								</VStack>
 							</GridItem>
