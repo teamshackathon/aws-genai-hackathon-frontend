@@ -39,6 +39,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router";
 
+import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
 import CookingModal from "@/components/organisms/CookingModal";
 import Header from "@/components/organisms/Header";
 import {
@@ -428,21 +429,29 @@ export default function RecipePage() {
 							{/* Recipe image placeholder */}
 							<GridItem>
 								<Box
-									bg={useColorModeValue("gray.100", "gray.700")}
 									rounded="xl"
 									h="300px"
-									display="flex"
-									alignItems="center"
-									justifyContent="center"
-									position="relative"
 									overflow="hidden"
+									shadow="lg"
+									border="1px"
+									borderColor={borderColor}
 								>
-									<VStack spacing={3}>
-										<Icon as={FaCookieBite} boxSize={12} color={textColor} />
-										<Text color={textColor} fontWeight="semibold">
-											レシピ画像
-										</Text>
-									</VStack>
+									<YouTubeThumbnail
+										url={currentRecipe.url}
+										alt={currentRecipe.recipeName}
+										height="300px"
+										width="full"
+										objectFit="cover"
+										onClick={() => {
+											if (currentRecipe.url) {
+												window.open(
+													currentRecipe.url,
+													"_blank",
+													"noopener,noreferrer",
+												);
+											}
+										}}
+									/>
 								</Box>
 							</GridItem>
 						</Grid>
