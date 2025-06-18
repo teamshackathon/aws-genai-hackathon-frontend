@@ -21,6 +21,7 @@ export const getUserAtom = atom(null, async (_, set) => {
 		set(userAtom, res);
 	} catch (error) {
 		console.error("Failed to fetch user data:", error);
+		set(userAtom, null);
 	} finally {
 		set(isUserLoadingAtom, false);
 	}
