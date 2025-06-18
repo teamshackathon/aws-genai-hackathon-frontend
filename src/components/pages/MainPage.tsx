@@ -16,6 +16,7 @@ import {
 	InputRightElement,
 	SimpleGrid,
 	Spinner,
+	Stack,
 	Text,
 	VStack,
 	useColorModeValue,
@@ -42,7 +43,7 @@ import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 import { useAtom } from "jotai";
 
 // Motion components
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 const MotionCard = motion(Card);
 
 // モックデータ - 実際のデータはAPIから取得
@@ -147,233 +148,244 @@ export default function MainPage() {
 	}, [session]);
 
 	return (
-		<><MotionBox
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.6, delay: 0.2 }}
-			mb={12}
-		>
-			<Box
-				bg={cardBg}
-				p={{ base: 6, md: 8 }}
-				rounded="2xl"
-				shadow="xl"
-				border="1px"
-				borderColor={borderColor}
-				maxW={{ base: "full", md: "4xl" }}
-				mx="auto"
-			>
-				<VStack spacing={6}>
-					<HStack spacing={2}>
-						<Icon as={FaVideo} boxSize={6} color="purple.500" />
-						<Heading
-							size="md"
-							color={useColorModeValue("gray.800", "white")}
-							lineHeight="1.4"
-						>
-							動画レシピをAIで解析
-						</Heading>
-						<Icon as={HiSparkles} boxSize={5} color="pink.500" />
-					</HStack>
-
-					<Text
-						color={textColor}
-						textAlign="center"
-						fontSize={{ base: "sm", md: "md" }}
-						lineHeight="1.8"
-						px={{ base: 2, md: 4 }}
+		<>
+			<Box minH="100vh" bgGradient={bgGradient}>
+				<Header />
+				<Container maxW="7xl" py={8}>
+					{/* ウェルカムセクション */}
+					<MotionBox
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.6 }}
+						mb={12}
 					>
-						YouTube Shorts の動画URLを入力すると、
-						<br />
-						AIが自動でレシピを抽出・整理します
-					</Text>
+						<VStack spacing={6} textAlign="center">
+							<HStack>
+								<Icon as={FaCookieBite} boxSize={8} color="orange.500" />
+								<Heading
+									size="xl"
+									bgGradient="linear(to-r, orange.500, pink.500)"
+									bgClip="text"
+								>
+									あなたのレシピコレクション
+								</Heading>
+							</HStack>
+							<Text fontSize="lg" color={textColor} maxW="2xl">
+								動画URLを入力してAIでレシピを自動生成するか、
+								既存のレシピから選んで「映える献立」を作りましょう
+							</Text>
+						</VStack>
+					</MotionBox>
 
-					<Stack
-						w="full"
-						spacing={4}
-						direction={{ base: "column", md: "row" }}
+					<MotionBox
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.6, delay: 0.2 }}
+						mb={12}
 					>
-						<InputGroup flex={1}>
-							<Input
-								placeholder="https://youtube.com/shorts/..."
-								value={urlInput}
-								onChange={(e) => setUrlInput(e.target.value)}
-								size="lg"
-								bg={useColorModeValue("gray.50", "gray.700")}
-								border="2px"
-								borderColor={useColorModeValue("gray.200", "gray.600")}
-								_focus={{
-									borderColor: "orange.400",
-									boxShadow: "0 0 0 1px var(--chakra-colors-orange-400)",
-								}}
-								isDisabled={isProcessing} />
-							<InputRightElement height="100%">
-								<Icon as={FaSearch} color="gray.400" />
-							</InputRightElement>
-						</InputGroup>
-
-						<Button
-							size="lg"
-							bgGradient="linear(to-r, orange.400, pink.400)"
-							color="white"
-							_hover={{
-								bgGradient: "linear(to-r, orange.500, pink.500)",
-								transform: "translateY(-2px)",
-								shadow: "lg",
-							}}
-							leftIcon={isProcessing ? (
-								<Spinner size="sm" />
-							) : (
-								<Icon as={HiSparkles} />
-							)}
-							onClick={handleUrlSubmit}
-							isLoading={isProcessing}
-							loadingText="解析中..."
-							transition="all 0.3s"
-							px={8}
-							w={{ base: "full", md: "auto" }} // スマホでボタン幅100%
-						>
-							AI解析開始
-						</Button>
-					</Stack>
-				</VStack>
-			</Box>
-
-		</MotionBox>
-			//レシピ一覧セクション 
-			<MotionBox
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.6, delay: 0.4 }}
-			>
-				<Flex justify="space-between" align="center" mb={8}>
-					<VStack align="start" spacing={2}>
-						<Heading size="lg" color={useColorModeValue("gray.800", "white")}>
-							あなたのレシピ
-						</Heading>
-						<Text color={textColor}>
-							{recipes?.total}個のレシピが保存されています
-						</Text>
-					</VStack>
-				</Flex>
-
-				<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-					{recipes?.items.map((recipe, index) => (
-						<MotionCard
-							key={recipe.id}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: index * 0.1 }}
-							whileHover={{ y: -8, transition: { duration: 0.2 } }}
+						<Box
 							bg={cardBg}
-							shadow="lg"
-							rounded="xl"
-							overflow="hidden"
+							p={{ base: 6, md: 8 }}
+							rounded="2xl"
+							shadow="xl"
 							border="1px"
 							borderColor={borderColor}
-							_hover={{
-								shadow: "2xl",
-								borderColor: "orange.300",
-							}}
-							cursor="pointer"
-							onClick={() => navigate(`/home/recipe/${recipe.id}`)}
+							maxW={{ base: "full", md: "4xl" }}
+							mx="auto"
 						>
-							<Box position="relative">
-								<Image
-									// src={recipe.thumbnail}
-									alt={recipe.recipeName}
-									h="200px"
+							<VStack spacing={6}>
+								<HStack spacing={2}>
+									<Icon as={FaVideo} boxSize={6} color="purple.500" />
+									<Heading
+										size="md"
+										color={useColorModeValue("gray.800", "white")}
+										lineHeight="1.4"
+									>
+										動画レシピをAIで解析
+									</Heading>
+									<Icon as={HiSparkles} boxSize={5} color="pink.500" />
+								</HStack>
+
+								<Text
+									color={textColor}
+									textAlign="center"
+									fontSize={{ base: "sm", md: "md" }}
+									lineHeight="1.8"
+									px={{ base: 2, md: 4 }}
+								>
+									YouTube Shorts の動画URLを入力すると、
+									<br />
+									AIが自動でレシピを抽出・整理します
+								</Text>
+
+								<Stack
 									w="full"
-									objectFit="cover" />
-								<IconButton
-									aria-label="ブックマーク"
-									icon={<Icon
-										as={FaBookmark}
-										color={bookmarkedRecipes.has(recipe.id)
-											? "orange.400"
-											: "gray.400"} />}
-									position="absolute"
-									top={3}
-									right={3}
-									size="sm"
-									bg="white"
-									shadow="md"
-									rounded="full"
-									_hover={{
-										transform: "scale(1.1)",
-										shadow: "lg",
-									}}
-									transition="all 0.2s"
-									onClick={(e) => {
-										e.stopPropagation();
-										toggleBookmark(recipe.id);
-									} } />
-							</Box>
+									spacing={4}
+									direction={{ base: "column", md: "row" }}
+								>
+									<InputGroup flex={1}>
+										<Input
+											placeholder="https://youtube.com/shorts/..."
+											value={urlInput}
+											onChange={(e) => setUrlInput(e.target.value)}
+											size="lg"
+											bg={useColorModeValue("gray.50", "gray.700")}
+											border="2px"
+											borderColor={useColorModeValue("gray.200", "gray.600")}
+											_focus={{
+												borderColor: "orange.400",
+												boxShadow: "0 0 0 1px var(--chakra-colors-orange-400)",
+											}}
+											isDisabled={isProcessing}
+										/>
+										<InputRightElement height="100%">
+											<Icon as={FaSearch} color="gray.400" />
+										</InputRightElement>
+									</InputGroup>
 
-							<CardBody p={6}>
-								<VStack align="start" spacing={4}>
-									<VStack align="start" spacing={2} w="full">
-										<Heading size="md" noOfLines={2} lineHeight={1.3}>
-											{recipe.recipeName}
-										</Heading>
+									<Button
+										size="lg"
+										bgGradient="linear(to-r, orange.400, pink.400)"
+										color="white"
+										_hover={{
+											bgGradient: "linear(to-r, orange.500, pink.500)",
+											transform: "translateY(-2px)",
+											shadow: "lg",
+										}}
+										leftIcon={
+											isProcessing ? (
+												<Spinner size="sm" />
+											) : (
+												<Icon as={HiSparkles} />
+											)
+										}
+										onClick={handleUrlSubmit}
+										isLoading={isProcessing}
+										loadingText="解析中..."
+										transition="all 0.3s"
+										px={8}
+										w={{ base: "full", md: "auto" }}
+									>
+										AI解析開始
+									</Button>
+								</Stack>
+							</VStack>
+						</Box>
+					</MotionBox>
 
-										{/* <HStack spacing={2} flexWrap="wrap">
-                {recipe.tags.slice(0, 2).map((tag) => (
-                    <Badge
-                        key={tag}
-                        colorScheme="orange"
-                        variant="subtle"
-                        fontSize="xs"
-                    >
-                        {tag}
-                    </Badge>
-                ))}
-            </HStack> */}
-									</VStack>
-
-									<HStack justify="space-between" w="full">
-										<VStack align="start" spacing={1}>
-											<HStack spacing={1}>
-												<Icon as={FaClock} boxSize={3} color="gray.500" />
-												{/* <Text fontSize="sm" color={textColor}>
-                {recipe.cookingTime}
-            </Text> */}
-											</HStack>
-											{/* <Badge
-                colorScheme={getDifficultyColor(recipe.difficulty)}
-                variant="subtle"
-                fontSize="xs"
-            >
-                {recipe.difficulty}
-            </Badge> */}
-										</VStack>
-
-										<VStack align="end" spacing={1}>
-											{/* <HStack spacing={1}>
-                <Icon as={FaHeart} boxSize={3} color="red.400" />
-                <Text fontSize="sm" color={textColor}>
-                    {recipe.likes}
-                </Text>
-            </HStack> */}
-											{/* <Text fontSize="xs" color={textColor}>
-                {recipe?.createdDate}
-            </Text> */}
-										</VStack>
-									</HStack>
+					<Container maxW="container.xl" mt={12}>
+						<MotionBox
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.6, delay: 0.4 }}
+						>
+							<Flex justify="space-between" align="center" mb={8}>
+								<VStack align="start" spacing={2}>
+									<Heading
+										size="lg"
+										color={useColorModeValue("gray.800", "white")}
+									>
+										あなたのレシピ
+									</Heading>
+									<Text color={textColor}>
+										{recipes?.total}個のレシピが保存されています
+									</Text>
 								</VStack>
-							</CardBody>
-						</MotionCard>
-					))}
-				</SimpleGrid>
-			</MotionBox></>
-			</Container>
+							</Flex>
 
+							<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+								{recipes?.items.map((recipe, index) => (
+									<MotionCard
+										key={recipe.id}
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ duration: 0.5, delay: index * 0.1 }}
+										whileHover={{ y: -8, transition: { duration: 0.2 } }}
+										bg={cardBg}
+										shadow="lg"
+										rounded="xl"
+										overflow="hidden"
+										border="1px"
+										borderColor={borderColor}
+										_hover={{
+											shadow: "2xl",
+											borderColor: "orange.300",
+										}}
+										cursor="pointer"
+										onClick={() => navigate(`/home/recipe/${recipe.id}`)}
+									>
+										<Box position="relative">
+											<Image
+												//src={recipe.thumbnail}
+												alt={recipe.recipeName}
+												h="200px"
+												w="full"
+												objectFit="cover"
+											/>
+											<IconButton
+												aria-label="ブックマーク"
+												icon={
+													<Icon
+														as={FaBookmark}
+														color={
+															bookmarkedRecipes.has(recipe.id)
+																? "orange.400"
+																: "gray.400"
+														}
+													/>
+												}
+												position="absolute"
+												top={3}
+												right={3}
+												size="sm"
+												bg="white"
+												shadow="md"
+												rounded="full"
+												_hover={{
+													transform: "scale(1.1)",
+													shadow: "lg",
+												}}
+												transition="all 0.2s"
+												onClick={(e) => {
+													e.stopPropagation();
+													toggleBookmark(recipe.id);
+												}}
+											/>
+										</Box>
+
+										<CardBody p={6}>
+											<VStack align="start" spacing={4}>
+												<VStack align="start" spacing={2} w="full">
+													<Heading size="md" noOfLines={2} lineHeight={1.3}>
+														{recipe.recipeName}
+													</Heading>
+												</VStack>
+
+												<HStack justify="space-between" w="full">
+													<VStack align="start" spacing={1}>
+														<HStack spacing={1}>
+															<Icon as={FaClock} boxSize={3} color="gray.500" />
+														</HStack>
+													</VStack>
+													<VStack align="end" spacing={1} />
+												</HStack>
+											</VStack>
+										</CardBody>
+									</MotionCard>
+								))}
+							</SimpleGrid>
+						</MotionBox>
+					</Container>
+				</Container>
+				{/* ←追加：1つ目のContainerの閉じタグ */}
+			</Box>
+			{/* ←追加：Boxの閉じタグ */}
 			{/* AI処理チャット */}
 			<AIProcessChat
 				isOpen={isChatOpen}
 				isProcessing={isProcessing}
 				onClose={() => setIsChatOpen(false)}
 			/>
-		</Box>
+		</>
 	);
 }
