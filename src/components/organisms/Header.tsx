@@ -39,6 +39,10 @@ export default function Header() {
 
 	// デバウンス処理で検索を実行
 	useEffect(() => {
+		if (recipeQueryParam.keyword === searchValue) {
+			return;
+		}
+
 		const timeoutId = setTimeout(() => {
 			setRecipeQueryParam((prev) => ({
 				...prev,

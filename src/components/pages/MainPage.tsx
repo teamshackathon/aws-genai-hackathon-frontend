@@ -202,25 +202,45 @@ export default function MainPage() {
 						mx="auto"
 					>
 						<VStack spacing={6}>
+							{" "}
 							<HStack>
-								<Icon as={FaVideo} boxSize={6} color="purple.500" />
+								<Icon
+									as={FaVideo}
+									boxSize={{ base: 5, md: 6 }}
+									color="purple.500"
+								/>
 								<Heading
-									size="md"
+									size={{ base: "sm", md: "md" }}
 									color={useColorModeValue("gray.800", "white")}
+									fontSize={{ base: "lg", md: "xl" }}
 								>
 									動画レシピをAIで解析
 								</Heading>
-								<Icon as={HiSparkles} boxSize={5} color="pink.500" />
+								<Icon
+									as={HiSparkles}
+									boxSize={{ base: 4, md: 5 }}
+									color="pink.500"
+								/>
 							</HStack>
-
-							<Text color={textColor} textAlign="center">
+							<Text
+								color={textColor}
+								textAlign="center"
+								fontSize={{ base: "sm", md: "md" }}
+								px={{ base: 2, md: 0 }}
+							>
 								YouTube
 								Shortsの動画URLを入力すると、AIが自動でレシピを抽出・整理します
 							</Text>
-
-							<HStack w="full" spacing={4}>
-								<InputGroup flex={1}>
-									{" "}
+							<Flex
+								w="full"
+								gap={4}
+								direction={{ base: "column", md: "row" }}
+								align={{ base: "stretch", md: "center" }}
+							>
+								<InputGroup
+									flex={{ base: "none", md: 1 }}
+									w={{ base: "full", md: "auto" }}
+								>
 									<Input
 										placeholder="https://youtube.com/shorts/..."
 										value={urlInput}
@@ -237,9 +257,11 @@ export default function MainPage() {
 									<InputRightElement height="100%">
 										<Icon as={FaSearch} color="gray.400" />
 									</InputRightElement>
-								</InputGroup>{" "}
+								</InputGroup>
 								<Button
 									size="lg"
+									w={{ base: "full", md: "auto" }}
+									flexShrink={0}
 									bgGradient="linear(to-r, orange.400, pink.400)"
 									color="white"
 									_hover={{
@@ -254,7 +276,7 @@ export default function MainPage() {
 								>
 									AI解析開始
 								</Button>
-							</HStack>
+							</Flex>
 						</VStack>
 					</Box>
 				</MotionBox>
@@ -265,12 +287,27 @@ export default function MainPage() {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6, delay: 0.4 }}
 				>
-					<Flex justify="space-between" align="center" mb={8}>
-						<VStack align="start" spacing={2}>
-							<Heading size="lg" color={useColorModeValue("gray.800", "white")}>
+					{" "}
+					<Flex
+						justify="space-between"
+						align="center"
+						mb={8}
+						direction={{ base: "column", md: "row" }}
+						gap={{ base: 4, md: 0 }}
+					>
+						<VStack align={{ base: "center", md: "start" }} spacing={2}>
+							<Heading
+								size={{ base: "md", md: "lg" }}
+								color={useColorModeValue("gray.800", "white")}
+								textAlign={{ base: "center", md: "left" }}
+							>
 								あなたのレシピ
 							</Heading>
-							<Text color={textColor}>
+							<Text
+								color={textColor}
+								fontSize={{ base: "sm", md: "md" }}
+								textAlign={{ base: "center", md: "left" }}
+							>
 								{recipes?.total}個のレシピが保存されています
 								{recipeQueryParam.keyword && (
 									<Text as="span" color="orange.500" fontWeight="medium" ml={2}>
@@ -280,7 +317,6 @@ export default function MainPage() {
 							</Text>
 						</VStack>
 					</Flex>
-
 					<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
 						{recipes?.items && recipes.items.length > 0 ? (
 							recipes.items.map((recipe, index) => (
@@ -357,11 +393,16 @@ export default function MainPage() {
 												);
 											}}
 										/>
-									</Box>
-									<CardBody p={6}>
-										<VStack align="start" spacing={4}>
+									</Box>{" "}
+									<CardBody p={{ base: 4, md: 6 }}>
+										<VStack align="start" spacing={{ base: 3, md: 4 }}>
 											<VStack align="start" spacing={2} w="full">
-												<Heading size="md" noOfLines={2} lineHeight={1.3}>
+												<Heading
+													size={{ base: "sm", md: "md" }}
+													noOfLines={2}
+													lineHeight={1.3}
+													fontSize={{ base: "md", md: "lg" }}
+												>
 													{recipe.recipeName}
 												</Heading>
 
@@ -370,7 +411,7 @@ export default function MainPage() {
 													<Badge
 														colorScheme="purple"
 														variant="subtle"
-														fontSize="xs"
+														fontSize={{ base: "2xs", md: "xs" }}
 														px={2}
 														py={1}
 														rounded="md"
@@ -379,31 +420,35 @@ export default function MainPage() {
 													</Badge>
 												)}
 											</VStack>
-
 											{/* Keywords Tags */}
 											{recipe.keyword && (
 												<Wrap spacing={1}>
 													{recipe.keyword.split(",").map((tag, tagIndex) => (
 														<WrapItem key={tagIndex}>
 															<Tag
-																size="sm"
+																size={{ base: "sm", md: "md" }}
 																colorScheme="orange"
 																variant="subtle"
 																rounded="full"
 															>
-																<TagLabel>{tag.trim()}</TagLabel>
+																<TagLabel fontSize={{ base: "xs", md: "sm" }}>
+																	{tag.trim()}
+																</TagLabel>
 															</Tag>
 														</WrapItem>
 													))}
 												</Wrap>
-											)}
-
-											<HStack justify="space-between" w="full">
+											)}{" "}
+											<HStack
+												justify="space-between"
+												w="full"
+												flexWrap={{ base: "wrap", md: "nowrap" }}
+											>
 												<VStack align="start" spacing={1}>
 													<Badge
 														colorScheme={"green"}
 														variant="subtle"
-														fontSize="xs"
+														fontSize={{ base: "2xs", md: "xs" }}
 													>
 														{externalServices?.find(
 															(service) =>
@@ -413,7 +458,10 @@ export default function MainPage() {
 												</VStack>
 
 												<VStack align="end" spacing={1}>
-													<Text fontSize="xs" color={textColor}>
+													<Text
+														fontSize={{ base: "2xs", md: "xs" }}
+														color={textColor}
+													>
 														{recipe?.createdDate
 															? new Date(recipe.createdDate).toLocaleDateString(
 																	"ja-JP",
@@ -448,8 +496,7 @@ export default function MainPage() {
 								</VStack>
 							</Box>
 						)}
-					</SimpleGrid>
-
+					</SimpleGrid>{" "}
 					{/* Pagination */}
 					{recipes && recipes.pages > 1 && (
 						<MotionBox
@@ -458,8 +505,12 @@ export default function MainPage() {
 							transition={{ duration: 0.6, delay: 0.6 }}
 							mt={12}
 						>
-							<Flex justify="center" align="center">
-								<HStack spacing={2}>
+							<Flex justify="center" direction="column" align="center" gap={4}>
+								<HStack
+									spacing={{ base: 1, md: 2 }}
+									flexWrap="wrap"
+									justify="center"
+								>
 									{/* Previous Page Button */}
 									<IconButton
 										aria-label="前のページ"
@@ -468,6 +519,7 @@ export default function MainPage() {
 										onClick={() => handlePageChange(recipeQueryParam.page - 1)}
 										variant="outline"
 										colorScheme="orange"
+										size={{ base: "sm", md: "md" }}
 									/>
 
 									{/* Page Numbers */}
@@ -488,8 +540,9 @@ export default function MainPage() {
 															: "outline"
 													}
 													colorScheme="orange"
-													size="sm"
-													minW="40px"
+													size={{ base: "sm", md: "md" }}
+													minW={{ base: "32px", md: "40px" }}
+													fontSize={{ base: "sm", md: "md" }}
 												>
 													{pageNum}
 												</Button>
@@ -505,15 +558,19 @@ export default function MainPage() {
 										onClick={() => handlePageChange(recipeQueryParam.page + 1)}
 										variant="outline"
 										colorScheme="orange"
+										size={{ base: "sm", md: "md" }}
 									/>
 								</HStack>
+								{/* Page Info */}
+								<Text
+									textAlign="center"
+									fontSize={{ base: "xs", md: "sm" }}
+									color={textColor}
+								>
+									ページ {recipeQueryParam.page} / {recipes.pages}
+									（全 {recipes.total} 件）
+								</Text>{" "}
 							</Flex>
-
-							{/* Page Info */}
-							<Text textAlign="center" fontSize="sm" color={textColor} mt={4}>
-								ページ {recipeQueryParam.page} / {recipes.pages}
-								（全 {recipes.total} 件）
-							</Text>
 						</MotionBox>
 					)}
 				</MotionBox>

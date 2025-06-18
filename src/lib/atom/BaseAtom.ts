@@ -1,7 +1,8 @@
 import type { SettingsData } from "@/lib/type/Base";
+import type { UseToastOptions } from "@chakra-ui/react";
 import { atomWithReset } from "jotai/utils";
 
-export const toastAtom = atomWithReset({ status: "", message: "" });
+export const toastAtom = atomWithReset<UseToastOptions | null>(null);
 
 export const settingsAtom = atomWithReset<SettingsData>({
 	notifications: {
