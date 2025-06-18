@@ -11,7 +11,6 @@ import {
 	Text,
 	VStack,
 	useColorModeValue,
-	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useAtom, useSetAtom } from "jotai";
@@ -27,6 +26,7 @@ import { HiSparkles } from "react-icons/hi2";
 import { useNavigate, useSearchParams } from "react-router";
 
 import Header from "@/components/organisms/Header";
+import { toastAtom } from "@/lib/atom/BaseAtom";
 import { recipeUrlAtom, refreshRecipeListAtom } from "@/lib/atom/RecipeAtom";
 import { useRecipeGenWebSocket } from "@/lib/hook/useRecipeGenWebSocket";
 import { WebSocketMessage } from "@/lib/type/websocket";
@@ -116,7 +116,7 @@ function classifyWebSocketMessage(message: WebSocketMessage) {
 export default function RecipeAIGenPage() {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
-	const toast = useToast();
+	const setToastState = useSetAtom(toastAtom);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	const [recipeUrl, setRecipeUrl] = useAtom(recipeUrlAtom);
@@ -125,7 +125,7 @@ export default function RecipeAIGenPage() {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [message, setMessage] = useState<string[]>([]);
 	const [messageTimestamps, setMessageTimestamps] = useState<Date[]>([]);
-	const [types, setTypes] = useState<string[]>([]);
+	const [, setTypes] = useState<string[]>([]);
 	const [hasError, setHasError] = useState(false);
 	const [progress, setProgress] = useState(0);
 
@@ -142,57 +142,70 @@ export default function RecipeAIGenPage() {
 	const headingColor = useColorModeValue("gray.800", "white");
 
 	const shouldConnect = isProcessing && recipeUrl !== "";
-	const handleWebSocketMessage = useCallback(
-		(message: MessageEvent) => {
-			if (message) {
-				try {
-					const parsedMessage = JSON.parse(message.data);
-					const wsMessage = new WebSocketMessage(
-						parsedMessage.type,
-						parsedMessage.data,
-						new Date(parsedMessage.timestamp),
-						parsedMessage.session_id,
-					);
+	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
+		if (message) {
+			try {
+				const parsedMessage = JSON.parse(message.data);
+				const wsMessage = new WebSocketMessage(
+					parsedMessage.type,
+					parsedMessage.data,
+					new Date(parsedMessage.timestamp),
+					parsedMessage.session_id,
+				);
 
-					setTypes((prev) => [...prev, wsMessage.type]);
-					const classifiedMessages = classifyWebSocketMessage(wsMessage);
-					const timestamp = new Date();
+				setTypes((prev) => [...prev, wsMessage.type]);
+				const classifiedMessages = classifyWebSocketMessage(wsMessage);
+				const timestamp = new Date();
 
-					setMessage((prev) => [...prev, ...classifiedMessages]);
-					setMessageTimestamps((prev) => [
-						...prev,
-						...classifiedMessages.map(() => timestamp),
-					]);
+				setMessage((prev) => [...prev, ...classifiedMessages]);
+				setMessageTimestamps((prev) => [
+					...prev,
+					...classifiedMessages.map(() => timestamp),
+				]);
 
-					if (wsMessage.data.progress !== undefined) {
-						setProgress(wsMessage.data.progress || 0);
-					}
+				if (wsMessage.data.progress !== undefined) {
+					setProgress(wsMessage.data.progress || 0);
+				}
 
-					// エラーの検出
-					if (
-						wsMessage.type === "error" ||
-						wsMessage.data.content?.includes("エラー")
-					) {
-						setHasError(true);
-						setIsProcessing(false);
-						toast({
-							title: "エラーが発生しました",
-							description:
-								"AI処理中にエラーが発生しました。再試行してください。",
-							status: "error",
-							duration: 5000,
-							isClosable: true,
-						});
-					}
-				} catch (error) {
-					console.error("WebSocket message parsing error:", error);
+				// エラーの検出
+				if (
+					wsMessage.type === "error" ||
+					wsMessage.data.content?.includes("エラー")
+				) {
 					setHasError(true);
 					setIsProcessing(false);
+					setToastState({
+						title: "エラーが発生しました",
+						description: wsMessage.data.content || "不明なエラー",
+						status: "error",
+						duration: 5000,
+						isClosable: true,
+					});
 				}
+
+				if (wsMessage.type === "all_tasks_completed") {
+					refreshRecipe();
+					setIsProcessing(false);
+					disconnect();
+					setRecipeUrl("");
+					setToastState({
+						title: "レシピ生成完了！",
+						description: "新しいレシピがレシピ一覧に追加されました。",
+						status: "success",
+						duration: 5000,
+						isClosable: true,
+					});
+					setTimeout(() => {
+						navigate("/home");
+					}, 2000);
+				}
+			} catch (error) {
+				console.error("WebSocket message parsing error:", error);
+				setHasError(true);
+				setIsProcessing(false);
 			}
-		},
-		[toast],
-	);
+		}
+	}, []);
 	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
 		shouldConnect: shouldConnect,
@@ -206,29 +219,6 @@ export default function RecipeAIGenPage() {
 			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
 		}
 	}, [message]);
-
-	// AIProcessChatと同じ完了処理
-	useEffect(() => {
-		if (types.length > 0) {
-			const type = types[types.length - 1];
-			if (type === "all_tasks_completed") {
-				refreshRecipe();
-				setIsProcessing(false);
-				disconnect();
-				setRecipeUrl("");
-				toast({
-					title: "レシピ生成完了！",
-					description: "新しいレシピがレシピ一覧に追加されました。",
-					status: "success",
-					duration: 5000,
-					isClosable: true,
-				});
-				setTimeout(() => {
-					navigate("/home");
-				}, 2000);
-			}
-		}
-	}, [types, refreshRecipe, disconnect, toast, navigate]);
 
 	// 初期化処理（AIProcessChatと同じ）
 	useEffect(() => {
