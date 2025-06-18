@@ -41,6 +41,7 @@ export const createAccountInPasswordAtom = atom(
 			await postUserCreate(userInfo);
 		} catch (error) {
 			console.error("Account creation failed:", error);
+			set(isLoadingAuthAtom, false);
 		} finally {
 			set(isLoadingAuthAtom, false);
 		}
@@ -71,6 +72,18 @@ export const loginInGithubAtom = atom(null, async (_, set) => {
 		window.location.href = `${import.meta.env.VITE_PUBLIC_API_URL}/auth/login/github`;
 	} catch (error) {
 		console.error("GitHub login failed:", error);
+	} finally {
+		set(isLoadingAuthAtom, false);
+	}
+});
+
+// Googleログインするためのatom
+export const loginInGoogleAtom = atom(null, async (_, set) => {
+	set(isLoadingAuthAtom, true);
+	try {
+		window.location.href = `${import.meta.env.VITE_PUBLIC_API_URL}/auth/login/google`;
+	} catch (error) {
+		console.error("Google login failed:", error);
 	} finally {
 		set(isLoadingAuthAtom, false);
 	}

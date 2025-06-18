@@ -1,6 +1,7 @@
 import GitHubLoginButton from "@/components/atoms/GitHubLoginButton";
 import LoginForm from "@/components/atoms/LoginForm";
 import { Box, Divider, Text, VStack } from "@chakra-ui/react";
+import GoogleLoginButton from "../atoms/GoogleLoginButton";
 
 export default function LoginPage() {
 	return (
@@ -12,6 +13,7 @@ export default function LoginPage() {
 				<Text mb={4}>または</Text>
 				<VStack spacing={4}>
 					<GitHubLoginButton />
+					<GoogleLoginButton />
 				</VStack>
 			</Box>
 		</Box>
