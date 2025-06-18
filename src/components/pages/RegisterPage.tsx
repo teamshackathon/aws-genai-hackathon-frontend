@@ -27,6 +27,7 @@ import { FaCookie, FaRegStar, FaUserPlus } from "react-icons/fa6";
 import { Link as RouterLink, useNavigate } from "react-router";
 
 import GitHubLoginButton from "@/components/atoms/GitHubLoginButton";
+import GoogleLoginButton from "@/components/atoms/GoogleLoginButton";
 import { createAccountInPasswordAtom } from "@/lib/atom/AuthAtom";
 import { useSetAtom } from "jotai";
 
@@ -483,6 +484,8 @@ export default function RegisterPage() {
 													または
 												</Text>
 												<GitHubLoginButton />
+												<Box mt={4} />
+												<GoogleLoginButton />
 											</Box>
 
 											<Box textAlign="center" pt={4}>

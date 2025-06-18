@@ -32,13 +32,18 @@ import {
 	FaEye,
 	FaEyeSlash,
 	FaGithub,
+	FaGoogle,
 	FaLock,
 	FaSignInAlt,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { useNavigate } from "react-router";
 
-import { loginInGithubAtom, loginInPasswordAtom } from "@/lib/atom/AuthAtom";
+import {
+	loginInGithubAtom,
+	loginInGoogleAtom,
+	loginInPasswordAtom,
+} from "@/lib/atom/AuthAtom";
 
 // Motion components
 const MotionBox = motion(Box);
@@ -58,6 +63,7 @@ export default function LoginPage() {
 
 	const login = useSetAtom(loginInPasswordAtom);
 	const setLoginInGithub = useSetAtom(loginInGithubAtom);
+	const setGoogleInGoogle = useSetAtom(loginInGoogleAtom);
 
 	// Color values
 	const bgGradient = useColorModeValue(
@@ -334,6 +340,19 @@ export default function LoginPage() {
 										whileTap={{ scale: 0.98 }}
 									>
 										GitHubでログイン
+									</MotionButton>
+
+									<MotionButton
+										leftIcon={<Icon as={FaGoogle} />}
+										colorScheme="red"
+										variant="outline"
+										size="lg"
+										w="full"
+										onClick={() => setGoogleInGoogle()}
+										whileHover={{ scale: 1.02 }}
+										whileTap={{ scale: 0.98 }}
+									>
+										Googleでログイン
 									</MotionButton>
 
 									<Divider />
