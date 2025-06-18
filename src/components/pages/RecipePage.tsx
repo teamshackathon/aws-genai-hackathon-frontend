@@ -35,7 +35,6 @@ import {
 	FaClipboardList,
 	FaClock,
 	FaCookieBite,
-	FaExternalLinkAlt,
 	FaPlay,
 	FaShoppingCart,
 	FaTag,
@@ -161,12 +160,6 @@ export default function RecipePage() {
 				duration: 2000,
 				isClosable: true,
 			});
-		}
-	};
-
-	const handleOpenOriginal = () => {
-		if (currentRecipe?.url) {
-			window.open(currentRecipe.url, "_blank");
 		}
 	};
 
@@ -430,19 +423,6 @@ export default function RecipePage() {
 												? "ブックマーク済み"
 												: "ブックマーク"}
 										</MotionButton>
-
-										{currentRecipe.url && (
-											<MotionButton
-												leftIcon={<Icon as={FaExternalLinkAlt} />}
-												variant="outline"
-												colorScheme="purple"
-												onClick={handleOpenOriginal}
-												whileHover={{ scale: 1.05 }}
-												whileTap={{ scale: 0.95 }}
-											>
-												元動画を見る
-											</MotionButton>
-										)}
 										{/* ★「買い物リストを作成」ボタンを追加 */}
 										<MotionButton
 											leftIcon={<Icon as={FaClipboardList} />}
@@ -674,28 +654,6 @@ export default function RecipePage() {
 								templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
 								gap={6}
 							>
-								<VStack align="start" spacing={3}>
-									<Text fontWeight="semibold" color={headingColor}>
-										元動画URL
-									</Text>
-									{currentRecipe.url ? (
-										<Button
-											as="a"
-											href={currentRecipe.url}
-											target="_blank"
-											leftIcon={<Icon as={FaExternalLinkAlt} />}
-											colorScheme="blue"
-											variant="outline"
-											size="sm"
-											isTruncated
-											maxW="full"
-										>
-											動画を見る
-										</Button>
-									) : (
-										<Text color={textColor}>URLが設定されていません</Text>
-									)}
-								</VStack>
 
 								<VStack align="start" spacing={3}>
 									<Text fontWeight="semibold" color={headingColor}>

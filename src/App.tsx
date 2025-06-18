@@ -1,3 +1,7 @@
+import { useEffect } from "react";
+
+import { useToast } from "@chakra-ui/react";
+
 import { ProtectedRoute } from "@/lib/route/ProtectedRoute";
 import { BrowserRouter, Route, Routes } from "react-router";
 
@@ -10,12 +14,29 @@ import RecipeAIGenPage from "@/components/pages/RecipeAIGenPage";
 import RecipePage from "@/components/pages/RecipePage";
 import RegisterPage from "@/components/pages/RegisterPage";
 import SettingPage from "@/components/pages/SettingPage";
-import HistoryPage from "./components/pages/HistroyPage";
-
 import ShoppingListDetailPage from "@/components/pages/ShoppingListDetailPage";
 import ShoppingListPage from "@/components/pages/ShoppingListPage";
+import HistoryPage from "./components/pages/HistroyPage";
+
+import { toastAtom } from "@/lib/atom/BaseAtom";
+import { useAtom } from "jotai";
 
 function App() {
+	const toast = useToast();
+	const [toastState, setToastState] = useAtom(toastAtom);
+
+	useEffect(() => {
+		if (toastState) {
+			toast({
+				...toastState,
+				position: "top",
+				duration: 5000,
+				isClosable: true,
+			});
+			setToastState(null); // トースト表示後に状態をリセット
+		}
+	}, [toastState]);
+
 	return (
 		<BrowserRouter basename="/bae-recipe">
 			<Routes>
