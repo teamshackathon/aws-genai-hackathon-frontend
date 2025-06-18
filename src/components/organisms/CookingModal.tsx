@@ -17,13 +17,14 @@ import {
 	ModalOverlay,
 	Progress,
 	Spinner,
+	Switch,
 	Text,
 	VStack,
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	FaArrowLeft,
 	FaArrowRight,
@@ -31,6 +32,7 @@ import {
 	FaClock,
 	FaPause,
 	FaUtensils,
+	FaVolumeOff,
 	FaVolumeUp,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
@@ -68,6 +70,8 @@ export default function CookingModal({
 	const [currentVoice, setCurrentVoice] = useState<ChatVoice | null>(null);
 	const [isVoiceLoading, setIsVoiceLoading] = useState(false);
 	const [isVoicePlaying, setIsVoicePlaying] = useState(false);
+	const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
+	const [autoPlayTimeout, setAutoPlayTimeout] = useState<number | null>(null);
 	const toast = useToast();
 
 	// Color values
@@ -85,6 +89,28 @@ export default function CookingModal({
 	const progress = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
 	const currentProcess = processes[currentStep];
 
+	// モーダルクローズ時の処理を拡張
+	const handleClose = useCallback(() => {
+		// 音声を確実に停止
+		if (currentVoice) {
+			currentVoice.stop();
+			setCurrentVoice(null);
+			setIsVoicePlaying(false);
+		}
+
+		// タイマーをクリア
+		if (autoPlayTimeout) {
+			clearTimeout(autoPlayTimeout);
+			setAutoPlayTimeout(null);
+		}
+
+		// ローディング状態をリセット
+		setIsVoiceLoading(false);
+
+		// 元のonCloseを呼び出し
+		onClose();
+	}, [currentVoice, autoPlayTimeout, onClose]);
+
 	const handleNext = () => {
 		if (currentStep < totalSteps - 1) {
 			setCurrentStep(currentStep + 1);
@@ -96,6 +122,7 @@ export default function CookingModal({
 			setCurrentStep(currentStep - 1);
 		}
 	};
+
 	const handleStepJump = (stepIndex: number) => {
 		setCurrentStep(stepIndex);
 		// 音声を停止
@@ -104,6 +131,41 @@ export default function CookingModal({
 			setIsVoicePlaying(false);
 		}
 	};
+
+	// 自動音声再生機能
+	const autoPlayVoice = useCallback(
+		async (instruction: string) => {
+			if (!autoPlayEnabled) return;
+
+			try {
+				setIsVoiceLoading(true);
+
+				// 既存の音声を停止
+				if (currentVoice) {
+					currentVoice.stop();
+					setIsVoicePlaying(false);
+				}
+
+				const voice = await generateVoice("cooking-assistant", instruction);
+				setCurrentVoice(voice);
+
+				setIsVoicePlaying(true);
+				await voice.play();
+				setIsVoicePlaying(false);
+			} catch (error) {
+				// AbortErrorは正常な中断として扱う
+				if (error instanceof Error && error.name === "AbortError") {
+					console.log("音声再生が中断されました（正常）");
+					setIsVoicePlaying(false);
+				} else {
+					console.error("自動音声再生エラー:", error);
+				}
+			} finally {
+				setIsVoiceLoading(false);
+			}
+		},
+		[autoPlayEnabled],
+	); // currentVoiceを依存配列から除外
 
 	// 音声生成・再生のハンドラー
 	const handleVoicePlay = async () => {
@@ -116,6 +178,7 @@ export default function CookingModal({
 			// 既存の音声を停止
 			if (currentVoice) {
 				currentVoice.stop();
+				setIsVoicePlaying(false);
 			}
 
 			const voice = await generateVoice(
@@ -128,14 +191,20 @@ export default function CookingModal({
 			await voice.play();
 			setIsVoicePlaying(false);
 		} catch (error) {
-			console.error("音声生成・再生エラー:", error);
-			toast({
-				title: "音声の生成に失敗しました",
-				description: "もう一度お試しください",
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-			});
+			// AbortErrorは正常な中断として扱う
+			if (error instanceof Error && error.name === "AbortError") {
+				console.log("音声再生が中断されました（正常）");
+				setIsVoicePlaying(false);
+			} else {
+				console.error("音声生成・再生エラー:", error);
+				toast({
+					title: "音声の生成に失敗しました",
+					description: "もう一度お試しください",
+					status: "error",
+					duration: 3000,
+					isClosable: true,
+				});
+			}
 		} finally {
 			setIsVoiceLoading(false);
 		}
@@ -148,21 +217,58 @@ export default function CookingModal({
 		}
 	};
 
-	// ステップ変更時に音声を停止
+	// ステップ変更時に音声を停止し、自動再生をセットアップ
 	useEffect(() => {
+		let isCancelled = false;
+
+		// 既存の音声とタイマーを停止・クリア
 		if (currentVoice) {
 			currentVoice.stop();
 			setIsVoicePlaying(false);
 		}
-	}, [currentStep]);
-
-	// モーダルクローズ時に音声を停止
-	useEffect(() => {
-		if (!isOpen && currentVoice) {
-			currentVoice.stop();
-			setIsVoicePlaying(false);
+		if (autoPlayTimeout) {
+			clearTimeout(autoPlayTimeout);
+			setAutoPlayTimeout(null);
 		}
-	}, [isOpen, currentVoice]);
+
+		// 新しいステップで自動再生をセットアップ（2秒後に再生）
+		if (autoPlayEnabled && processes[currentStep] && !isCancelled) {
+			const timeout = window.setTimeout(() => {
+				// タイムアウト実行時にキャンセルされていないかチェック
+				if (!isCancelled) {
+					autoPlayVoice(processes[currentStep].instruction);
+				}
+			}, 2000); // 2秒の遅延で自動再生
+			setAutoPlayTimeout(timeout);
+		}
+
+		// クリーンアップ関数
+		return () => {
+			isCancelled = true;
+			if (autoPlayTimeout) {
+				clearTimeout(autoPlayTimeout);
+			}
+		};
+	}, [currentStep, autoPlayEnabled, processes, autoPlayVoice]);
+
+	// モーダルクローズ時に音声とタイマーを停止
+	useEffect(() => {
+		if (!isOpen) {
+			// 音声を確実に停止
+			if (currentVoice) {
+				currentVoice.stop();
+				setCurrentVoice(null);
+				setIsVoicePlaying(false);
+			}
+			// タイマーをクリア
+			if (autoPlayTimeout) {
+				clearTimeout(autoPlayTimeout);
+				setAutoPlayTimeout(null);
+			}
+			// ローディング状態をリセット
+			setIsVoiceLoading(false);
+		}
+	}, [isOpen, currentVoice, autoPlayTimeout]);
 
 	if (!currentProcess) {
 		return null;
@@ -171,7 +277,7 @@ export default function CookingModal({
 	return (
 		<Modal
 			isOpen={isOpen}
-			onClose={onClose}
+			onClose={handleClose}
 			size="full"
 			motionPreset="slideInBottom"
 		>
@@ -204,7 +310,7 @@ export default function CookingModal({
 					>
 						<HStack spacing={4}>
 							<Icon as={FaUtensils} color={primaryColor} boxSize={6} />
-							<VStack align="start" spacing={0}>
+							<VStack align="start" spacing={0} flex={1}>
 								<Text fontSize="lg" fontWeight="bold" color={textColor}>
 									{recipeName}
 								</Text>
@@ -212,6 +318,24 @@ export default function CookingModal({
 									料理工程ガイド
 								</Text>
 							</VStack>
+
+							{/* 自動再生コントロール */}
+							<HStack spacing={2}>
+								<Icon
+									as={autoPlayEnabled ? FaVolumeUp : FaVolumeOff}
+									color={autoPlayEnabled ? primaryColor : mutedColor}
+									boxSize={4}
+								/>
+								<Switch
+									isChecked={autoPlayEnabled}
+									onChange={(e) => setAutoPlayEnabled(e.target.checked)}
+									colorScheme="purple"
+									size="sm"
+								/>
+								<Text fontSize="xs" color={mutedColor}>
+									自動音声
+								</Text>
+							</HStack>
 						</HStack>
 					</Box>
 				</ModalHeader>
@@ -391,7 +515,7 @@ export default function CookingModal({
 							{currentStep === totalSteps - 1 ? (
 								<Button
 									rightIcon={<FaCheck />}
-									onClick={onClose}
+									onClick={handleClose}
 									colorScheme="green"
 									size="lg"
 								>
@@ -429,7 +553,7 @@ export default function CookingModal({
 						right={0}
 						bottom="80px"
 						w="30%"
-						onClick={currentStep === totalSteps - 1 ? onClose : handleNext}
+						onClick={currentStep === totalSteps - 1 ? handleClose : handleNext}
 						cursor="pointer"
 						opacity={0}
 						bg="transparent"
