@@ -654,7 +654,6 @@ export default function RecipePage() {
 								templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
 								gap={6}
 							>
-
 								<VStack align="start" spacing={3}>
 									<Text fontWeight="semibold" color={headingColor}>
 										AI解析情報
