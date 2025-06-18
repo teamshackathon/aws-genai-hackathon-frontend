@@ -12,6 +12,7 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	Image,
 	List,
 	ListItem,
 	Skeleton,
@@ -34,7 +35,6 @@ import {
 	FaBookmark,
 	FaClipboardList,
 	FaClock,
-	FaCookieBite,
 	FaPlay,
 	FaShoppingCart,
 	FaTag,
@@ -571,7 +571,11 @@ export default function RecipePage() {
 						{" "}
 						<CardHeader pb={4}>
 							<HStack spacing={3}>
-								<Icon as={FaCookieBite} boxSize={6} color="purple.500" />
+								<Image
+									src="/bae-recipe/favicon.svg"
+									alt="BAE Recipe Logo"
+									boxSize={6}
+								/>
 								<Heading size="lg" color={headingColor}>
 									調理手順
 								</Heading>

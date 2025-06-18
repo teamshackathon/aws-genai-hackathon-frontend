@@ -7,13 +7,12 @@ import {
 	InputGroup,
 	InputLeftElement,
 	Spacer,
-	Text,
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { FaCookieBite, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 
 import SiderDrawer from "@/components/molecules/SiderDrawer";
@@ -79,16 +78,14 @@ export default function Header() {
 							whileHover={{ scale: 1.05 }}
 							transition={{ duration: 0.2 }}
 						>
-							<HStack spacing={2}>
-								<Icon as={FaCookieBite} boxSize={8} color={textColor} />
-								<Text
-									fontSize={{ base: "xl", md: "2xl" }}
-									fontWeight="bold"
-									color={textColor}
-									letterSpacing="tight"
-								>
-									BAE RECIPE
-								</Text>
+							<HStack spacing={3}>
+								<Box
+									as="img"
+									src="/bae-recipe/bae-recipe-logo_white.svg"
+									alt="BAE RECIPE Logo"
+									height={{ base: "32px", md: "40px" }}
+									width="auto"
+								/>
 								<Icon as={HiSparkles} boxSize={5} color="yellow.200" />
 							</HStack>
 						</MotionBox>{" "}
