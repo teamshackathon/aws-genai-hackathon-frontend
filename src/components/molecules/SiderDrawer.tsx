@@ -25,7 +25,6 @@ import {
 	FaBook,
 	FaClipboardList,
 	FaCog,
-	FaCookieBite,
 	FaHistory,
 	FaHome,
 	FaUser,
@@ -95,11 +94,16 @@ const SiderDrawer = () => {
 					<DrawerHeader borderBottomWidth="1px" py={6}>
 						<HStack spacing={3}>
 							<Box
-								bgGradient="linear(to-r, orange.400, pink.400)"
+								bgGradient="linear(to-r, gray.400, pink.400)"
 								p={2}
 								rounded="lg"
 							>
-								<Icon as={FaCookieBite} boxSize={6} color="white" />
+								<Box
+									as="img"
+									src="/bae-recipe/favicon.svg"
+									alt="BAE RECIPE Icon"
+									boxSize={6}
+								/>
 							</Box>
 							<VStack align="start" spacing={0}>
 								<Text fontSize="lg" fontWeight="bold">

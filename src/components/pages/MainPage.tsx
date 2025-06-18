@@ -10,6 +10,7 @@ import {
 	Heading,
 	Icon,
 	IconButton,
+	Image,
 	Input,
 	InputGroup,
 	InputRightElement,
@@ -29,7 +30,6 @@ import {
 	FaBookmark,
 	FaChevronLeft,
 	FaChevronRight,
-	FaCookieBite,
 	FaSearch,
 	FaVideo,
 } from "react-icons/fa";
@@ -168,7 +168,11 @@ export default function MainPage() {
 				>
 					<VStack spacing={6} textAlign="center">
 						<HStack>
-							<Icon as={FaCookieBite} boxSize={8} color="orange.500" />
+							<Image
+								src="/bae-recipe/favicon.svg"
+								alt="BAE Recipe Logo"
+								boxSize={8}
+							/>
 							<Heading
 								size="xl"
 								bgGradient="linear(to-r, orange.500, pink.500)"
@@ -482,7 +486,12 @@ export default function MainPage() {
 						) : (
 							<Box gridColumn="1 / -1" textAlign="center" py={16}>
 								<VStack spacing={4}>
-									<Icon as={FaCookieBite} boxSize={16} color="gray.300" />
+									<Image
+										src="/bae-recipe/favicon.svg"
+										alt="BAE Recipe Logo"
+										boxSize={16}
+										opacity={0.4}
+									/>
 									<Heading size="md" color={textColor}>
 										{recipeQueryParam.keyword
 											? `「${recipeQueryParam.keyword}」に一致するレシピが見つかりません`

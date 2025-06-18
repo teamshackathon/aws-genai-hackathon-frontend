@@ -13,6 +13,7 @@ import {
 	Heading,
 	Icon,
 	IconButton,
+	Image,
 	Input,
 	InputGroup,
 	InputLeftElement,
@@ -27,7 +28,6 @@ import { motion } from "framer-motion";
 import { useSetAtom } from "jotai";
 import { useState } from "react";
 import {
-	FaCookieBite,
 	FaEnvelope,
 	FaEye,
 	FaEyeSlash,
@@ -150,7 +150,12 @@ export default function LoginPage() {
 				animate={{ opacity: 0.1, scale: 1 }}
 				transition={{ duration: 2, delay: 0.5 }}
 			>
-				<Icon as={FaCookieBite} boxSize={32} color="orange.400" />
+				<Image
+					src="/bae-recipe/favicon.svg"
+					alt="BAE Recipe Logo"
+					boxSize={32}
+					opacity={0.6}
+				/>
 			</MotionBox>
 			<MotionBox
 				position="absolute"
@@ -174,7 +179,11 @@ export default function LoginPage() {
 					>
 						<VStack spacing={4}>
 							<HStack spacing={3} justify="center">
-								<Icon as={FaCookieBite} boxSize={10} color="orange.400" />
+								<Image
+									src="/bae-recipe/favicon.svg"
+									alt="BAE Recipe Logo"
+									boxSize={10}
+								/>
 								<Heading
 									size="2xl"
 									bgGradient="linear(to-r, orange.400, pink.400)"
