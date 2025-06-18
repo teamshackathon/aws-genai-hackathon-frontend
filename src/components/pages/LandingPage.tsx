@@ -14,13 +14,7 @@ import {
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { useAtomValue } from "jotai";
-import {
-	FaArrowRight,
-	FaCookieBite,
-	FaPlay,
-	FaRobot,
-	FaVideo,
-} from "react-icons/fa";
+import { FaArrowRight, FaPlay, FaRobot, FaVideo } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { Link as RouterLink } from "react-router";
 
@@ -47,7 +41,12 @@ const LandingPage = () => {
 								rounded="full"
 								shadow="lg"
 							>
-								<Icon as={FaCookieBite} boxSize={12} color="white" />
+								<Box
+									as="img"
+									src="/bae-recipe/favicon.svg"
+									alt="BAE RECIPE Icon"
+									boxSize={12}
+								/>
 							</Box>
 						</HStack>
 
@@ -166,7 +165,14 @@ const LandingPage = () => {
 								border="2px"
 								borderColor={useColorModeValue("blue.200", "blue.700")}
 							>
-								<Icon as={FaCookieBite} boxSize={8} color="blue.500" mb={4} />
+								<Box
+									as="img"
+									src="/bae-recipe/favicon.svg"
+									alt="BAE RECIPE Icon"
+									boxSize={8}
+									mx="auto"
+									mb={4}
+								/>
 								<Text fontWeight="bold" mb={2}>
 									レシピ管理の困難
 								</Text>
@@ -233,7 +239,12 @@ const LandingPage = () => {
 
 								<Box>
 									<HStack mb={3}>
-										<Icon as={FaCookieBite} boxSize={6} color="purple.500" />
+										<Box
+											as="img"
+											src="/bae-recipe/favicon.svg"
+											alt="BAE RECIPE Icon"
+											boxSize={6}
+										/>
 										<Text fontWeight="bold" fontSize="lg">
 											スマート管理
 										</Text>
@@ -299,6 +310,7 @@ const LandingPage = () => {
 									"お気に入りのレシピ動画のURLをコピー&ペーストするだけ",
 								icon: FaVideo,
 								color: "orange",
+								isCustomIcon: false,
 							},
 							{
 								step: "02",
@@ -306,13 +318,15 @@ const LandingPage = () => {
 								description: "AIが動画を分析し、材料・手順・ポイントを抽出",
 								icon: FaRobot,
 								color: "pink",
+								isCustomIcon: false,
 							},
 							{
 								step: "03",
 								title: "レシピノート完成",
 								description: "整理されたレシピノートで簡単調理&献立管理",
-								icon: FaCookieBite,
+								icon: null,
 								color: "purple",
+								isCustomIcon: true,
 							},
 						].map((item) => (
 							<GridItem key={item.step} textAlign="center">
@@ -328,7 +342,16 @@ const LandingPage = () => {
 											justifyContent="center"
 											mx="auto"
 										>
-											<Icon as={item.icon} boxSize={8} color="white" />
+											{item.isCustomIcon ? (
+												<Box
+													as="img"
+													src="/bae-recipe/favicon.svg"
+													alt="BAE RECIPE Icon"
+													boxSize={8}
+												/>
+											) : item.icon ? (
+												<Icon as={item.icon} boxSize={8} color="white" />
+											) : null}
 										</Box>
 										<Badge
 											position="absolute"
