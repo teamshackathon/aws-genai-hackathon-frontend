@@ -9,13 +9,16 @@ import {
 	type RecipeStatus,
 	createIngredient,
 	deleteIngredient,
+	deleteProcess,
 	getExternalServices,
 	getIngridients,
 	getProcesses,
 	getRecipeById,
 	getRecipeStatuses,
 	getRecipes,
+	postProcess,
 	updateIngredient,
+	updateProcess,
 } from "@/lib/domain/RecipeQuery";
 import { atom } from "jotai";
 
@@ -158,6 +161,39 @@ export const deleteIngredientAtom = atom(
 			await deleteIngredient(ingredientId);
 		} catch (error) {
 			console.error("Error deleting ingredient:", error);
+		}
+	},
+);
+
+export const createProcessAtom = atom(
+	null,
+	async (_, __, recipeId: number, process_number: number, process: string) => {
+		const newProcess = await postProcess(recipeId, {
+			process_number,
+			process,
+		});
+		return newProcess;
+	},
+);
+
+export const updateProcessAtom = atom(
+	null,
+	async (_, __, processId: number, process_number: number, process: string) => {
+		const updatedProcess = await updateProcess(processId, {
+			process_number,
+			process,
+		});
+		return updatedProcess;
+	},
+);
+
+export const deleteProcessAtom = atom(
+	null,
+	async (_, __, processId: number) => {
+		try {
+			await deleteProcess(processId);
+		} catch (error) {
+			console.error("Error deleting process:", error);
 		}
 	},
 );
