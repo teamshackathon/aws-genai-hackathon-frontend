@@ -95,7 +95,7 @@ function createUser(res: UserResponse): User {
 		res.name || "No Name", // 名前がnullの場合はデフォルト値を設定
 		res.email || "No Email", // メールアドレスがnullの場合はデフォルト値を設定
 		res.avatar_url || "", // アバターURLがnullの場合はnullを設定
-		res.last_login_at ? new Date(res.last_login_at) : null,
+		res.last_login_at ? new Date(res.last_login_at) : new Date(), // 最終ログイン日時がnullの場合は1970年1月1日を設定
 		res.bio || "", // ユーザーの自己紹介やプロフィール情報
 		res.serving_size || null, // ユーザーの料理のサービングサイズ（オプション）
 		res.salt_preference || "", // ユーザーの塩分の好み（オプション）

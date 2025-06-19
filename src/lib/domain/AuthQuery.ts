@@ -38,6 +38,15 @@ function createUser(res: UserResponse): User {
 		res.email,
 		res.avatar_url || "", // アバターURLがnullの場合は空文字列を設定
 		res.last_login_at ? new Date(res.last_login_at) : null,
+        res.bio || null, // ユーザーの自己紹介やプロフィール情報
+        res.serving_size || null, // ユーザーの料理のサービングサイズ（オプション）
+        res.salt_preference || null, // ユーザーの塩分の好み（オプション）
+        res.sweetness_preference || null, // ユーザーの甘さの好み（オプション）
+        res.spiciness_preference || null, // ユーザーの辛さの
+        res.cooking_time_preference || null, // ユーザーの料理時間の好み（オプション）
+        res.meal_purpose || null, // ユーザーの食事の目的
+        res.disliked_ingredients || null, // ユーザーが嫌いな食
+        res.preference_trend || null, // ユーザーの好みのトレンド（オプション）
 	);
 }
 
