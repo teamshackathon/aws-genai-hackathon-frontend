@@ -572,7 +572,12 @@ export default function RecipePage() {
 						editable={true}
 					/>{" "}
 					{/* Cooking process */}
-					<ProcessCard processes={processes} isLoading={!currentRecipe} />
+					<ProcessCard
+						processes={processes}
+						recipeId={Number(recipeId)}
+						isLoading={!currentRecipe}
+						editable={true}
+					/>
 				</Grid>
 
 				{/* Additional info */}

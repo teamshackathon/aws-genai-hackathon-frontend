@@ -9,6 +9,7 @@ import {
 	type RecipeStatus,
 	createIngredient,
 	deleteIngredient,
+	deleteProcess,
 	getExternalServices,
 	getIngridients,
 	getProcesses,
@@ -17,6 +18,7 @@ import {
 	getRecipes,
 	postProcess,
 	updateIngredient,
+	updateProcess,
 } from "@/lib/domain/RecipeQuery";
 import { atom } from "jotai";
 
@@ -177,7 +179,7 @@ export const createProcessAtom = atom(
 export const updateProcessAtom = atom(
 	null,
 	async (_, __, processId: number, process_number: number, process: string) => {
-		const updatedProcess = await postProcess(processId, {
+		const updatedProcess = await updateProcess(processId, {
 			process_number,
 			process,
 		});
@@ -189,7 +191,7 @@ export const deleteProcessAtom = atom(
 	null,
 	async (_, __, processId: number) => {
 		try {
-			await deleteIngredient(processId);
+			await deleteProcess(processId);
 		} catch (error) {
 			console.error("Error deleting process:", error);
 		}
