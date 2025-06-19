@@ -1,9 +1,9 @@
 import {
 	Accordion,
-	AccordionItem,
 	AccordionButton,
-	AccordionPanel,
 	AccordionIcon,
+	AccordionItem,
+	AccordionPanel,
 	Badge,
 	Box,
 	Button,
@@ -11,6 +11,8 @@ import {
 	CardBody,
 	Container,
 	Flex,
+	FormControl,
+	FormLabel,
 	HStack,
 	Heading,
 	Icon,
@@ -23,19 +25,17 @@ import {
 	MenuButton,
 	MenuItem,
 	MenuList,
+	Select,
 	SimpleGrid,
 	Tag,
 	TagLabel,
 	Text,
+	Textarea,
 	VStack,
 	Wrap,
 	WrapItem,
 	useColorModeValue,
 	useToast,
-	Select,
-	FormControl,
-	FormLabel,
-	Textarea,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -65,7 +65,7 @@ import {
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
-import { type RecipeParameters } from "@/lib/type/RecipeParameters";
+import type { RecipeParameters } from "@/lib/type/RecipeParameters";
 import { useAtom, useSetAtom } from "jotai";
 
 // Framer Motion コンポーネントの定義
@@ -93,7 +93,7 @@ export default function MainPage() {
 		saltiness: "recipe",
 		sweetness: "recipe",
 		spiciness: "recipe",
-		dislikedIngredients: ""
+		dislikedIngredients: "",
 	});
 
 	// トースト通知用
@@ -382,7 +382,6 @@ export default function MainPage() {
 									AI解析開始
 								</Button>
 							</Flex>
-
 							{/* レシピパラメータ設定 */}
 							<Box maxW="4xl" mx="auto" w="100%">
 								<Accordion allowToggle mt={6}>
@@ -390,7 +389,7 @@ export default function MainPage() {
 										<AccordionButton
 											_expanded={{
 												bg: useColorModeValue("orange.50", "orange.900"),
-												color: useColorModeValue("orange.600", "orange.200")
+												color: useColorModeValue("orange.600", "orange.200"),
 											}}
 											borderRadius="md"
 											px={4}
@@ -406,30 +405,42 @@ export default function MainPage() {
 												</Text>
 											</Box>
 											<AccordionIcon />
-										</AccordionButton>									<AccordionPanel pb={4} px={0}>
+										</AccordionButton>{" "}
+										<AccordionPanel pb={4} px={0}>
 											<VStack spacing={4} align="stretch" w="100%">
-												<SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>													<FormControl>
-													<FormLabel>食べる人数</FormLabel>
-													<Select
-														defaultValue="recipe"
-														value={recipeParams.peopleCount}
-														onChange={(e) => setRecipeParams(prev => ({ ...prev, peopleCount: e.target.value }))}
-													>
-														<option value="recipe">レシピ通り</option>
-														{[1, 2, 3, 4, 5, 6].map((num) => (
-															<option key={num} value={num}>
-																{num}人
-															</option>
-														))}
-													</Select>
-												</FormControl>
-
+												<SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+													{" "}
+													<FormControl>
+														<FormLabel>食べる人数</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.peopleCount}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	peopleCount: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															{[1, 2, 3, 4, 5, 6].map((num) => (
+																<option key={num} value={num}>
+																	{num}人
+																</option>
+															))}
+														</Select>
+													</FormControl>
 													<FormControl>
 														<FormLabel>調理時間</FormLabel>
 														<Select
 															defaultValue="recipe"
 															value={recipeParams.cookingTime}
-															onChange={(e) => setRecipeParams(prev => ({ ...prev, cookingTime: e.target.value }))}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	cookingTime: e.target.value,
+																}))
+															}
 														>
 															<option value="recipe">レシピ通り</option>
 															<option value="30min">30分以内</option>
@@ -437,28 +448,40 @@ export default function MainPage() {
 															<option value="free">自由</option>
 														</Select>
 													</FormControl>
-
 													<FormControl>
 														<FormLabel>重視する傾向</FormLabel>
 														<Select
 															defaultValue="recipe"
 															value={recipeParams.preference}
-															onChange={(e) => setRecipeParams(prev => ({ ...prev, preference: e.target.value }))}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	preference: e.target.value,
+																}))
+															}
 														>
 															<option value="recipe">レシピ通り</option>
 															<option value="nutrition">栄養重視</option>
 															<option value="appearance">見栄え重視</option>
-															<option value="cost_performance">コスパ重視</option>
-															<option value="time_performance">タイパ重視</option>
+															<option value="cost_performance">
+																コスパ重視
+															</option>
+															<option value="time_performance">
+																タイパ重視
+															</option>
 														</Select>
 													</FormControl>
-
 													<FormControl>
 														<FormLabel>塩味</FormLabel>
 														<Select
 															defaultValue="recipe"
 															value={recipeParams.saltiness}
-															onChange={(e) => setRecipeParams(prev => ({ ...prev, saltiness: e.target.value }))}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	saltiness: e.target.value,
+																}))
+															}
 														>
 															<option value="recipe">レシピ通り</option>
 															<option value="strong">濃いめ</option>
@@ -466,13 +489,17 @@ export default function MainPage() {
 															<option value="light">薄め</option>
 														</Select>
 													</FormControl>
-
 													<FormControl>
 														<FormLabel>甘味</FormLabel>
 														<Select
 															defaultValue="recipe"
 															value={recipeParams.sweetness}
-															onChange={(e) => setRecipeParams(prev => ({ ...prev, sweetness: e.target.value }))}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	sweetness: e.target.value,
+																}))
+															}
 														>
 															<option value="recipe">レシピ通り</option>
 															<option value="sweet">甘め</option>
@@ -480,13 +507,17 @@ export default function MainPage() {
 															<option value="less">控えめ</option>
 														</Select>
 													</FormControl>
-
 													<FormControl>
 														<FormLabel>辛み</FormLabel>
 														<Select
 															defaultValue="recipe"
 															value={recipeParams.spiciness}
-															onChange={(e) => setRecipeParams(prev => ({ ...prev, spiciness: e.target.value }))}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	spiciness: e.target.value,
+																}))
+															}
 														>
 															<option value="recipe">レシピ通り</option>
 															<option value="very_spicy">非常に好む</option>
@@ -496,16 +527,23 @@ export default function MainPage() {
 															<option value="none">なし</option>
 														</Select>
 													</FormControl>
-												</SimpleGrid>												<FormControl>
+												</SimpleGrid>{" "}
+												<FormControl>
 													<FormLabel>嫌いな食材</FormLabel>
 													<Textarea
 														placeholder="嫌いな食材を入力してください（例：なす、ピーマン、セロリなど）"
 														resize="vertical"
 														minH="100px"
 														value={recipeParams.dislikedIngredients}
-														onChange={(e) => setRecipeParams(prev => ({ ...prev, dislikedIngredients: e.target.value }))}
+														onChange={(e) =>
+															setRecipeParams((prev) => ({
+																...prev,
+																dislikedIngredients: e.target.value,
+															}))
+														}
 													/>
-												</FormControl></VStack>
+												</FormControl>
+											</VStack>
 										</AccordionPanel>
 									</AccordionItem>
 								</Accordion>
@@ -594,16 +632,17 @@ export default function MainPage() {
 									transition="all 0.2s"
 								>
 									{recipeSortParam.sorted_by
-										? `${recipeSortParam.sorted_by === "created_date"
-											? "作成日"
-											: recipeSortParam.sorted_by === "updated_date"
-												? "更新日"
-												: recipeSortParam.sorted_by === "recipe_name"
-													? "レシピ名"
-													: recipeSortParam.sorted_by === "rating"
-														? "評価"
-														: "不明"
-										}${recipeSortParam.order_by === "asc" ? " (昇順)" : " (降順)"}`
+										? `${
+												recipeSortParam.sorted_by === "created_date"
+													? "作成日"
+													: recipeSortParam.sorted_by === "updated_date"
+														? "更新日"
+														: recipeSortParam.sorted_by === "recipe_name"
+															? "レシピ名"
+															: recipeSortParam.sorted_by === "rating"
+																? "評価"
+																: "不明"
+											}${recipeSortParam.order_by === "asc" ? " (昇順)" : " (降順)"}`
 										: "ソート"}
 								</MenuButton>
 								<MenuList>
@@ -876,13 +915,13 @@ export default function MainPage() {
 													>
 														{recipe?.createdDate
 															? new Date(recipe.createdDate).toLocaleDateString(
-																"ja-JP",
-																{
-																	year: "numeric",
-																	month: "2-digit",
-																	day: "2-digit",
-																},
-															)
+																	"ja-JP",
+																	{
+																		year: "numeric",
+																		month: "2-digit",
+																		day: "2-digit",
+																	},
+																)
 															: "不明な日付"}
 													</Text>
 												</VStack>
@@ -988,7 +1027,8 @@ export default function MainPage() {
 									（全 {recipes.total} 件）
 								</Text>{" "}
 							</Flex>
-						</MotionBox>)}
+						</MotionBox>
+					)}
 				</MotionBox>
 			</Container>
 		</Box>
