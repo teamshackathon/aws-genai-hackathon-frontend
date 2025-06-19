@@ -5,6 +5,7 @@ import {
 	type Recipe,
 	type RecipeList,
 	type RecipeQueryParams,
+	type RecipeSortParams,
 	type RecipeStatus,
 	getExternalServices,
 	getIngridients,
@@ -29,15 +30,23 @@ export const recipeQueryParamAtom = atom<RecipeQueryParams>({
 	favorite_only: false,
 });
 
+export const recipeSortParamAtom = atom<RecipeSortParams>({
+	sorted_by: null,
+	order_by: null,
+});
+
 export const recipeListAtomAsync = atomWithRefresh<Promise<RecipeList | null>>(
 	async (get) => {
 		const params = get(recipeQueryParamAtom);
+		const sortParams = get(recipeSortParamAtom);
 		try {
 			return await getRecipes(
 				params.page,
 				params.par_page,
 				params.keyword,
 				params.favorite_only,
+				sortParams.sorted_by,
+				sortParams.order_by,
 			);
 		} catch (error) {
 			console.error("Error fetching recipe list:", error);
