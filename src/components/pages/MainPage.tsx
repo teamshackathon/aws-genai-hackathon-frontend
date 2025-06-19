@@ -31,6 +31,7 @@ import {
 	FaChevronLeft,
 	FaChevronRight,
 	FaSearch,
+	FaStar,
 	FaVideo,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
@@ -148,6 +149,25 @@ export default function MainPage() {
 				isClosable: true,
 			});
 		}
+	};
+
+	const updateRating = (recipeId: number, newRating: number) => {
+		updateUserRecipe(recipeId, {
+			rating: newRating,
+		});
+		// ローカルのuserRecipeを更新
+		setUserRecipe((prev) =>
+			prev.map((ur) =>
+				ur.recipeId === recipeId ? { ...ur, rating: newRating } : ur,
+			),
+		);
+		toast({
+			title: "評価を更新しました",
+			description: `${newRating}つ星の評価をつけました`,
+			status: "success",
+			duration: 2000,
+			isClosable: true,
+		});
 	};
 
 	useEffect(() => {
@@ -440,9 +460,73 @@ export default function MainPage() {
 																</TagLabel>
 															</Tag>
 														</WrapItem>
-													))}
+													))}{" "}
 												</Wrap>
-											)}{" "}
+											)}
+
+											{/* Rating Component */}
+											{(() => {
+												const currentUserRecipe = userRecipe.find(
+													(ur) => ur.recipeId === recipe.id,
+												);
+												const currentRating = currentUserRecipe?.rating || 0;
+
+												return (
+													<Box>
+														<Text
+															fontSize={{ base: "xs", md: "sm" }}
+															color={textColor}
+															mb={1}
+															fontWeight="medium"
+														>
+															評価:
+														</Text>
+														<HStack spacing={1}>
+															{[1, 2, 3, 4, 5].map((star) => (
+																<IconButton
+																	key={star}
+																	aria-label={`${star}つ星の評価をつける`}
+																	icon={
+																		<Icon
+																			as={FaStar}
+																			color={
+																				star <= currentRating
+																					? "yellow.400"
+																					: "gray.300"
+																			}
+																		/>
+																	}
+																	size={{ base: "xs", md: "sm" }}
+																	variant="ghost"
+																	minW="auto"
+																	h={{ base: "16px", md: "20px" }}
+																	w={{ base: "16px", md: "20px" }}
+																	p={0}
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		updateRating(recipe.id, star);
+																	}}
+																	_hover={{
+																		transform: "scale(1.1)",
+																		bg: "transparent",
+																	}}
+																	transition="all 0.2s"
+																/>
+															))}
+															{currentRating > 0 && (
+																<Text
+																	fontSize={{ base: "xs", md: "sm" }}
+																	color={textColor}
+																	ml={2}
+																>
+																	({currentRating}/5)
+																</Text>
+															)}
+														</HStack>
+													</Box>
+												);
+											})()}
+
 											<HStack
 												justify="space-between"
 												w="full"

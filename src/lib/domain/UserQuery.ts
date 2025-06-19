@@ -17,6 +17,8 @@ export class UserRecipe {
 		public userId: number, // ユーザーID
 		public recipeId: number,
 		public isFavorite: boolean, // レシピのお気に入り状態
+		public note: string | null, // レシピに対するユーザーのメモやコメント
+		public rating: number | null, // レシピの評価（1〜5の範囲）
 		public createdAt: Date, // 作成日時
 		public updatedAt: Date, // 更新日時
 	) {}
@@ -36,6 +38,8 @@ export interface UserRecipeResponse {
 	user_id: number; // ユーザーID
 	recipe_id: number; // レシピID
 	is_favorite: boolean; // レシピのお気に入り状態
+	note: string | null; // レシピに対するユーザーのメモやコメント
+	rating: number | null; // レシピの評価（1〜5の範囲）
 	created_date: string; // 作成日時 (ISO 8601形式)
 	updated_date: string; // 更新日時 (ISO 8601形式)
 }
@@ -57,6 +61,8 @@ export interface UserUpdateRequest {
 
 export interface UserRecipeRequest {
 	is_favorite?: boolean; // レシピのお気に入り状態
+	note?: string; // レシピに対するユーザーのメモやコメント
+	rating?: number; // レシピの評価（1〜5の範囲）
 }
 
 function createUser(res: UserResponse): User {
@@ -76,6 +82,8 @@ function createUserRecipe(res: UserRecipeResponse): UserRecipe {
 		res.user_id,
 		res.recipe_id,
 		res.is_favorite,
+		res.note, // レシピに対するユーザーのメモやコメント
+		res.rating, // レシピの評価（デフォルトは0）
 		new Date(res.created_date),
 		new Date(res.updated_date),
 	);
