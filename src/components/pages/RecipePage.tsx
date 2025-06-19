@@ -4,7 +4,6 @@ import {
 	Button,
 	Card,
 	CardBody,
-	CardHeader,
 	Container,
 	Grid,
 	GridItem,
@@ -12,9 +11,6 @@ import {
 	Heading,
 	Icon,
 	IconButton,
-	Image,
-	List,
-	ListItem,
 	Skeleton,
 	SkeletonText,
 	Tag,
@@ -46,6 +42,7 @@ import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
 import CookingModal from "@/components/organisms/CookingModal";
 import Header from "@/components/organisms/Header";
 import IngredientsCard from "@/components/organisms/IngredientsCard";
+import ProcessCard from "@/components/organisms/ProcessCard";
 import {
 	currentRecipeAtom,
 	externalServiceAtomLoadable,
@@ -573,85 +570,9 @@ export default function RecipePage() {
 						recipeId={Number(recipeId)}
 						isLoading={!currentRecipe}
 						editable={true}
-					/>
-
+					/>{" "}
 					{/* Cooking process */}
-					<MotionCard
-						bg={cardBg}
-						shadow="xl"
-						rounded="2xl"
-						border="1px"
-						borderColor={borderColor}
-						initial={{ opacity: 0, x: 20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.6, delay: 0.4 }}
-					>
-						{" "}
-						<CardHeader pb={4}>
-							<HStack spacing={3}>
-								<Image
-									src="/bae-recipe/favicon.svg"
-									alt="BAE Recipe Logo"
-									boxSize={6}
-								/>
-								<Heading size="lg" color={headingColor}>
-									調理手順
-								</Heading>
-								<Badge colorScheme="purple" variant="subtle">
-									{processes.length}ステップ
-								</Badge>
-							</HStack>
-						</CardHeader>
-						<CardBody pt={0}>
-							{processes.length >= 0 ? (
-								<List spacing={4}>
-									{processes
-										.sort((a, b) => a.processNumber - b.processNumber)
-										.map((process) => (
-											<ListItem
-												key={process.id}
-												p={4}
-												bg={useColorModeValue("gray.50", "gray.700")}
-												rounded="lg"
-												border="1px"
-												borderColor={borderColor}
-												position="relative"
-											>
-												<Box
-													position="absolute"
-													top={4}
-													left={4}
-													w={8}
-													h={8}
-													bg="purple.100"
-													color="purple.600"
-													rounded="full"
-													display="flex"
-													alignItems="center"
-													justifyContent="center"
-													fontSize="sm"
-													fontWeight="bold"
-												>
-													{process.processNumber}
-												</Box>
-												<Text
-													pl={12}
-													color={headingColor}
-													lineHeight={1.6}
-													whiteSpace="pre-wrap"
-												>
-													{process.process}
-												</Text>
-											</ListItem>
-										))}
-								</List>
-							) : (
-								<Text color={textColor} textAlign="center" py={8}>
-									調理手順が読み込み中です...
-								</Text>
-							)}
-						</CardBody>
-					</MotionCard>
+					<ProcessCard processes={processes} isLoading={!currentRecipe} />
 				</Grid>
 
 				{/* Additional info */}

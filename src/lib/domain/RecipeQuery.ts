@@ -134,6 +134,12 @@ export interface IngredientRequest {
 	amount?: string;
 }
 
+export interface ProcessRequest {
+	recipeId?: number;
+	process_number?: number;
+	process?: string;
+}
+
 export function createRecipe(res: RecipeResponse): Recipe {
 	return new Recipe(
 		res.id,
@@ -278,4 +284,33 @@ export async function getProcesses(recipeId: number): Promise<Process[]> {
 		`/recipes/${recipeId}/processes`,
 	);
 	return response.data.map(createProcess);
+}
+
+export async function postProcess(
+	recipeId: number,
+	request: ProcessRequest,
+): Promise<Process> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.post<ProcessRequest, ProcessResponse>(
+		`/recipes/${recipeId}/process`,
+		request,
+	);
+	return createProcess(response.data);
+}
+
+export async function updateProcess(
+	processId: number,
+	request: ProcessRequest,
+): Promise<Process> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.put<ProcessRequest, ProcessResponse>(
+		`/recipes/process/${processId}`,
+		request,
+	);
+	return createProcess(response.data);
+}
+
+export async function deleteProcess(processId: number): Promise<void> {
+	const axiosClient = createAxiosClient();
+	await axiosClient.delete(`/recipes/process/${processId}`);
 }
