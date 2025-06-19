@@ -14,6 +14,10 @@ import {
 	Input,
 	InputGroup,
 	InputRightElement,
+	Menu,
+	MenuButton,
+	MenuItem,
+	MenuList,
 	SimpleGrid,
 	Tag,
 	TagLabel,
@@ -28,9 +32,12 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
 	FaBookmark,
+	FaChevronDown,
 	FaChevronLeft,
 	FaChevronRight,
+	FaFilter,
 	FaSearch,
+	FaSort,
 	FaStar,
 	FaVideo,
 } from "react-icons/fa";
@@ -43,6 +50,7 @@ import {
 	externalServiceAtomLoadable,
 	recipeListAtomLoadable,
 	recipeQueryParamAtom,
+	recipeSortParamAtom,
 	recipeUrlAtom,
 } from "@/lib/atom/RecipeAtom";
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
@@ -58,6 +66,7 @@ export default function MainPage() {
 	const navigate = useNavigate();
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
 	const [recipeQueryParam, setRecipeQueryParam] = useAtom(recipeQueryParamAtom);
+	const [recipeSortParam, setRecipeSortParam] = useAtom(recipeSortParamAtom);
 
 	const toast = useToast();
 
@@ -168,6 +177,29 @@ export default function MainPage() {
 			duration: 2000,
 			isClosable: true,
 		});
+	};
+
+	const handleSortChange = (
+		sortBy: "created_date" | "updated_date" | "recipe_name" | "rating" | null,
+		orderBy: "asc" | "desc" | null,
+	) => {
+		setRecipeSortParam({
+			sorted_by: sortBy,
+			order_by: orderBy,
+		});
+		// ページを1に戻す
+		setRecipeQueryParam((prev) => ({
+			...prev,
+			page: 1,
+		}));
+	};
+
+	const toggleFavoriteOnly = () => {
+		setRecipeQueryParam((prev) => ({
+			...prev,
+			favorite_only: !prev.favorite_only,
+			page: 1, // ページを1に戻す
+		}));
 	};
 
 	useEffect(() => {
@@ -314,7 +346,7 @@ export default function MainPage() {
 					{" "}
 					<Flex
 						justify="space-between"
-						align="center"
+						align={{ base: "stretch", md: "center" }}
 						mb={8}
 						direction={{ base: "column", md: "row" }}
 						gap={{ base: 4, md: 0 }}
@@ -338,8 +370,124 @@ export default function MainPage() {
 										「{recipeQueryParam.keyword}」で検索中
 									</Text>
 								)}
+								{recipeQueryParam.favorite_only && (
+									<Text as="span" color="pink.500" fontWeight="medium" ml={2}>
+										（ブックマークのみ）
+									</Text>
+								)}
 							</Text>
 						</VStack>
+
+						{/* Sort and Filter Controls */}
+						<HStack
+							spacing={3}
+							align="center"
+							justify={{ base: "center", md: "flex-end" }}
+							flexWrap="wrap"
+						>
+							{/* お気に入りフィルター */}
+							<Button
+								leftIcon={<Icon as={FaBookmark} />}
+								variant={recipeQueryParam.favorite_only ? "solid" : "outline"}
+								colorScheme="orange"
+								size={{ base: "sm", md: "md" }}
+								onClick={toggleFavoriteOnly}
+								_hover={{
+									transform: "translateY(-1px)",
+									shadow: "md",
+								}}
+								transition="all 0.2s"
+							>
+								ブックマークのみ
+							</Button>
+
+							{/* ソートメニュー */}
+							<Menu>
+								<MenuButton
+									as={Button}
+									rightIcon={<Icon as={FaChevronDown} />}
+									leftIcon={<Icon as={FaSort} />}
+									variant="outline"
+									colorScheme="orange"
+									size={{ base: "sm", md: "md" }}
+									_hover={{
+										transform: "translateY(-1px)",
+										shadow: "md",
+									}}
+									transition="all 0.2s"
+								>
+									{recipeSortParam.sorted_by
+										? `${
+												recipeSortParam.sorted_by === "created_date"
+													? "作成日"
+													: recipeSortParam.sorted_by === "updated_date"
+														? "更新日"
+														: recipeSortParam.sorted_by === "recipe_name"
+															? "レシピ名"
+															: recipeSortParam.sorted_by === "rating"
+																? "評価"
+																: "不明"
+											}${recipeSortParam.order_by === "asc" ? " (昇順)" : " (降順)"}`
+										: "ソート"}
+								</MenuButton>
+								<MenuList>
+									<MenuItem
+										icon={<Icon as={FaSort} />}
+										onClick={() => handleSortChange("created_date", "desc")}
+									>
+										作成日（新しい順）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaSort} />}
+										onClick={() => handleSortChange("created_date", "asc")}
+									>
+										作成日（古い順）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaSort} />}
+										onClick={() => handleSortChange("updated_date", "desc")}
+									>
+										更新日（新しい順）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaSort} />}
+										onClick={() => handleSortChange("updated_date", "asc")}
+									>
+										更新日（古い順）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaSort} />}
+										onClick={() => handleSortChange("recipe_name", "asc")}
+									>
+										レシピ名（A-Z）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaSort} />}
+										onClick={() => handleSortChange("recipe_name", "desc")}
+									>
+										レシピ名（Z-A）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaStar} />}
+										onClick={() => handleSortChange("rating", "desc")}
+									>
+										評価（高い順）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaStar} />}
+										onClick={() => handleSortChange("rating", "asc")}
+									>
+										評価（低い順）
+									</MenuItem>
+									<MenuItem
+										icon={<Icon as={FaFilter} />}
+										onClick={() => handleSortChange(null, null)}
+									>
+										ソートをクリア
+									</MenuItem>
+								</MenuList>
+							</Menu>
+						</HStack>
 					</Flex>
 					<SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
 						{recipes?.items && recipes.items.length > 0 ? (

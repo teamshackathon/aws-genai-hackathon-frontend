@@ -123,6 +123,11 @@ export interface RecipeQueryParams {
 	favorite_only?: boolean;
 }
 
+export interface RecipeSortParams {
+	sorted_by: "created_date" | "updated_date" | "recipe_name" | "rating" | null;
+	order_by: "asc" | "desc" | null;
+}
+
 export function createRecipe(res: RecipeResponse): Recipe {
 	return new Recipe(
 		res.id,
@@ -193,10 +198,12 @@ export async function getRecipes(
 	par_page = 20,
 	keyword?: string,
 	favorite_only?: boolean,
+	sorted_by?: "created_date" | "updated_date" | "recipe_name" | "rating" | null,
+	order_by?: "asc" | "desc" | null,
 ): Promise<RecipeList> {
 	const axiosClient = createAxiosClient();
 	const response = await axiosClient.get<RecipeListResponse>(
-		`/recipes?page=${page}&par_page=${par_page}&keyword=${keyword || ""}&favorite_only=${favorite_only || false}`,
+		`/recipes?page=${page}&par_page=${par_page}&keyword=${keyword || ""}&favorites_only=${favorite_only || false}&sorted_by=${sorted_by || ""}&order_by=${order_by || ""}`,
 	);
 	return new RecipeList(
 		response.data.items.map(createRecipe),
