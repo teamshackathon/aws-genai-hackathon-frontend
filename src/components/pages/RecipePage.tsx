@@ -12,6 +12,7 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	IconButton,
 	Image,
 	List,
 	ListItem,
@@ -37,6 +38,7 @@ import {
 	FaClock,
 	FaPlay,
 	FaShoppingCart,
+	FaStar,
 	FaTag,
 	FaUser,
 } from "react-icons/fa";
@@ -161,6 +163,25 @@ export default function RecipePage() {
 				isClosable: true,
 			});
 		}
+	};
+
+	const updateRating = (recipeId: number, newRating: number) => {
+		updateUserRecipe(recipeId, {
+			rating: newRating,
+		});
+		// ローカルのuserRecipeを更新
+		setUserRecipe((prev) =>
+			prev.map((ur) =>
+				ur.recipeId === recipeId ? { ...ur, rating: newRating } : ur,
+			),
+		);
+		toast({
+			title: "評価を更新しました",
+			description: `${newRating}つ星の評価をつけました`,
+			status: "success",
+			duration: 2000,
+			isClosable: true,
+		});
 	};
 
 	// ★新しい関数: 買い物リスト作成ボタンのハンドラ
@@ -325,9 +346,68 @@ export default function RecipePage() {
 																</Tag>
 															</WrapItem>
 														))}
-												</Wrap>
+												</Wrap>{" "}
 											</Box>
 										)}
+
+										{/* Rating Component */}
+										{(() => {
+											const currentUserRecipe = userRecipe.find(
+												(ur) => ur.recipeId === currentRecipe.id,
+											);
+											const currentRating = currentUserRecipe?.rating || 0;
+
+											return (
+												<Box w="full">
+													<Text
+														fontSize="sm"
+														color={textColor}
+														mb={2}
+														fontWeight="medium"
+													>
+														評価:
+													</Text>
+													<HStack spacing={2}>
+														{[1, 2, 3, 4, 5].map((star) => (
+															<IconButton
+																key={star}
+																aria-label={`${star}つ星の評価をつける`}
+																icon={
+																	<Icon
+																		as={FaStar}
+																		color={
+																			star <= currentRating
+																				? "yellow.400"
+																				: "gray.300"
+																		}
+																	/>
+																}
+																size="md"
+																variant="ghost"
+																onClick={() => {
+																	updateRating(currentRecipe.id, star);
+																}}
+																_hover={{
+																	transform: "scale(1.1)",
+																	bg: "transparent",
+																}}
+																transition="all 0.2s"
+															/>
+														))}
+														{currentRating > 0 && (
+															<Text
+																fontSize="md"
+																color={textColor}
+																ml={2}
+																fontWeight="medium"
+															>
+																({currentRating}/5)
+															</Text>
+														)}
+													</HStack>
+												</Box>
+											);
+										})()}
 
 										<HStack spacing={4} flexWrap="wrap">
 											<Badge
