@@ -66,7 +66,7 @@ export interface UpdateShoppingListItemRequest {
 
 export interface ShoppingListQueryParams {
 	page: number;
-	par_page: number;
+	per_page: number;
 	keyword?: string;
 }
 

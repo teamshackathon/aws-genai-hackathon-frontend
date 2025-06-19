@@ -17,18 +17,19 @@ import { useNavigate } from "react-router"; // Linkの代わりにnavigateを使
 
 import Header from "@/components/organisms/Header";
 import { shoppingListAtomLoadable } from "@/lib/atom/ShoppingAtom";
-import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
+import type { ShoppingList } from "@/lib/domain/ShoppingListQuery";
+import { useAtomValue } from "jotai";
 
 export default function ShoppingListPage() {
 	const navigate = useNavigate();
-	const shoppingLists = useLoadableAtom(shoppingListAtomLoadable);
+	const shoppingLists = useAtomValue(shoppingListAtomLoadable);
 
 	const cardBg = useColorModeValue("white", "gray.800");
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const headingColor = useColorModeValue("gray.800", "white");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
-	if (shoppingLists === undefined) {
+	if (shoppingLists.state === "loading") {
 		return (
 			<Box
 				minH="100vh"
@@ -52,7 +53,7 @@ export default function ShoppingListPage() {
 		);
 	}
 
-	if (shoppingLists === null) {
+	if (shoppingLists.state === "hasError") {
 		return (
 			<Box
 				minH="100vh"
@@ -78,65 +79,73 @@ export default function ShoppingListPage() {
 		);
 	}
 
-	return (
-		<Box minH="100vh" bgGradient="linear(to-br, orange.50, pink.50, purple.50)">
-			<Header />
-			<Container maxW="4xl" py={8}>
-				<VStack spacing={8} align="stretch">
-					<Heading as="h1" size="xl" color={headingColor}>
-						買い物リスト一覧
-					</Heading>
+	if (shoppingLists.state === "hasData" && shoppingLists.data) {
+		const items = shoppingLists.data.items;
+		return (
+			<Box
+				minH="100vh"
+				bgGradient="linear(to-br, orange.50, pink.50, purple.50)"
+			>
+				<Header />
+				<Container maxW="4xl" py={8}>
+					<VStack spacing={8} align="stretch">
+						<Heading as="h1" size="xl" color={headingColor}>
+							買い物リスト一覧
+						</Heading>
 
-					{shoppingLists?.items.length === 0 ? (
-						<Box textAlign="center" py={10}>
-							<Text fontSize="xl" color={textColor} mb={4}>
-								まだ買い物リストがありません。
-							</Text>
-							<Text color={textColor}>
-								レシピページから新しい買い物リストを作成しましょう！
-							</Text>
-						</Box>
-					) : (
-						<VStack spacing={4} align="stretch">
-							{shoppingLists?.items.map((list) => (
-								<Card
-									key={list.id}
-									bg={cardBg}
-									shadow="md"
-									rounded="lg"
-									border="1px"
-									borderColor={borderColor}
-									_hover={{
-										shadow: "lg",
-										transform: "translateY(-2px)",
-										cursor: "pointer",
-									}}
-									transition="all 0.2s ease-in-out"
-									onClick={() => navigate(`/home/shopping_list/${list.id}`)}
-								>
-									<CardBody p={5}>
-										<VStack align="stretch" spacing={2}>
-											<HStack>
-												<Icon as={FaListAlt} color="teal.500" boxSize={5} />
-												<Heading size="md" color={headingColor}>
-													{list.listName}
-												</Heading>
-											</HStack>
-											<HStack fontSize="sm" color={textColor}>
-												<Icon as={FaCalendarAlt} />
-												<Text>
-													作成日:{" "}
-													{new Date(list.createdAt).toLocaleDateString()}
-												</Text>
-											</HStack>
-										</VStack>
-									</CardBody>
-								</Card>
-							))}
-						</VStack>
-					)}
-				</VStack>
-			</Container>
-		</Box>
-	);
+						{items.length === 0 ? (
+							<Box textAlign="center" py={10}>
+								<Text fontSize="xl" color={textColor} mb={4}>
+									まだ買い物リストがありません。
+								</Text>
+								<Text color={textColor}>
+									レシピページから新しい買い物リストを作成しましょう！
+								</Text>
+							</Box>
+						) : (
+							<VStack spacing={4} align="stretch">
+								{items.map((list: ShoppingList) => (
+									<Card
+										key={list.id}
+										bg={cardBg}
+										shadow="md"
+										rounded="lg"
+										border="1px"
+										borderColor={borderColor}
+										_hover={{
+											shadow: "lg",
+											transform: "translateY(-2px)",
+											cursor: "pointer",
+										}}
+										transition="all 0.2s ease-in-out"
+										onClick={() => navigate(`/home/shopping_list/${list.id}`)}
+									>
+										<CardBody p={5}>
+											<VStack align="stretch" spacing={2}>
+												<HStack>
+													<Icon as={FaListAlt} color="teal.500" boxSize={5} />
+													<Heading size="md" color={headingColor}>
+														{list.listName}
+													</Heading>
+												</HStack>
+												<HStack fontSize="sm" color={textColor}>
+													<Icon as={FaCalendarAlt} />
+													<Text>
+														作成日:{" "}
+														{new Date(list.createdAt).toLocaleDateString()}
+													</Text>
+												</HStack>
+											</VStack>
+										</CardBody>
+									</Card>
+								))}
+							</VStack>
+						)}
+					</VStack>
+				</Container>
+			</Box>
+		);
+	}
+
+	return null;
 }
