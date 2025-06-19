@@ -53,6 +53,7 @@ export default function ShoppingListDetailPage() {
 	const [shoppingListItems, setShoppingListItem] = useState<ShoppingListItem[]>(
 		[],
 	);
+	console.log("shoppingListListItems:", shoppingListItems);
 	const [recipe, setRecipe] = useState<Recipe | null>(null);
 	const [ingredients, setIngredients] = useState<Ingridient[]>([]); // 材料のリスト
 	const [isLoading, setIsLoading] = useState(true);
@@ -96,12 +97,13 @@ export default function ShoppingListDetailPage() {
 			} else {
 				setError("レシピの取得に失敗しました。");
 			}
+			setIsLoading(false);
 		}
 	};
 
 	useEffect(() => {
 		fetchShoppingList();
-	}, [fetchShoppingList]);
+	}, []);
 
 	// 材料のチェック状態を切り替えるハンドラ
 	const handleItemCheck = async (itemId: number, currentIsChecked: boolean) => {
@@ -110,12 +112,9 @@ export default function ShoppingListDetailPage() {
 		// UIを先に更新して、ユーザー体験を向上させる（Optimistic Update）
 		setShoppingListItem((prevItem) => {
 			if (!prevItem) return [];
-			return {
-				...prevItem,
-				items: prevItem.map((item) =>
-					item.id === itemId ? { ...item, isChecked: !currentIsChecked } : item,
-				),
-			};
+			return prevItem.map((item) =>
+				item.id === itemId ? { ...item, isChecked: !currentIsChecked } : item,
+			);
 		});
 
 		try {
@@ -127,14 +126,9 @@ export default function ShoppingListDetailPage() {
 			// エラーが発生した場合、UIを元の状態に戻す（Rollback）
 			setShoppingListItem((prevList) => {
 				if (!prevList) return [];
-				return {
-					...prevList,
-					items: prevList.map((item) =>
-						item.id === itemId
-							? { ...item, isChecked: currentIsChecked }
-							: item,
-					),
-				};
+				return prevList.map((item) =>
+					item.id === itemId ? { ...item, isChecked: currentIsChecked } : item,
+				);
 			});
 			toast({
 				title: "更新に失敗しました",
