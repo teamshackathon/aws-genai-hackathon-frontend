@@ -7,12 +7,15 @@ import {
 	type RecipeQueryParams,
 	type RecipeSortParams,
 	type RecipeStatus,
+	createIngredient,
+	deleteIngredient,
 	getExternalServices,
 	getIngridients,
 	getProcesses,
 	getRecipeById,
 	getRecipeStatuses,
 	getRecipes,
+	updateIngredient,
 } from "@/lib/domain/RecipeQuery";
 import { atom } from "jotai";
 
@@ -124,3 +127,37 @@ export const refreshRecipeListAtom = atom(null, async (_, set) => {
 		console.error("Error refreshing recipe list:", error);
 	}
 });
+
+export const createIngredientAtom = atom(
+	null,
+	async (_, __, recipeId: number, ingredient: string, amount: string) => {
+		const newIngredient = await createIngredient(recipeId, {
+			recipeId,
+			ingredient,
+			amount,
+		});
+		return newIngredient;
+	},
+);
+
+export const updateIngredientAtom = atom(
+	null,
+	async (_, __, ingredientId: number, ingredient: string, amount: string) => {
+		const updatedIngredient = await updateIngredient(ingredientId, {
+			ingredient,
+			amount,
+		});
+		return updatedIngredient;
+	},
+);
+
+export const deleteIngredientAtom = atom(
+	null,
+	async (_, __, ingredientId: number) => {
+		try {
+			await deleteIngredient(ingredientId);
+		} catch (error) {
+			console.error("Error deleting ingredient:", error);
+		}
+	},
+);

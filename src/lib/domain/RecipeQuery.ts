@@ -128,6 +128,12 @@ export interface RecipeSortParams {
 	order_by: "asc" | "desc" | null;
 }
 
+export interface IngredientRequest {
+	recipeId?: number;
+	ingredient?: string;
+	amount?: string;
+}
+
 export function createRecipe(res: RecipeResponse): Recipe {
 	return new Recipe(
 		res.id,
@@ -235,6 +241,35 @@ export async function getIngridients(recipeId: number): Promise<Ingridient[]> {
 		`/recipes/${recipeId}/ingredients`,
 	);
 	return response.data.map(createIngridient);
+}
+
+export async function createIngredient(
+	recipeId: number,
+	request: IngredientRequest,
+): Promise<Ingridient> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.post<
+		IngredientRequest,
+		IngridientResponse
+	>(`/recipes/${recipeId}/ingredient`, request);
+	return createIngridient(response.data);
+}
+
+export async function updateIngredient(
+	ingredientId: number,
+	request: IngredientRequest,
+) {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.put<IngredientRequest, IngridientResponse>(
+		`/recipes/ingredient/${ingredientId}`,
+		request,
+	);
+	return createIngridient(response.data);
+}
+
+export async function deleteIngredient(ingredientId: number): Promise<void> {
+	const axiosClient = createAxiosClient();
+	await axiosClient.delete(`/recipes/ingredient/${ingredientId}`);
 }
 
 export async function getProcesses(recipeId: number): Promise<Process[]> {
