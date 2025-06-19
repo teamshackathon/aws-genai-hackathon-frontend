@@ -6,7 +6,6 @@ import {
 	CardBody,
 	CardHeader,
 	Container,
-	Flex,
 	Grid,
 	GridItem,
 	HStack,
@@ -37,7 +36,6 @@ import {
 	FaClipboardList,
 	FaClock,
 	FaPlay,
-	FaShoppingCart,
 	FaStar,
 	FaTag,
 	FaUser,
@@ -47,6 +45,7 @@ import { useNavigate, useParams } from "react-router";
 import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
 import CookingModal from "@/components/organisms/CookingModal";
 import Header from "@/components/organisms/Header";
+import IngredientsCard from "@/components/organisms/IngredientsCard";
 import {
 	currentRecipeAtom,
 	externalServiceAtomLoadable,
@@ -569,73 +568,12 @@ export default function RecipePage() {
 				{/* Main content */}
 				<Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8}>
 					{/* Ingredients */}
-					<MotionCard
-						bg={cardBg}
-						shadow="xl"
-						rounded="2xl"
-						border="1px"
-						borderColor={borderColor}
-						initial={{ opacity: 0, x: -20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.6, delay: 0.2 }}
-					>
-						<CardHeader pb={4}>
-							<HStack spacing={3}>
-								<Icon as={FaShoppingCart} boxSize={6} color="green.500" />
-								<Heading size="lg" color={headingColor}>
-									材料
-								</Heading>
-								<Badge colorScheme="green" variant="subtle">
-									{ingredients.length}品目
-								</Badge>
-							</HStack>
-						</CardHeader>
-						<CardBody pt={0}>
-							{ingredients.length >= 0 ? (
-								<List spacing={3}>
-									{ingredients.map((ingredient, index) => (
-										<ListItem
-											key={ingredient.id}
-											p={3}
-											bg={useColorModeValue("gray.50", "gray.700")}
-											rounded="lg"
-											border="1px"
-											borderColor={borderColor}
-										>
-											<Flex justify="space-between" align="center">
-												<HStack spacing={3}>
-													<Box
-														w={6}
-														h={6}
-														bg="green.100"
-														color="green.600"
-														rounded="full"
-														display="flex"
-														alignItems="center"
-														justifyContent="center"
-														fontSize="xs"
-														fontWeight="bold"
-													>
-														{index + 1}
-													</Box>
-													<Text fontWeight="semibold" color={headingColor}>
-														{ingredient.ingredient}
-													</Text>
-												</HStack>
-												<Text color={textColor} fontWeight="medium">
-													{ingredient.amount}
-												</Text>
-											</Flex>
-										</ListItem>
-									))}
-								</List>
-							) : (
-								<Text color={textColor} textAlign="center" py={8}>
-									材料が読み込み中です...
-								</Text>
-							)}
-						</CardBody>
-					</MotionCard>
+					<IngredientsCard
+						ingredients={ingredients}
+						recipeId={Number(recipeId)}
+						isLoading={!currentRecipe}
+						editable={true}
+					/>
 
 					{/* Cooking process */}
 					<MotionCard
