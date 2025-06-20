@@ -95,6 +95,7 @@ export default function CookPage() {
 	const [isVoicePlaying, setIsVoicePlaying] = useState(false);
 	const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
 	const [autoPlayTimeout, setAutoPlayTimeout] = useState<number | null>(null);
+	const [lastVoiceCommand, setLastVoiceCommand] = useState<string | null>(null);
 	const toast = useToast();
 
 	// Refs for cleanup
@@ -148,9 +149,8 @@ export default function CookPage() {
 	const shouldConnect = true; // WebSocket接続を有効化
 
 	const { connectionStatus, disconnect, sendMessage } = useCookWebSocket({
-		onMessage: (data) => {
-			// Backendからのメッセージ処理（将来の実装用）
-			console.log("WebSocketメッセージ受信:", data);
+		onMessage: (message) => {
+			handleWebSocketMessage(message.data);
 		},
 		shouldConnect: shouldConnect,
 	});
@@ -340,6 +340,78 @@ export default function CookPage() {
 			setIsVoicePlaying(false);
 		}
 	};
+
+	// WebSocketメッセージ処理関数
+	const handleWebSocketMessage = useCallback((data: string) => {
+		try {
+			const message = JSON.parse(data);
+			console.log("WebSocketメッセージ受信:", message);
+
+			// JSONスキーマに基づく処理
+			if (message && typeof message === "object" && "status" in message) {
+				const { status } = message;
+
+				switch (status) {
+					case "next":
+						console.log("音声コマンド: 次のステップへ");
+						setLastVoiceCommand("次のステップ");
+						handleNext();
+						toast({
+							title: "🎤 音声コマンド実行",
+							description: "次のステップに進みます",
+							status: "info",
+							duration: 2000,
+							isClosable: true,
+						});
+						break;
+
+					case "previous":
+						console.log("音声コマンド: 前のステップへ");
+						setLastVoiceCommand("前のステップ");
+						handlePrevious();
+						toast({
+							title: "🎤 音声コマンド実行",
+							description: "前のステップに戻ります",
+							status: "info",
+							duration: 2000,
+							isClosable: true,
+						});
+						break;
+
+					case "play":
+						console.log("音声コマンド: 音声再生");
+						setLastVoiceCommand("音声再生");
+						handleVoicePlay();
+						toast({
+							title: "🎤 音声コマンド実行",
+							description: "手順を音声で再生します",
+							status: "info",
+							duration: 2000,
+							isClosable: true,
+						});
+						break;
+
+					case "None":
+						console.log("音声コマンド: アクションなし");
+						setLastVoiceCommand("認識できませんでした");
+						break;
+
+					default:
+						console.warn("未知のステータス:", status);
+						break;
+				}
+			} else {
+				console.warn("不正なメッセージ形式:", message);
+			}
+		} catch (error) {
+			console.error("WebSocketメッセージ解析エラー:", error);
+		}
+
+		// 3秒後にコマンド表示をクリア
+		setTimeout(() => {
+			setLastVoiceCommand(null);
+		}, 3000);
+	}, []);
 	// ステップ変更時に音声を停止し、自動再生をセットアップ
 	useEffect(() => {
 		let isCancelled = false;
@@ -437,8 +509,7 @@ export default function CookPage() {
 									料理工程ガイド
 								</Text>
 							</VStack>
-						</HStack>
-
+						</HStack>{" "}
 						{/* WebSocket status */}
 						<HStack spacing={1}>
 							{statusInfo.icon}
@@ -446,7 +517,14 @@ export default function CookPage() {
 								{statusInfo.text}
 							</Text>
 						</HStack>
-
+						{/* 最後の音声コマンド表示 */}
+						{lastVoiceCommand && (
+							<HStack spacing={2} bg="blue.50" px={3} py={1} rounded="md">
+								<Text fontSize="xs" color="blue.600" fontWeight="bold">
+									🎤 {lastVoiceCommand}
+								</Text>
+							</HStack>
+						)}
 						{/* 自動再生コントロール */}
 						<HStack spacing={2}>
 							<Icon
@@ -464,7 +542,6 @@ export default function CookPage() {
 								自動音声
 							</Text>
 						</HStack>
-
 						{/* Back button */}
 						<Button
 							leftIcon={<FaArrowLeft />}
