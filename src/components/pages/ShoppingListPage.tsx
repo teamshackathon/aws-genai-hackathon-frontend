@@ -14,12 +14,21 @@ import {
 	VStack,
 	useColorModeValue,
 } from "@chakra-ui/react";
-import { FaCalendarAlt, FaListAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa"; // アイコンをインポート
-import { useNavigate } from "react-router"; // Linkの代わりにnavigateを使用
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+	FaCalendarAlt,
+	FaChevronLeft,
+	FaChevronRight,
+	FaListAlt,
+} from "react-icons/fa"; // アイコンをインポート
+import { useNavigate } from "react-router"; // Linkの代わりにnavigateを使用
 
 import Header from "@/components/organisms/Header";
-import { shoppingListAtomLoadable, shoppingListQueryParamAtom, shoppingListAtomAsync } from "@/lib/atom/ShoppingAtom";
+import {
+	shoppingListAtomAsync,
+	shoppingListAtomLoadable,
+	shoppingListQueryParamAtom,
+} from "@/lib/atom/ShoppingAtom";
 import type { Shopping } from "@/lib/domain/ShoppingListQuery";
 
 export default function ShoppingListPage() {
@@ -35,7 +44,7 @@ export default function ShoppingListPage() {
 
 	// ページ変更ハンドラー
 	const handlePageChange = (newPage: number) => {
-		setQueryParams(prev => ({ ...prev, page: newPage }));
+		setQueryParams((prev) => ({ ...prev, page: newPage }));
 		refreshShoppingList();
 	};
 
@@ -93,7 +102,7 @@ export default function ShoppingListPage() {
 		const data = shoppingLists.data;
 		const items = data.items;
 		const { page, pages, total, perPage } = data;
-		
+
 		return (
 			<Box
 				minH="100vh"
@@ -107,7 +116,8 @@ export default function ShoppingListPage() {
 								買い物リスト一覧
 							</Heading>
 							<Text color={textColor} fontSize="sm">
-								{total}件中 {(page - 1) * perPage + 1}-{Math.min(page * perPage, total)}件表示
+								{total}件中 {(page - 1) * perPage + 1}-
+								{Math.min(page * perPage, total)}件表示
 							</Text>
 						</HStack>
 
@@ -171,40 +181,42 @@ export default function ShoppingListPage() {
 											variant="outline"
 											size="sm"
 										/>
-										
+
 										{/* ページ番号ボタン */}
-										{Array.from({ length: pages }, (_, i) => i + 1).map((pageNum) => {
-											// 現在のページ周辺のみ表示
-											if (
-												pageNum === 1 ||
-												pageNum === pages ||
-												(pageNum >= page - 2 && pageNum <= page + 2)
-											) {
-												return (
-													<Button
-														key={pageNum}
-														size="sm"
-														onClick={() => handlePageChange(pageNum)}
-														colorScheme={pageNum === page ? "teal" : "gray"}
-														variant={pageNum === page ? "solid" : "outline"}
-													>
-														{pageNum}
-													</Button>
-												);
-											}
-											
-											// 省略記号
-											if (pageNum === page - 3 || pageNum === page + 3) {
-												return (
-													<Text key={pageNum} color={textColor} px={2}>
-														...
-													</Text>
-												);
-											}
-											
-											return null;
-										})}
-										
+										{Array.from({ length: pages }, (_, i) => i + 1).map(
+											(pageNum) => {
+												// 現在のページ周辺のみ表示
+												if (
+													pageNum === 1 ||
+													pageNum === pages ||
+													(pageNum >= page - 2 && pageNum <= page + 2)
+												) {
+													return (
+														<Button
+															key={pageNum}
+															size="sm"
+															onClick={() => handlePageChange(pageNum)}
+															colorScheme={pageNum === page ? "teal" : "gray"}
+															variant={pageNum === page ? "solid" : "outline"}
+														>
+															{pageNum}
+														</Button>
+													);
+												}
+
+												// 省略記号
+												if (pageNum === page - 3 || pageNum === page + 3) {
+													return (
+														<Text key={pageNum} color={textColor} px={2}>
+															...
+														</Text>
+													);
+												}
+
+												return null;
+											},
+										)}
+
 										<IconButton
 											aria-label="次のページ"
 											icon={<FaChevronRight />}
