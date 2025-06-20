@@ -25,6 +25,7 @@ import {
 	FaArrowLeft,
 	FaArrowRight,
 	FaCheck,
+	FaMicrophone,
 	FaPause,
 	FaUtensils,
 	FaVolumeOff,
@@ -42,10 +43,46 @@ import {
 	processesAtom,
 } from "@/lib/atom/RecipeAtom";
 import { type ChatVoice, generateVoice } from "@/lib/domain/VoiceQuery";
+import { useCookWebSocket } from "@/lib/hook/useCookWebSocket";
 
 // Motion components
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
+
+function webSocketStatus(status: string) {
+	switch (status) {
+		case "Connecting":
+			return {
+				icon: <Icon as={FaMicrophone} boxSize={4} color="orange.500" />,
+				text: "接続中...",
+				color: "orange.500",
+			};
+		case "Open":
+			return {
+				icon: <Icon as={FaMicrophone} boxSize={4} color="green.500" />,
+				text: "オンライン",
+				color: "green.500",
+			};
+		case "Closing":
+			return {
+				icon: <Icon as={FaMicrophone} boxSize={4} color="red.500" />,
+				text: "切断中...",
+				color: "red.500",
+			};
+		case "Closed":
+			return {
+				icon: <Icon as={FaMicrophone} boxSize={4} color="gray.500" />,
+				text: "オフライン",
+				color: "gray.500",
+			};
+		default:
+			return {
+				icon: <Icon as={FaMicrophone} boxSize={4} color="gray.500" />,
+				text: "不明",
+				color: "gray.500",
+			};
+	}
+}
 
 export default function CookPage() {
 	const { recipeId } = useParams<{ recipeId: string }>();
@@ -54,7 +91,7 @@ export default function CookPage() {
 	const [currentVoice, setCurrentVoice] = useState<ChatVoice | null>(null);
 	const [isVoiceLoading, setIsVoiceLoading] = useState(false);
 	const [isVoicePlaying, setIsVoicePlaying] = useState(false);
-	const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
+	const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
 	const [autoPlayTimeout, setAutoPlayTimeout] = useState<number | null>(null);
 	const toast = useToast();
 
@@ -105,6 +142,16 @@ export default function CookPage() {
 	const progress = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
 	const currentProcess = sortedProcesses[currentStep];
 
+	// ここからWebsocket通信の設定
+	const shouldConnect = false;
+
+	const { connectionStatus, disconnect } = useCookWebSocket({
+		onMessage: () => {},
+		shouldConnect: shouldConnect,
+	});
+
+	const statusInfo = webSocketStatus(connectionStatus);
+
 	const handleNext = () => {
 		if (currentStep < totalSteps - 1) {
 			setCurrentStep(currentStep + 1);
@@ -149,6 +196,9 @@ export default function CookPage() {
 
 		// クック履歴を保存
 		postCookHistory(Number(recipeId));
+
+		// WebSocket接続を切断
+		disconnect();
 
 		// レシピページに戻る
 		navigate(`/home/recipe/${recipeId}`);
@@ -349,6 +399,14 @@ export default function CookPage() {
 									料理工程ガイド
 								</Text>
 							</VStack>
+						</HStack>
+
+						{/* WebSocket status */}
+						<HStack spacing={1}>
+							{statusInfo.icon}
+							<Text fontSize="sm" color={statusInfo.color} fontWeight="medium">
+								{statusInfo.text}
+							</Text>
 						</HStack>
 
 						{/* 自動再生コントロール */}
