@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/lib/route/ProtectedRoute";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import CallbackPage from "@/components/pages/CallbackPage";
+import CookPage from "@/components/pages/CookPage";
 import LandingPage from "@/components/pages/LandingPage";
 import LoginPage from "@/components/pages/LoginPage";
 import MainPage from "@/components/pages/MainPage";
@@ -55,6 +56,7 @@ function App() {
 					<Route path="/home" element={<MainPage />} />
 					<Route path="/home/ai-gen" element={<RecipeAIGenPage />} />
 					<Route path="/home/recipe/:recipeId" element={<RecipePage />} />
+					<Route path="/home/recipe/:recipeId/cook" element={<CookPage />} />
 					<Route path="/home/setting" element={<SettingPage />} />
 					<Route path="/home/profile" element={<ProfilePage />} />
 					<Route path="/home/history" element={<HistoryPage />} />
