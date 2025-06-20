@@ -31,7 +31,7 @@ export const currentRecipeAtom = atomWithReset<Recipe | null>(null);
 
 export const recipeQueryParamAtom = atom<RecipeQueryParams>({
 	page: 1,
-	par_page: 20,
+	per_page: 20,
 	keyword: "",
 	favorite_only: false,
 });
@@ -48,7 +48,7 @@ export const recipeListAtomAsync = atomWithRefresh<Promise<RecipeList | null>>(
 		try {
 			return await getRecipes(
 				params.page,
-				params.par_page,
+				params.per_page,
 				params.keyword,
 				params.favorite_only,
 				sortParams.sorted_by,
