@@ -12,11 +12,14 @@ import {
 	Text,
 	VStack,
 	useColorModeValue,
+	useDisclosure,
 } from "@chakra-ui/react";
 import { useAtomValue } from "jotai";
 import { FaArrowRight, FaPlay, FaRobot, FaVideo } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { Link as RouterLink } from "react-router";
+
+import DemoVideoModal from "@/components/organisms/DemoVideoModal";
 
 const LandingPage = () => {
 	const bgGradient = useColorModeValue(
@@ -27,6 +30,11 @@ const LandingPage = () => {
 	const textColor = useColorModeValue("gray.600", "gray.300");
 
 	const isLoggedIn = useAtomValue(isLoggedInAtom);
+	const {
+		isOpen: isDemoModalOpen,
+		onOpen: onDemoModalOpen,
+		onClose: onDemoModalClose,
+	} = useDisclosure();
 
 	return (
 		<Box minH="100vh" bgGradient={bgGradient}>
@@ -49,17 +57,15 @@ const LandingPage = () => {
 								/>
 							</Box>
 						</HStack>
-
-						<Heading
-							as="h1"
-							size={{ base: "2xl", md: "4xl" }}
-							bgGradient="linear(to-r, orange.500, pink.500)"
-							bgClip="text"
-							mb={4}
-						>
-							BAE-RECIPE
-						</Heading>
-
+						<HStack justify="center" spacing={3}>
+							<Box
+								as="img"
+								src="/bae-recipe/bae-recipe-logo_orange.svg"
+								alt="Bae Recipe Logo"
+								height={{ base: "60px", md: "100px" }}
+								width="auto"
+							/>
+						</HStack>
 						<Text
 							fontSize={{ base: "xl", md: "2xl" }}
 							fontWeight="semibold"
@@ -97,6 +103,7 @@ const LandingPage = () => {
 							variant="outline"
 							colorScheme="orange"
 							leftIcon={<Icon as={FaPlay} />}
+							onClick={onDemoModalOpen}
 						>
 							デモを見る
 						</Button>
@@ -199,7 +206,7 @@ const LandingPage = () => {
 							AI搭載ソリューション
 						</Badge>
 						<Heading size="xl" color={useColorModeValue("gray.800", "white")}>
-							BAE-RECIPEが解決します
+							Bae Recipeが解決します
 						</Heading>
 						<Text fontSize="lg" color={textColor} maxW="4xl">
 							AIを活用して動画レシピを自動で分析・整理。あなた専用のレシピノートを簡単に作成できます。
@@ -269,15 +276,21 @@ const LandingPage = () => {
 									<Box
 										w="full"
 										h="200px"
-										bg={useColorModeValue("gray.100", "gray.700")}
 										rounded="lg"
+										overflow="hidden"
 										display="flex"
 										alignItems="center"
 										justifyContent="center"
 									>
-										<Text color={textColor} fontStyle="italic">
-											レシピノートプレビュー
-										</Text>
+										<Box
+											as="img"
+											src="/bae-recipe/preview.gif"
+											alt="レシピノートプレビュー"
+											w="full"
+											h="full"
+											objectFit="cover"
+											rounded="lg"
+										/>
 									</Box>
 									<Text fontSize="sm" color={textColor} textAlign="center">
 										動画から抽出された整理済みレシピ情報
@@ -387,7 +400,7 @@ const LandingPage = () => {
 					color="white"
 				>
 					<VStack spacing={6}>
-						<Heading size="xl">今すぐBAE-RECIPEを始めよう</Heading>
+						<Heading size="xl">今すぐBae Recipeを始めよう</Heading>
 						<Text fontSize="lg" opacity={0.9}>
 							動画レシピをもっと簡単に、もっと楽しく。
 							あなた専用のレシピノートで「映える献立」を実現しませんか？
@@ -409,6 +422,9 @@ const LandingPage = () => {
 					</VStack>
 				</Box>
 			</Container>
+
+			{/* Demo Video Modal */}
+			<DemoVideoModal isOpen={isDemoModalOpen} onClose={onDemoModalClose} />
 		</Box>
 	);
 };
