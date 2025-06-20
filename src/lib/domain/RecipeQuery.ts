@@ -118,7 +118,7 @@ export interface ProcessResponse {
 
 export interface RecipeQueryParams {
 	page: number;
-	par_page?: number;
+	per_page?: number;
 	keyword?: string;
 	favorite_only?: boolean;
 }
@@ -132,6 +132,12 @@ export interface IngredientRequest {
 	recipeId?: number;
 	ingredient?: string;
 	amount?: string;
+}
+
+export interface ProcessRequest {
+	recipeId?: number;
+	process_number?: number;
+	process?: string;
 }
 
 export function createRecipe(res: RecipeResponse): Recipe {
@@ -201,7 +207,7 @@ export async function getRecipeById(id: number): Promise<Recipe | null> {
 
 export async function getRecipes(
 	page: number,
-	par_page = 20,
+	per_page = 20,
 	keyword?: string,
 	favorite_only?: boolean,
 	sorted_by?: "created_date" | "updated_date" | "recipe_name" | "rating" | null,
@@ -209,7 +215,7 @@ export async function getRecipes(
 ): Promise<RecipeList> {
 	const axiosClient = createAxiosClient();
 	const response = await axiosClient.get<RecipeListResponse>(
-		`/recipes?page=${page}&par_page=${par_page}&keyword=${keyword || ""}&favorites_only=${favorite_only || false}&sorted_by=${sorted_by || ""}&order_by=${order_by || ""}`,
+		`/recipes?page=${page}&per_page=${per_page}&keyword=${keyword || ""}&favorites_only=${favorite_only || false}&sorted_by=${sorted_by || ""}&order_by=${order_by || ""}`,
 	);
 	return new RecipeList(
 		response.data.items.map(createRecipe),
@@ -278,4 +284,33 @@ export async function getProcesses(recipeId: number): Promise<Process[]> {
 		`/recipes/${recipeId}/processes`,
 	);
 	return response.data.map(createProcess);
+}
+
+export async function postProcess(
+	recipeId: number,
+	request: ProcessRequest,
+): Promise<Process> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.post<ProcessRequest, ProcessResponse>(
+		`/recipes/${recipeId}/process`,
+		request,
+	);
+	return createProcess(response.data);
+}
+
+export async function updateProcess(
+	processId: number,
+	request: ProcessRequest,
+): Promise<Process> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.put<ProcessRequest, ProcessResponse>(
+		`/recipes/process/${processId}`,
+		request,
+	);
+	return createProcess(response.data);
+}
+
+export async function deleteProcess(processId: number): Promise<void> {
+	const axiosClient = createAxiosClient();
+	await axiosClient.delete(`/recipes/process/${processId}`);
 }

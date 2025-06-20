@@ -1,4 +1,9 @@
 import {
+	Accordion,
+	AccordionButton,
+	AccordionIcon,
+	AccordionItem,
+	AccordionPanel,
 	Badge,
 	Box,
 	Button,
@@ -6,6 +11,8 @@ import {
 	CardBody,
 	Container,
 	Flex,
+	FormControl,
+	FormLabel,
 	HStack,
 	Heading,
 	Icon,
@@ -18,10 +25,12 @@ import {
 	MenuButton,
 	MenuItem,
 	MenuList,
+	Select,
 	SimpleGrid,
 	Tag,
 	TagLabel,
 	Text,
+	Textarea,
 	VStack,
 	Wrap,
 	WrapItem,
@@ -56,20 +65,41 @@ import {
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
+import type { RecipeParameters } from "@/lib/type/RecipeParameters";
 import { useAtom, useSetAtom } from "jotai";
 
-// Motion components
+// Framer Motion コンポーネントの定義
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 
+/**
+ * メインページコンポーネント
+ * YouTube ShortsのURL入力、レシピパラメータ設定、既存レシピの一覧表示を行う
+ */
 export default function MainPage() {
+	// ルーティング
 	const navigate = useNavigate();
+
+	// Jotai Atom 状態管理
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
 	const [recipeQueryParam, setRecipeQueryParam] = useAtom(recipeQueryParamAtom);
 	const [recipeSortParam, setRecipeSortParam] = useAtom(recipeSortParamAtom);
 
+	// レシピパラメータの状態管理（AI解析時に使用）
+	const [recipeParams, setRecipeParams] = useState<RecipeParameters>({
+		peopleCount: "recipe",
+		cookingTime: "recipe",
+		preference: "recipe",
+		saltiness: "recipe",
+		sweetness: "recipe",
+		spiciness: "recipe",
+		dislikedIngredients: "",
+	});
+
+	// トースト通知用
 	const toast = useToast();
 
+	// カラーモード対応のスタイル定義
 	const bgGradient = useColorModeValue(
 		"linear(to-br, orange.50, pink.50, purple.50)",
 		"linear(to-br, orange.900, pink.900, purple.900)",
@@ -78,11 +108,18 @@ export default function MainPage() {
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
+	// Loadable Atom の使用（非同期データ取得）
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
+
+	// ユーザーレシピ情報（お気に入り、評価など）の状態管理
 	const [userRecipe, setUserRecipe] = useState<UserRecipe[]>([]);
 
+	/**
+	 * ページネーション処理
+	 * @param newPage 新しいページ番号
+	 */
 	const handlePageChange = (newPage: number) => {
 		setRecipeQueryParam((prev) => ({
 			...prev,
@@ -90,13 +127,18 @@ export default function MainPage() {
 		}));
 	};
 
-	const handleUrlSubmit = () => {
-		//youtube shorts以外を受け付けない→
+	/**
+	 * YouTube Shorts URL送信処理
+	 * URLの妥当性をチェックし、レシピパラメータとともにAI解析ページに遷移
+	 * @param submittedParams オプション：外部から渡されたレシピパラメータ
+	 */
+	const handleUrlSubmit = (submittedParams?: RecipeParameters) => {
 		// YouTube ShortsのURLパターンをチェックする正規表現
-		// youtube.com/shorts/ または youtu.be/ に続く11桁の英数字（動画ID）をチェックします。
+		// youtube.com/shorts/ または youtu.be/ に続く11桁の英数字（動画ID）をチェック
 		const youtubeShortsRegex =
 			/^(https?:\/\/)?(www\.)?(youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})(\?.*)?$/;
 
+		// URL入力チェック
 		if (!urlInput.trim()) {
 			toast({
 				title: "Youtube ShortsのURLを入力してください",
@@ -106,7 +148,8 @@ export default function MainPage() {
 			});
 			return;
 		}
-		// 入力されたURLがYouTube Shortsの正規表現に一致するかをチェック
+
+		// YouTube Shorts URLの形式チェック
 		if (!youtubeShortsRegex.test(urlInput)) {
 			toast({
 				title:
@@ -118,9 +161,15 @@ export default function MainPage() {
 			return;
 		}
 
-		// AI解析ページに遷移
+		// レシピパラメータをstateに反映
+		const finalParams = submittedParams || recipeParams;
+		setRecipeParams(finalParams);
+
+		// AI解析ページに遷移（URLパラメータとstateでレシピパラメータを渡す）
 		const encodedUrl = encodeURIComponent(urlInput);
-		navigate(`/home/ai-gen?url=${encodedUrl}`);
+		navigate(`/home/ai-gen?url=${encodedUrl}`, {
+			state: { recipeParams: finalParams },
+		});
 	};
 
 	const fetchData = async () => {
@@ -326,13 +375,179 @@ export default function MainPage() {
 										shadow: "lg",
 									}}
 									leftIcon={<Icon as={HiSparkles} />}
-									onClick={handleUrlSubmit}
+									onClick={() => handleUrlSubmit()}
 									transition="all 0.3s"
 									px={8}
 								>
 									AI解析開始
 								</Button>
 							</Flex>
+							{/* レシピパラメータ設定 */}
+							<Box maxW="4xl" mx="auto" w="100%">
+								<Accordion allowToggle mt={6}>
+									<AccordionItem border="none">
+										<AccordionButton
+											_expanded={{
+												bg: useColorModeValue("orange.50", "orange.900"),
+												color: useColorModeValue("orange.600", "orange.200"),
+											}}
+											borderRadius="md"
+											px={4}
+											py={3}
+										>
+											<Box flex="1" textAlign="center">
+												<Text
+													fontSize="md"
+													fontWeight="semibold"
+													color={useColorModeValue("gray.700", "gray.200")}
+												>
+													レシピの詳細設定
+												</Text>
+											</Box>
+											<AccordionIcon />
+										</AccordionButton>{" "}
+										<AccordionPanel pb={4} px={0}>
+											<VStack spacing={4} align="stretch" w="100%">
+												<SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+													{" "}
+													<FormControl>
+														<FormLabel>食べる人数</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.peopleCount}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	peopleCount: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															{[1, 2, 3, 4, 5, 6].map((num) => (
+																<option key={num} value={num}>
+																	{num}人
+																</option>
+															))}
+														</Select>
+													</FormControl>
+													<FormControl>
+														<FormLabel>調理時間</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.cookingTime}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	cookingTime: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															<option value="30min">30分以内</option>
+															<option value="60min">1時間以内</option>
+															<option value="free">自由</option>
+														</Select>
+													</FormControl>
+													<FormControl>
+														<FormLabel>重視する傾向</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.preference}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	preference: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															<option value="nutrition">栄養重視</option>
+															<option value="appearance">見栄え重視</option>
+															<option value="cost_performance">
+																コスパ重視
+															</option>
+															<option value="time_performance">
+																タイパ重視
+															</option>
+														</Select>
+													</FormControl>
+													<FormControl>
+														<FormLabel>塩味</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.saltiness}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	saltiness: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															<option value="strong">濃いめ</option>
+															<option value="normal">普通</option>
+															<option value="light">薄め</option>
+														</Select>
+													</FormControl>
+													<FormControl>
+														<FormLabel>甘味</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.sweetness}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	sweetness: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															<option value="sweet">甘め</option>
+															<option value="normal">普通</option>
+															<option value="less">控えめ</option>
+														</Select>
+													</FormControl>
+													<FormControl>
+														<FormLabel>辛み</FormLabel>
+														<Select
+															defaultValue="recipe"
+															value={recipeParams.spiciness}
+															onChange={(e) =>
+																setRecipeParams((prev) => ({
+																	...prev,
+																	spiciness: e.target.value,
+																}))
+															}
+														>
+															<option value="recipe">レシピ通り</option>
+															<option value="very_spicy">非常に好む</option>
+															<option value="spicy">好む</option>
+															<option value="normal">普通</option>
+															<option value="less">控えめ</option>
+															<option value="none">なし</option>
+														</Select>
+													</FormControl>
+												</SimpleGrid>{" "}
+												<FormControl>
+													<FormLabel>嫌いな食材</FormLabel>
+													<Textarea
+														placeholder="嫌いな食材を入力してください（例：なす、ピーマン、セロリなど）"
+														resize="vertical"
+														minH="100px"
+														value={recipeParams.dislikedIngredients}
+														onChange={(e) =>
+															setRecipeParams((prev) => ({
+																...prev,
+																dislikedIngredients: e.target.value,
+															}))
+														}
+													/>
+												</FormControl>
+											</VStack>
+										</AccordionPanel>
+									</AccordionItem>
+								</Accordion>
+							</Box>
 						</VStack>
 					</Box>
 				</MotionBox>

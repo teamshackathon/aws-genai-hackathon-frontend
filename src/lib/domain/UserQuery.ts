@@ -32,6 +32,17 @@ export class UserRecipe {
 	) {}
 }
 
+export class UserShopping {
+	constructor(
+		public id: number, // ユーザーの買い物リストID
+		public userId: number, // ユーザーID
+		public shoppingId: number, // 買い物リストID
+		public isFavorite: boolean, // 買い物リストのお気に入り状態
+		public createdAt: Date, // 作成日時
+		public updatedAt: Date, // 更新日時
+	) {}
+}
+
 export interface UserResponse {
 	id: number;
 	name: string | null;
@@ -56,6 +67,15 @@ export interface UserRecipeResponse {
 	is_favorite: boolean; // レシピのお気に入り状態
 	note: string | null; // レシピに対するユーザーのメモやコメント
 	rating: number | null; // レシピの評価（1〜5の範囲）
+	created_date: string; // 作成日時 (ISO 8601形式)
+	updated_date: string; // 更新日時 (ISO 8601形式)
+}
+
+export interface UserShoppingResponse {
+	id: number; // ユーザーの買い物リストID
+	user_id: number; // ユーザーID
+	shopping_id: number; // 買い物リストID
+	is_favorite: boolean; // 買い物リストのお気に入り状態
 	created_date: string; // 作成日時 (ISO 8601形式)
 	updated_date: string; // 更新日時 (ISO 8601形式)
 }
@@ -87,6 +107,10 @@ export interface UserRecipeRequest {
 	is_favorite?: boolean; // レシピのお気に入り状態
 	note?: string; // レシピに対するユーザーのメモやコメント
 	rating?: number; // レシピの評価（1〜5の範囲）
+}
+
+export interface UserShoppingRequest {
+	is_favorite?: boolean; // 買い物リストのお気に入り状態
 }
 
 function createUser(res: UserResponse): User {
@@ -121,6 +145,17 @@ function createUserRecipe(res: UserRecipeResponse): UserRecipe {
 	);
 }
 
+function createUserShopping(res: UserShoppingResponse): UserShopping {
+	return new UserShopping(
+		res.id,
+		res.user_id,
+		res.shopping_id,
+		res.is_favorite,
+		new Date(res.created_date),
+		new Date(res.updated_date),
+	);
+}
+
 export async function getUser(): Promise<User> {
 	const axiosClient = createAxiosClient();
 	const response = await axiosClient.get<UserResponse>("/users/me");
@@ -144,6 +179,14 @@ export async function getUserRecipes(ids: string): Promise<UserRecipe[]> {
 	return response.data.map(createUserRecipe);
 }
 
+export async function getUserRecipe(recipeId: number): Promise<UserRecipe> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<UserRecipeResponse>(
+		`/users/me/recipes/${recipeId}`,
+	);
+	return createUserRecipe(response.data);
+}
+
 export async function updateUserRecipe(
 	recipeId: number,
 	request: UserRecipeRequest,
@@ -151,6 +194,25 @@ export async function updateUserRecipe(
 	const axiosClient = createAxiosClient();
 	await axiosClient.put<UserRecipeRequest, boolean>(
 		`/users/me/recipes/${recipeId}`,
+		request,
+	);
+}
+
+export async function getUserShopping(ids: string): Promise<UserShopping[]> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<UserShoppingResponse[]>(
+		`/users/me/shoppings?ids=${ids}`,
+	);
+	return response.data.map(createUserShopping);
+}
+
+export async function updateUserShopping(
+	shoppingId: number,
+	request: UserShoppingRequest,
+): Promise<void> {
+	const axiosClient = createAxiosClient();
+	await axiosClient.put<UserShoppingRequest, boolean>(
+		`/users/me/shoppings/${shoppingId}`,
 		request,
 	);
 }
