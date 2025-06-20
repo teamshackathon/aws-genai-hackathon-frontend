@@ -26,6 +26,7 @@ import {
 	FaArrowRight,
 	FaCheck,
 	FaMicrophone,
+	FaMicrophoneSlash,
 	FaPause,
 	FaUtensils,
 	FaVolumeOff,
@@ -44,6 +45,7 @@ import {
 } from "@/lib/atom/RecipeAtom";
 import { type ChatVoice, generateVoice } from "@/lib/domain/VoiceQuery";
 import { useCookWebSocket } from "@/lib/hook/useCookWebSocket";
+import { useVoiceRecorder } from "@/lib/hook/useVoiceRecorder";
 
 // Motion components
 const MotionBox = motion(Box);
@@ -143,11 +145,37 @@ export default function CookPage() {
 	const currentProcess = sortedProcesses[currentStep];
 
 	// ここからWebsocket通信の設定
-	const shouldConnect = false;
+	const shouldConnect = true; // WebSocket接続を有効化
 
-	const { connectionStatus, disconnect } = useCookWebSocket({
-		onMessage: () => {},
+	const { connectionStatus, disconnect, sendMessage } = useCookWebSocket({
+		onMessage: (data) => {
+			// Backendからのメッセージ処理（将来の実装用）
+			console.log("WebSocketメッセージ受信:", data);
+		},
 		shouldConnect: shouldConnect,
+	});
+
+	// 音声録音機能
+	const voiceRecorder = useVoiceRecorder({
+		onDataAvailable: (audioData) => {
+			// 音声データをWebSocketで送信
+			if (connectionStatus === "Open" && sendMessage) {
+				try {
+					// バイナリデータとして直接送信
+					sendMessage(audioData);
+					console.log(
+						"音声データ送信:",
+						audioData.byteLength,
+						"bytes (PCM 16bit 16kHz Mono)",
+					);
+				} catch (error) {
+					console.error("音声データ送信エラー:", error);
+				}
+			}
+		},
+		silenceThreshold: 30, // 音声検出の閾値
+		silenceTimeout: 1000, // 1秒間無音で録音停止
+		minRecordingTime: 500, // 最小録音時間500ms
 	});
 
 	const statusInfo = webSocketStatus(connectionStatus);
@@ -174,6 +202,11 @@ export default function CookPage() {
 	};
 
 	const handleComplete = () => {
+		// 音声録音を停止
+		if (voiceRecorder.isListening) {
+			voiceRecorder.stopListening();
+		}
+
 		// 音声を停止
 		if (currentVoice) {
 			currentVoice.stop();
@@ -205,6 +238,11 @@ export default function CookPage() {
 	};
 
 	const handleBackToRecipe = () => {
+		// 音声録音を停止
+		if (voiceRecorder.isListening) {
+			voiceRecorder.stopListening();
+		}
+
 		// 音声を停止
 		if (currentVoice) {
 			currentVoice.stop();
@@ -534,7 +572,6 @@ export default function CookPage() {
 											{currentProcess.process}
 										</Text>
 									</MotionBox>
-
 									{/* Voice control buttons */}
 									<HStack spacing={4}>
 										<Button
@@ -558,7 +595,61 @@ export default function CookPage() {
 										>
 											{isVoicePlaying ? "停止" : "音声で聞く"}
 										</Button>
+
+										{/* 音声録音ボタン */}
+										<Button
+											leftIcon={
+												<Icon
+													as={
+														voiceRecorder.isListening
+															? FaMicrophone
+															: FaMicrophoneSlash
+													}
+													color={
+														voiceRecorder.isListening ? "red.500" : "gray.500"
+													}
+												/>
+											}
+											onClick={
+												voiceRecorder.isListening
+													? voiceRecorder.stopListening
+													: voiceRecorder.startListening
+											}
+											colorScheme={voiceRecorder.isListening ? "red" : "gray"}
+											variant={voiceRecorder.isListening ? "solid" : "outline"}
+											size="lg"
+											isDisabled={connectionStatus !== "Open"}
+										>
+											{voiceRecorder.isListening ? "音声停止" : "音声開始"}
+										</Button>
 									</HStack>
+
+									{/* 音声レベル表示 */}
+									{voiceRecorder.isListening && (
+										<VStack spacing={2}>
+											<Text fontSize="sm" color={mutedColor}>
+												音量レベル: {Math.round(voiceRecorder.volume)}
+											</Text>
+											<Progress
+												value={(voiceRecorder.volume / 100) * 100}
+												colorScheme={voiceRecorder.isRecording ? "red" : "gray"}
+												size="sm"
+												w="200px"
+											/>
+											{voiceRecorder.isRecording && (
+												<Text fontSize="xs" color="red.500" fontWeight="bold">
+													🔴 録音中
+												</Text>
+											)}
+										</VStack>
+									)}
+
+									{/* エラー表示 */}
+									{voiceRecorder.error && (
+										<Text fontSize="sm" color="red.500">
+											エラー: {voiceRecorder.error}
+										</Text>
+									)}
 								</VStack>
 							</CardBody>
 						</MotionCard>
