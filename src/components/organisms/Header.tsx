@@ -14,6 +14,7 @@ import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
+import { useNavigate } from "react-router";
 
 import SiderDrawer from "@/components/molecules/SiderDrawer";
 import { recipeQueryParamAtom } from "@/lib/atom/RecipeAtom";
@@ -27,6 +28,7 @@ export default function Header() {
 	const [searchValue, setSearchValue] = useState(
 		recipeQueryParam.keyword || "",
 	);
+	const navigate = useNavigate();
 
 	const bgGradient = useColorModeValue(
 		"linear(to-r, orange.400, pink.400)",
@@ -80,6 +82,7 @@ export default function Header() {
 						>
 							<HStack spacing={3}>
 								<Box
+									onClick={() => navigate("/home")}
 									as="img"
 									src="/bae-recipe/bae-recipe-logo_white.svg"
 									alt="BAE RECIPE Logo"
