@@ -179,6 +179,14 @@ export async function getUserRecipes(ids: string): Promise<UserRecipe[]> {
 	return response.data.map(createUserRecipe);
 }
 
+export async function getUserRecipe(recipeId: number): Promise<UserRecipe> {
+	const axiosClient = createAxiosClient();
+	const response = await axiosClient.get<UserRecipeResponse>(
+		`/users/me/recipes/${recipeId}`,
+	);
+	return createUserRecipe(response.data);
+}
+
 export async function updateUserRecipe(
 	recipeId: number,
 	request: UserRecipeRequest,
