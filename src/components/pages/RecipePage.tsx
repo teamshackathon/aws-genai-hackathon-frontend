@@ -53,7 +53,7 @@ import {
 	processesAtom,
 	recipeStatusAtomLoadable,
 } from "@/lib/atom/RecipeAtom";
-import { postShoppingListAtom } from "@/lib/atom/ShoppingAtom";
+import { postShoppingAtom } from "@/lib/atom/ShoppingAtom";
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
 import type { ExternalService, RecipeStatus } from "@/lib/domain/RecipeQuery";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
@@ -79,7 +79,7 @@ export default function RecipePage() {
 	const ingredients = useAtomValue(ingredientsAtom);
 	const processes = useAtomValue(processesAtom);
 	const currentRecipe = useAtomValue(currentRecipeAtom);
-	const postShoppingList = useSetAtom(postShoppingListAtom);
+	const postShopping = useSetAtom(postShoppingAtom);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
 
 	// Color values
@@ -196,7 +196,7 @@ export default function RecipePage() {
 		setIsCreatingShoppingList(true); // ローディング開始
 
 		try {
-			const data = await postShoppingList(Number(recipeId));
+			const data = await postShopping(Number(recipeId));
 			toast({
 				title: "買い物リストを作成しました",
 				description: "買い物リストページへ移動します。",

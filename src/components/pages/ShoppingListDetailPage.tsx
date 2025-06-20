@@ -29,18 +29,13 @@ import {
 import { useNavigate, useParams } from "react-router";
 
 import Header from "@/components/organisms/Header";
-import { updatedShoppingListItemAtom } from "@/lib/atom/ShoppingAtom";
+import { updatedShoppingItemAtom } from "@/lib/atom/ShoppingAtom";
+import { type Recipe, getRecipeById } from "@/lib/domain/RecipeQuery";
 import {
-	type Ingridient,
-	type Recipe,
-	getIngridients,
-	getRecipeById,
-} from "@/lib/domain/RecipeQuery";
-import {
-	type ShoppingList,
-	type ShoppingListItem,
-	getShoppingList,
-	getShoppingListItems,
+	type Shopping,
+	type ShoppingItem,
+	getShopping,
+	getShoppingItems,
 } from "@/lib/domain/ShoppingListQuery";
 import { useSetAtom } from "jotai";
 
@@ -49,17 +44,14 @@ export default function ShoppingListDetailPage() {
 	const navigate = useNavigate();
 	const toast = useToast();
 
-	const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
-	const [shoppingListItems, setShoppingListItem] = useState<ShoppingListItem[]>(
-		[],
-	);
-	console.log("shoppingListListItems:", shoppingListItems);
+	const [shoppingList, setShoppingList] = useState<Shopping | null>(null);
+	const [shoppingListItems, setShoppingListItem] = useState<ShoppingItem[]>([]);
+
 	const [recipe, setRecipe] = useState<Recipe | null>(null);
-	const [ingredients, setIngredients] = useState<Ingridient[]>([]); // 材料のリスト
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const updateShippingListItem = useSetAtom(updatedShoppingListItemAtom);
+	const updateShippingListItem = useSetAtom(updatedShoppingItemAtom);
 
 	const cardBg = useColorModeValue("white", "gray.800");
 	const textColor = useColorModeValue("gray.600", "gray.300");
@@ -73,13 +65,13 @@ export default function ShoppingListDetailPage() {
 			setIsLoading(false);
 		} else {
 			setError(null);
-			const shoppingListData = await getShoppingList(Number(shoppingListId));
+			const shoppingListData = await getShopping(Number(shoppingListId));
 			if (shoppingListData) {
 				setShoppingList(shoppingListData);
 			} else {
 				setError("買い物リストの取得に失敗しました。");
 			}
-			const shoppingListItemsData = await getShoppingListItems(shoppingListId);
+			const shoppingListItemsData = await getShoppingItems(shoppingListId);
 			if (shoppingListItems) {
 				setShoppingListItem(shoppingListItemsData);
 			} else {
@@ -88,14 +80,8 @@ export default function ShoppingListDetailPage() {
 			const recipeData = await getRecipeById(shoppingListData.recipeId);
 			if (recipeData) {
 				setRecipe(recipeData);
-				const IngridientsData = await getIngridients(recipeData.id);
-				if (IngridientsData) {
-					setIngredients(IngridientsData);
-				} else {
-					setError("材料の取得に失敗しました。");
-				}
 			} else {
-				setError("レシピの取得に失敗しました。");
+				setError("関連レシピの取得に失敗しました。");
 			}
 			setIsLoading(false);
 		}
@@ -118,7 +104,7 @@ export default function ShoppingListDetailPage() {
 		});
 
 		try {
-			await updateShippingListItem(shoppingListId, {
+			await updateShippingListItem(itemId.toString(), {
 				is_checked: !currentIsChecked,
 			});
 			// 成功トーストは不要（UIが既に更新されているため）
@@ -376,11 +362,7 @@ export default function ShoppingListDetailPage() {
 															}
 															opacity={item.isChecked ? 0.7 : 1}
 														>
-															{
-																ingredients.find(
-																	(ing) => ing.id === item.ingredientId,
-																)?.ingredient
-															}
+															{item.ingredient}
 														</Text>
 													</Checkbox>
 												</HStack>
@@ -392,11 +374,7 @@ export default function ShoppingListDetailPage() {
 													}
 													opacity={item.isChecked ? 0.7 : 1}
 												>
-													{
-														ingredients.find(
-															(ing) => ing.id === item.ingredientId,
-														)?.amount
-													}
+													{item.amount}
 												</Text>
 											</Flex>
 										</ListItem>
