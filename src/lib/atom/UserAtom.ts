@@ -1,10 +1,12 @@
 import {
 	type User,
 	type UserRecipeRequest,
+	type UserShoppingRequest,
 	type UserUpdateRequest,
 	getUser,
 	updateUser,
 	updateUserRecipe,
+	updateUserShopping,
 } from "@/lib/domain/UserQuery";
 import { atom } from "jotai";
 
@@ -50,6 +52,18 @@ export const updateUserRecipeAtom = atom(
 			return data;
 		} catch (error) {
 			console.error("Failed to update user recipe:", error);
+		}
+	},
+);
+
+export const updateUserShoppingAtom = atom(
+	null,
+	async (_, __, shoppingId: number, userShopping: UserShoppingRequest) => {
+		try {
+			const data = await updateUserShopping(shoppingId, userShopping);
+			return data;
+		} catch (error) {
+			console.error("Failed to update user shopping:", error);
 		}
 	},
 );

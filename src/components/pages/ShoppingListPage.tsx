@@ -17,7 +17,7 @@ import { useNavigate } from "react-router"; // Linkの代わりにnavigateを使
 
 import Header from "@/components/organisms/Header";
 import { shoppingListAtomLoadable } from "@/lib/atom/ShoppingAtom";
-import type { ShoppingList } from "@/lib/domain/ShoppingListQuery";
+import type { Shopping } from "@/lib/domain/ShoppingListQuery";
 import { useAtomValue } from "jotai";
 
 export default function ShoppingListPage() {
@@ -104,7 +104,7 @@ export default function ShoppingListPage() {
 							</Box>
 						) : (
 							<VStack spacing={4} align="stretch">
-								{items.map((list: ShoppingList) => (
+								{items.map((list: Shopping) => (
 									<Card
 										key={list.id}
 										bg={cardBg}

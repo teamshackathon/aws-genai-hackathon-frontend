@@ -2,31 +2,31 @@ import { atom } from "jotai";
 
 import { atomWithRefresh, atomWithReset, loadable } from "jotai/utils";
 import {
-	type ShoppingListItem,
-	type ShoppingListList,
+	type ShoppingItem,
+	type ShoppingList,
 	type ShoppingListQueryParams,
-	type UpdateShoppingListItemRequest,
-	getShoppingListItems,
-	getShoppingLists,
-	postShoppingList,
-	updateShoppingListItem,
+	type UpdateShoppingItemRequest,
+	getShoppingItems,
+	getShoppingList,
+	postShopping,
+	updateShoppingItem,
 } from "../domain/ShoppingListQuery";
 
 export const shoppingListQueryParamAtom =
 	atomWithReset<ShoppingListQueryParams>({
 		page: 1,
-		par_page: 20,
+		per_page: 20,
 		keyword: "",
 	});
-export const shoppingListItemsAtom = atomWithReset<ShoppingListItem[]>([]);
+export const shoppingItemsAtom = atomWithReset<ShoppingItem[]>([]);
 
 export const shoppingListAtomAsync = atomWithRefresh<
-	Promise<ShoppingListList | null>
+	Promise<ShoppingList | null>
 >(async (get) => {
 	const params = get(shoppingListQueryParamAtom);
 	try {
 		// ここでAPI呼び出しを行い、買い物リストを取得する
-		return await getShoppingLists(params.page, params.par_page, params.keyword);
+		return await getShoppingList(params.page, params.per_page, params.keyword);
 	} catch (error) {
 		console.error("Error fetching shopping list:", error);
 		return null;
@@ -35,12 +35,12 @@ export const shoppingListAtomAsync = atomWithRefresh<
 
 export const shoppingListAtomLoadable = loadable(shoppingListAtomAsync);
 
-export const getShoppingListItemsAtom = atom(
+export const getShoppingItemsAtom = atom(
 	null,
 	async (_, set, shoppingListId: string) => {
 		try {
-			const items = await getShoppingListItems(shoppingListId);
-			set(shoppingListItemsAtom, items);
+			const items = await getShoppingItems(shoppingListId);
+			set(shoppingItemsAtom, items);
 		} catch (error) {
 			console.error(
 				`Error fetching shopping list items for ${shoppingListId}:`,
@@ -50,33 +50,25 @@ export const getShoppingListItemsAtom = atom(
 	},
 );
 
-export const postShoppingListAtom = atom(
-	null,
-	async (_, __, recipeId: number) => {
-		try {
-			const shoppingList = await postShoppingList(recipeId);
-			return shoppingList;
-		} catch (error) {
-			console.error("Error creating shopping list:", error);
-			throw error; // エラーを再スローして上位でハンドリングできるようにする
-		}
-	},
-);
+export const postShoppingAtom = atom(null, async (_, __, recipeId: number) => {
+	try {
+		const shopping = await postShopping(recipeId);
+		return shopping;
+	} catch (error) {
+		console.error("Error creating shopping list:", error);
+		throw error; // エラーを再スローして上位でハンドリングできるようにする
+	}
+});
 
-export const updatedShoppingListItemAtom = atom(
+export const updatedShoppingItemAtom = atom(
 	null,
-	async (
-		_,
-		__,
-		shoppingListId: string,
-		data: UpdateShoppingListItemRequest,
-	) => {
+	async (_, __, shoppingItemId: string, data: UpdateShoppingItemRequest) => {
 		try {
-			const updatedItems = await updateShoppingListItem(shoppingListId, data);
+			const updatedItems = await updateShoppingItem(shoppingItemId, data);
 			return updatedItems;
 		} catch (error) {
 			console.error(
-				`Error updating shopping list item for ${shoppingListId}:`,
+				`Error updating shopping list item for ${shoppingItemId}:`,
 				error,
 			);
 			throw error; // エラーを再スローして上位でハンドリングできるようにする
