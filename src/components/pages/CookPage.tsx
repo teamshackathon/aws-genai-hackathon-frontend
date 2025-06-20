@@ -181,12 +181,14 @@ export default function CookPage() {
 	const statusInfo = webSocketStatus(connectionStatus);
 
 	const handleNext = () => {
+		console.log("現在の番号:", currentStep, "次へ移動試行");
 		if (currentStep < totalSteps - 1) {
 			setCurrentStep(currentStep + 1);
 		}
 	};
 
 	const handlePrevious = () => {
+		console.log("現在の番号:", currentStep, "前へ移動試行");
 		if (currentStep > 0) {
 			setCurrentStep(currentStep - 1);
 		}
@@ -342,76 +344,92 @@ export default function CookPage() {
 	};
 
 	// WebSocketメッセージ処理関数
-	const handleWebSocketMessage = useCallback((data: string) => {
-		try {
-			const message = JSON.parse(data);
-			console.log("WebSocketメッセージ受信:", message);
+	const handleWebSocketMessage = useCallback(
+		(data: string) => {
+			try {
+				const message = JSON.parse(data);
+				console.log("WebSocketメッセージ受信:", message);
 
-			// JSONスキーマに基づく処理
-			if (message && typeof message === "object" && "status" in message) {
-				const { status } = message;
+				// JSONスキーマに基づく処理
+				if (message && typeof message === "object" && "status" in message) {
+					const { status } = message;
 
-				switch (status) {
-					case "next":
-						console.log("音声コマンド: 次のステップへ");
-						setLastVoiceCommand("次のステップ");
-						handleNext();
-						toast({
-							title: "🎤 音声コマンド実行",
-							description: "次のステップに進みます",
-							status: "info",
-							duration: 2000,
-							isClosable: true,
-						});
-						break;
+					switch (status) {
+						case "next":
+							console.log("音声コマンド: 次のステップへ");
+							setLastVoiceCommand("次のステップ");
+							// currentStepを直接更新
+							setCurrentStep((prev) => {
+								console.log(
+									"現在の番号:",
+									prev,
+									"→",
+									Math.min(prev + 1, totalSteps - 1),
+								);
+								return prev < totalSteps - 1 ? prev + 1 : prev;
+							});
+							toast({
+								title: "🎤 音声コマンド実行",
+								description: "次のステップに進みます",
+								status: "info",
+								duration: 2000,
+								isClosable: true,
+							});
+							break;
 
-					case "previous":
-						console.log("音声コマンド: 前のステップへ");
-						setLastVoiceCommand("前のステップ");
-						handlePrevious();
-						toast({
-							title: "🎤 音声コマンド実行",
-							description: "前のステップに戻ります",
-							status: "info",
-							duration: 2000,
-							isClosable: true,
-						});
-						break;
+						case "previous":
+							console.log("音声コマンド: 前のステップへ");
+							setLastVoiceCommand("前のステップ");
+							// currentStepを直接更新
+							setCurrentStep((prev) => {
+								console.log("現在の番号:", prev, "→", Math.max(prev - 1, 0));
+								return prev > 0 ? prev - 1 : prev;
+							});
+							toast({
+								title: "🎤 音声コマンド実行",
+								description: "前のステップに戻ります",
+								status: "info",
+								duration: 2000,
+								isClosable: true,
+							});
+							break;
 
-					case "play":
-						console.log("音声コマンド: 音声再生");
-						setLastVoiceCommand("音声再生");
-						handleVoicePlay();
-						toast({
-							title: "🎤 音声コマンド実行",
-							description: "手順を音声で再生します",
-							status: "info",
-							duration: 2000,
-							isClosable: true,
-						});
-						break;
+						case "play":
+							console.log("音声コマンド: 音声再生");
+							setLastVoiceCommand("音声再生");
+							handleVoicePlay();
+							toast({
+								title: "🎤 音声コマンド実行",
+								description: "手順を音声で再生します",
+								status: "info",
+								duration: 2000,
+								isClosable: true,
+							});
+							break;
 
-					case "None":
-						console.log("音声コマンド: アクションなし");
-						setLastVoiceCommand("認識できませんでした");
-						break;
+						case "None":
+							console.log("音声コマンド: アクションなし");
+							setLastVoiceCommand("認識できませんでした");
+							break;
 
-					default:
-						console.warn("未知のステータス:", status);
-						break;
+						default:
+							console.warn("未知のステータス:", status);
+							break;
+					}
+				} else {
+					console.warn("不正なメッセージ形式:", message);
 				}
-			} else {
-				console.warn("不正なメッセージ形式:", message);
+			} catch (error) {
+				console.error("WebSocketメッセージ解析エラー:", error);
 			}
-		} catch (error) {
-			console.error("WebSocketメッセージ解析エラー:", error);
-		}
 
-		// 3秒後にコマンド表示をクリア
-		setTimeout(() => {
-			setLastVoiceCommand(null);
-		}, 3000);
-	}, []);
+			// 3秒後にコマンド表示をクリア
+			setTimeout(() => {
+				setLastVoiceCommand(null);
+			}, 3000);
+		},
+		[totalSteps, handleVoicePlay, toast],
+	);
 	// ステップ変更時に音声を停止し、自動再生をセットアップ
 	useEffect(() => {
 		let isCancelled = false;

@@ -280,7 +280,11 @@ export function useVoiceRecorder({
 
 		// ストリームを停止
 		if (streamRef.current) {
-			streamRef.current.getTracks().forEach((track) => track.stop());
+			const tracks = streamRef.current.getTracks();
+			for (const track of tracks) {
+				track.stop();
+			}
+
 			streamRef.current = null;
 		}
 
