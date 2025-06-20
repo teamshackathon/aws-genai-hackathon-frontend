@@ -36,6 +36,7 @@ import {
 	FaClipboardList,
 	FaClock,
 	FaPlay,
+	FaShareAlt,
 	FaStar,
 	FaTag,
 	FaUser,
@@ -529,6 +530,53 @@ export default function RecipePage() {
 												料理開始
 											</MotionButton>
 										)}
+										{/* ★「レシピ共有」ボタンを追加 */}
+										<MotionButton
+											leftIcon={<Icon as={FaShareAlt} />}
+											variant="outline"
+											colorScheme="blue"
+											onClick={() => {
+												// レシピテキストを生成
+												const recipeText = [
+													`【${currentRecipe.recipeName}】`,
+													"",
+													"■ 材料",
+													...ingredients.map(
+														(ing) => `・${ing.ingredient} ${ing.amount || ""}`,
+													),
+													"",
+													"■ 手順",
+													...processes
+														.sort((a, b) => a.processNumber - b.processNumber)
+														.map((proc, idx) => `${idx + 1}. ${proc.process}`),
+												].join("\n");
+												// クリップボードにコピー
+												navigator.clipboard
+													.writeText(recipeText)
+													.then(() => {
+														toast({
+															title: "レシピをコピーしました",
+															description:
+																"テキストデータがクリップボードに保存されました。",
+															status: "success",
+															duration: 2000,
+															isClosable: true,
+														});
+													})
+													.catch(() => {
+														toast({
+															title: "コピーに失敗しました",
+															description:
+																"クリップボードへのコピーに失敗しました。",
+															status: "error",
+															duration: 2000,
+															isClosable: true,
+														});
+													});
+											}}
+										>
+											レシピをテキストでコピー
+										</MotionButton>
 									</HStack>
 								</VStack>
 							</GridItem>
