@@ -21,7 +21,6 @@ import {
 	Wrap,
 	WrapItem,
 	useColorModeValue,
-	useDisclosure,
 	useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -44,7 +43,6 @@ import {
 import { useNavigate, useParams } from "react-router";
 
 import YouTubeThumbnail from "@/components/atoms/YouTubeThumbnail";
-import CookingModal from "@/components/organisms/CookingModal";
 import Header from "@/components/organisms/Header";
 import IngredientsCard from "@/components/organisms/IngredientsCard";
 import ProcessCard from "@/components/organisms/ProcessCard";
@@ -60,6 +58,8 @@ import {
 } from "@/lib/atom/RecipeAtom";
 import { postShoppingAtom } from "@/lib/atom/ShoppingAtom";
 import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
+import { getCookHistory } from "@/lib/domain/CookQuery";
+import type { CookHistory } from "@/lib/domain/CookQuery";
 import type { ExternalService, RecipeStatus } from "@/lib/domain/RecipeQuery";
 import { type UserRecipe, getUserRecipe } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
@@ -73,14 +73,10 @@ export default function RecipePage() {
 	const toast = useToast();
 	const [userRecipe, setUserRecipe] = useState<UserRecipe | null>(null);
 	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
+	const [cookHistory, setCookHistory] = useState<CookHistory[]>([]);
 	const [isEditingNote, setIsEditingNote] = useState(false);
 	const [noteValue, setNoteValue] = useState("");
 	const [isSavingNote, setIsSavingNote] = useState(false);
-	const {
-		isOpen: isCookingModalOpen,
-		onOpen: onCookingModalOpen,
-		onClose: onCookingModalClose,
-	} = useDisclosure();
 	const [, getIngredients] = useAtom(getIngridientsAtom);
 	const [, getProcesses] = useAtom(getProcessesAtom);
 	const [, getCurrentRecipe] = useAtom(getRecipeByIdAtom);
@@ -129,6 +125,10 @@ export default function RecipePage() {
 		setUserRecipe(userRecipeData);
 		// メモの初期値を設定
 		setNoteValue(userRecipeData?.note || "");
+
+		// クック履歴を取得
+		const history = await getCookHistory(recipeId);
+		setCookHistory(history);
 	};
 
 	// メモ編集開始
@@ -268,7 +268,6 @@ export default function RecipePage() {
 			setIsCreatingShoppingList(false); // ローディング終了
 		}
 	};
-	console.log(userRecipe);
 	// Loading state
 	if (!currentRecipe && !userRecipe) {
 		// データがロード中の場合
@@ -501,6 +500,8 @@ export default function RecipePage() {
 											<Text>
 												更新日: {currentRecipe.updatedDate.toLocaleDateString()}
 											</Text>
+											<Text>•</Text>
+											<Text>調理回数: {cookHistory.length}回</Text>
 										</HStack>
 									</VStack>
 
@@ -543,14 +544,16 @@ export default function RecipePage() {
 											whileTap={{ scale: 0.95 }}
 										>
 											買い物リストを作成
-										</MotionButton>
+										</MotionButton>{" "}
 										{/* ★「料理開始」ボタンを追加 */}
 										{processes.length > 0 && (
 											<MotionButton
 												leftIcon={<Icon as={FaPlay} />}
 												variant="solid"
 												colorScheme="purple"
-												onClick={onCookingModalOpen}
+												onClick={() =>
+													navigate(`/home/recipe/${recipeId}/cook`)
+												}
 												whileHover={{ scale: 1.05 }}
 												whileTap={{ scale: 0.95 }}
 											>
@@ -737,21 +740,6 @@ export default function RecipePage() {
 					</CardBody>{" "}
 				</MotionCard>
 			</Container>
-			{/* CookingModal */}{" "}
-			<CookingModal
-				isOpen={isCookingModalOpen}
-				onClose={onCookingModalClose}
-				processes={processes.map((process) => ({
-					id: process.id,
-					recipeId: process.recipeId,
-					stepNumber: process.processNumber,
-					instruction: process.process,
-					estimatedTime: undefined, // processにestimatedTimeフィールドがない場合
-					createdAt: process.createdDate,
-					updatedAt: process.updatedDate,
-				}))}
-				recipeName={currentRecipe?.recipeName || "レシピ"}
-			/>
 		</Box>
 	);
 }
