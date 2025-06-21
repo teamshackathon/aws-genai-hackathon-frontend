@@ -693,7 +693,7 @@ export default function RecipePage() {
 							>
 								<VStack align="start" spacing={3}>
 									<Text fontWeight="semibold" color={headingColor}>
-										AI解析情報
+										AI分析情報
 									</Text>
 									<Text color={textColor} fontSize="sm">
 										このレシピはAIによって動画から自動抽出されました

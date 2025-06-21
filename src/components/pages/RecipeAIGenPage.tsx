@@ -374,7 +374,7 @@ export default function RecipeAIGenPage() {
 					</HStack>
 
 					<Text fontSize="lg" color={textColor} maxW="2xl">
-						AIがYouTube動画を解析して、自動でレシピを生成しています
+						AIがYouTube動画を分析して、自動でレシピを生成しています
 					</Text>
 
 					{/* 処理中のYouTube URL表示 */}
