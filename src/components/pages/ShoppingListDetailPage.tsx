@@ -44,11 +44,12 @@ export default function ShoppingListDetailPage() {
 	const navigate = useNavigate();
 	const toast = useToast();
 
-	const [shoppingList, setShoppingList] = useState<Shopping | null>(null);
+	const [shoppingList, setShoppingList] = useState<Shopping | null | undefined>(
+		undefined,
+	);
 	const [shoppingListItems, setShoppingListItem] = useState<ShoppingItem[]>([]);
 
 	const [recipe, setRecipe] = useState<Recipe | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
 	const updateShippingListItem = useSetAtom(updatedShoppingItemAtom);
@@ -59,31 +60,33 @@ export default function ShoppingListDetailPage() {
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
 	const fetchShoppingList = async () => {
-		setIsLoading(true);
 		if (!shoppingListId) {
 			setError("買い物リストIDが指定されていません。");
-			setIsLoading(false);
 		} else {
 			setError(null);
-			const shoppingListData = await getShopping(Number(shoppingListId));
-			if (shoppingListData) {
+			let shoppingListData: Shopping | null = null;
+			try {
+				shoppingListData = await getShopping(Number(shoppingListId));
 				setShoppingList(shoppingListData);
-			} else {
+			} catch (err: any) {
+				console.error("Error fetching shopping list:", err);
 				setError("買い物リストの取得に失敗しました。");
+				setShoppingList(null);
 			}
-			const shoppingListItemsData = await getShoppingItems(shoppingListId);
-			if (shoppingListItems) {
-				setShoppingListItem(shoppingListItemsData);
-			} else {
-				setError("買い物リストの取得に失敗しました。");
+			if (shoppingListData !== null) {
+				const shoppingListItemsData = await getShoppingItems(shoppingListId);
+				if (shoppingListItems) {
+					setShoppingListItem(shoppingListItemsData);
+				} else {
+					setError("買い物リストの取得に失敗しました。");
+				}
+				const recipeData = await getRecipeById(shoppingListData.recipeId);
+				if (recipeData) {
+					setRecipe(recipeData);
+				} else {
+					setError("関連レシピの取得に失敗しました。");
+				}
 			}
-			const recipeData = await getRecipeById(shoppingListData.recipeId);
-			if (recipeData) {
-				setRecipe(recipeData);
-			} else {
-				setError("関連レシピの取得に失敗しました。");
-			}
-			setIsLoading(false);
 		}
 	};
 
@@ -191,7 +194,7 @@ export default function ShoppingListDetailPage() {
 		}
 	};
 
-	if (isLoading) {
+	if (shoppingList === undefined) {
 		return (
 			<Box
 				minH="100vh"
@@ -245,7 +248,7 @@ export default function ShoppingListDetailPage() {
 		);
 	}
 
-	if (!shoppingList) {
+	if (shoppingList === null) {
 		// エラーでもローディングでもないがリストがない場合の考慮
 		return (
 			<Box
