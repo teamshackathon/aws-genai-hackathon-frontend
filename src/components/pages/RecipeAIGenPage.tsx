@@ -1,3 +1,8 @@
+// React Hooks & Utils
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
+
+// UI Components
 import {
 	Box,
 	Button,
@@ -8,13 +13,14 @@ import {
 	Heading,
 	Icon,
 	Progress,
+	SimpleGrid,
 	Text,
 	VStack,
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useAtom, useSetAtom } from "jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
+
+// Icons
 import {
 	FaArrowLeft,
 	FaCog,
@@ -23,17 +29,27 @@ import {
 	FaYoutube,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
-import { useNavigate, useSearchParams } from "react-router";
 
+// State Management
+import { useAtom, useSetAtom } from "jotai";
+
+// Components & Hooks
 import Header from "@/components/organisms/Header";
 import { toastAtom } from "@/lib/atom/BaseAtom";
 import { recipeUrlAtom, refreshRecipeListAtom } from "@/lib/atom/RecipeAtom";
 import { useRecipeGenWebSocket } from "@/lib/hook/useRecipeGenWebSocket";
+import type { RecipeParameters } from "@/lib/type/RecipeParameters";
 import { WebSocketMessage } from "@/lib/type/websocket";
 
+// Framer Motion コンポーネントの定義
 const MotionBox = motion(Box);
 const MotionVStack = motion(VStack);
 
+/**
+ * WebSocketの接続状態に応じてステータス情報を返す関数
+ * @param status WebSocketの接続状態
+ * @returns アイコン、テキスト、カラーの情報
+ */
 function webSocketStatus(status: string) {
 	switch (status) {
 		case "Connecting":
@@ -69,6 +85,12 @@ function webSocketStatus(status: string) {
 	}
 }
 
+/**
+ * WebSocketメッセージを種類別に分類し、表示用のコンテンツに変換する関数
+ * AIProcessChatコンポーネントと同じロジックを使用
+ * @param message WebSocketMessage オブジェクト
+ * @returns 表示用の文字列配列
+ */
 // WebSocketに送られたメッセージをtypeごとに分類するための関数（AIProcessChatと同じ）
 function classifyWebSocketMessage(message: WebSocketMessage) {
 	const type = message.type || "unknown";
@@ -113,25 +135,40 @@ function classifyWebSocketMessage(message: WebSocketMessage) {
 	}
 }
 
+/**
+ * AIレシピ生成ページのメインコンポーネント
+ * YouTube動画URLからAIが自動でレシピを生成する過程をリアルタイムで表示
+ * WebSocketを使用してAI処理の進行状況をユーザーに提供
+ */
 export default function RecipeAIGenPage() {
+	// ルーティング関連
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [searchParams] = useSearchParams();
-	const setToastState = useSetAtom(toastAtom);
-	const messagesEndRef = useRef<HTMLDivElement>(null);
 
+	// 状態管理 - Atoms
+	const setToastState = useSetAtom(toastAtom);
 	const [recipeUrl, setRecipeUrl] = useAtom(recipeUrlAtom);
 	const refreshRecipe = useSetAtom(refreshRecipeListAtom);
 
-	const [isProcessing, setIsProcessing] = useState(false);
-	const [message, setMessage] = useState<string[]>([]);
-	const [messageTimestamps, setMessageTimestamps] = useState<Date[]>([]);
-	const [, setTypes] = useState<string[]>([]);
-	const [hasError, setHasError] = useState(false);
-	const [progress, setProgress] = useState(0);
+	// 状態管理 - ローカルstate
+	const [isProcessing, setIsProcessing] = useState(false); // AI処理実行中フラグ
+	const [message, setMessage] = useState<string[]>([]); // AI処理ログメッセージ
+	const [messageTimestamps, setMessageTimestamps] = useState<Date[]>([]); // メッセージのタイムスタンプ
+	const [, setTypes] = useState<string[]>([]); // メッセージタイプ（デバッグ用）
+	const [hasError, setHasError] = useState(false); // エラー発生フラグ
+	const [progress, setProgress] = useState(0); // 処理進行状況（0-100%）
+	const [recipeParams, setRecipeParams] = useState<RecipeParameters | null>(
+		null,
+	); // MainPageから受け取ったレシピパラメータ
+
+	// refs
+	const messagesEndRef = useRef<HTMLDivElement>(null); // 自動スクロール用
 
 	// URL params から YouTube URL を取得
 	const urlFromParams = searchParams.get("url");
 
+	// テーマ対応のカラー設定
 	const bgGradient = useColorModeValue(
 		"linear(to-br, orange.50, pink.50, purple.50)",
 		"linear(to-br, orange.900, pink.900, purple.900)",
@@ -141,10 +178,17 @@ export default function RecipeAIGenPage() {
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 	const headingColor = useColorModeValue("gray.800", "white");
 
+	// WebSocket接続の条件判定
 	const shouldConnect = isProcessing && recipeUrl !== "";
+
+	/**
+	 * WebSocketメッセージ受信時のコールバック関数
+	 * AI処理の進行状況やエラー、完了通知を処理
+	 */
 	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
 		if (message) {
 			try {
+				// WebSocketメッセージをパース
 				const parsedMessage = JSON.parse(message.data);
 				const wsMessage = new WebSocketMessage(
 					parsedMessage.type,
@@ -153,21 +197,26 @@ export default function RecipeAIGenPage() {
 					parsedMessage.session_id,
 				);
 
+				// メッセージタイプを記録（デバッグ用）
 				setTypes((prev) => [...prev, wsMessage.type]);
+
+				// メッセージを分類して表示用コンテンツに変換
 				const classifiedMessages = classifyWebSocketMessage(wsMessage);
 				const timestamp = new Date();
 
+				// 表示用メッセージとタイムスタンプを更新
 				setMessage((prev) => [...prev, ...classifiedMessages]);
 				setMessageTimestamps((prev) => [
 					...prev,
 					...classifiedMessages.map(() => timestamp),
 				]);
 
+				// 進行状況の更新
 				if (wsMessage.data.progress !== undefined) {
 					setProgress(wsMessage.data.progress || 0);
 				}
 
-				// エラーの検出
+				// エラーハンドリング
 				if (
 					wsMessage.type === "error" ||
 					wsMessage.data.content?.includes("エラー")
@@ -183,8 +232,9 @@ export default function RecipeAIGenPage() {
 					});
 				}
 
+				// 全タスク完了時の処理
 				if (wsMessage.type === "all_tasks_completed") {
-					refreshRecipe();
+					refreshRecipe(); // レシピ一覧を更新
 					setIsProcessing(false);
 					disconnect();
 					setRecipeUrl("");
@@ -195,6 +245,7 @@ export default function RecipeAIGenPage() {
 						duration: 5000,
 						isClosable: true,
 					});
+					// 2秒後にホームページに自動遷移
 					setTimeout(() => {
 						navigate("/home");
 					}, 2000);
@@ -206,23 +257,34 @@ export default function RecipeAIGenPage() {
 			}
 		}
 	}, []);
+
+	// WebSocket接続フックの初期化
 	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
 		shouldConnect: shouldConnect,
 	});
 
+	// WebSocket接続状態の表示情報を取得
 	const statusInfo = webSocketStatus(connectionStatus);
 
-	// 自動スクロール機能
+	/**
+	 * メッセージが追加されるたびに自動スクロールする
+	 */
 	useEffect(() => {
 		if (messagesEndRef.current) {
 			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
 		}
 	}, [message]);
 
+	/**
+	 * コンポーネント初期化時の処理
+	 * URLパラメータからYouTube URLを取得し、AI処理を開始
+	 * MainPageから渡されたrecipeParamsも取得
+	 */
 	// 初期化処理（AIProcessChatと同じ）
 	useEffect(() => {
 		if (urlFromParams) {
+			// 状態をリセットしてAI処理を開始
 			setMessage([]);
 			setMessageTimestamps([]);
 			setTypes([]);
@@ -230,12 +292,28 @@ export default function RecipeAIGenPage() {
 			setProgress(0);
 			setRecipeUrl(urlFromParams);
 			setIsProcessing(true);
+
+			// MainPageから渡されたrecipeParamsを取得
+			const receivedRecipeParams = location.state
+				?.recipeParams as RecipeParameters;
+			if (receivedRecipeParams) {
+				setRecipeParams(receivedRecipeParams);
+				console.log(
+					"MainPageから受け取ったレシピパラメータ:",
+					receivedRecipeParams,
+				);
+			} else {
+				console.log("デフォルトのレシピパラメータを使用します");
+			}
 		} else {
 			// URLが指定されていない場合はホームに戻る
 			navigate("/home");
 		}
-	}, [urlFromParams, setRecipeUrl, navigate]);
+	}, [urlFromParams, setRecipeUrl, navigate, location.state]);
 
+	/**
+	 * エラー発生時の再試行処理
+	 */
 	const handleRetry = () => {
 		setMessage([]);
 		setMessageTimestamps([]);
@@ -245,6 +323,9 @@ export default function RecipeAIGenPage() {
 		setIsProcessing(true);
 	};
 
+	/**
+	 * AI処理のキャンセル処理
+	 */
 	const handleCancel = () => {
 		disconnect();
 		setIsProcessing(false);
@@ -258,7 +339,8 @@ export default function RecipeAIGenPage() {
 			<Header />
 
 			<Container maxW="4xl" py={8}>
-				{/* Back button */}
+				{/* ===== ナビゲーション ===== */}
+				{/* ホームに戻るボタン */}
 				<Button
 					leftIcon={<Icon as={FaArrowLeft} />}
 					variant="ghost"
@@ -269,7 +351,8 @@ export default function RecipeAIGenPage() {
 					ホームに戻る
 				</Button>
 
-				{/* Header */}
+				{/* ===== ページヘッダー ===== */}
+				{/* AIレシピ生成のタイトルと説明 */}
 				<MotionVStack
 					spacing={6}
 					textAlign="center"
@@ -294,6 +377,7 @@ export default function RecipeAIGenPage() {
 						AIがYouTube動画を解析して、自動でレシピを生成しています
 					</Text>
 
+					{/* 処理中のYouTube URL表示 */}
 					{recipeUrl && (
 						<HStack
 							spacing={2}
@@ -309,8 +393,113 @@ export default function RecipeAIGenPage() {
 							</Text>
 						</HStack>
 					)}
+
+					{/* カスタム生成設定表示 */}
+					{recipeParams && (
+						<VStack
+							spacing={3}
+							bg={cardBg}
+							p={4}
+							rounded="lg"
+							border="1px"
+							borderColor={borderColor}
+							w="full"
+							maxW="600px"
+						>
+							<Text fontSize="sm" fontWeight="semibold" color={textColor}>
+								🎯 カスタム生成設定
+							</Text>
+							<SimpleGrid columns={{ base: 2, md: 3 }} spacing={3} w="full">
+								{/* 人数設定 - 常に表示 */}
+								<VStack spacing={1}>
+									<Text fontSize="xs" color={textColor}>
+										人数
+									</Text>
+									<Text fontSize="sm" fontWeight="medium">
+										{recipeParams.peopleCount === "1"
+											? "1人"
+											: recipeParams.peopleCount === "2"
+												? "2人"
+												: recipeParams.peopleCount === "3"
+													? "3人"
+													: recipeParams.peopleCount === "4"
+														? "4人"
+														: recipeParams.peopleCount === "5"
+															? "5人"
+															: recipeParams.peopleCount === "6"
+																? "6人"
+																: "レシピ通り"}
+									</Text>
+								</VStack>
+
+								{/* 調理時間 - 常に表示 */}
+								<VStack spacing={1}>
+									<Text fontSize="xs" color={textColor}>
+										調理時間
+									</Text>
+									<Text fontSize="sm" fontWeight="medium">
+										{recipeParams.cookingTime}
+									</Text>
+								</VStack>
+
+								{/* 重視する傾向 - 常に表示 */}
+								<VStack spacing={1}>
+									<Text fontSize="xs" color={textColor}>
+										重視する傾向
+									</Text>
+									<Text fontSize="sm" fontWeight="medium">
+										{recipeParams.preference}
+									</Text>
+								</VStack>
+
+								{/* 塩味 - 常に表示 */}
+								<VStack spacing={1}>
+									<Text fontSize="xs" color={textColor}>
+										塩味
+									</Text>
+									<Text fontSize="sm" fontWeight="medium">
+										{recipeParams.saltiness === "薄味"
+											? "薄め"
+											: recipeParams.saltiness}
+									</Text>
+								</VStack>
+
+								{/* 甘味 - 常に表示 */}
+								<VStack spacing={1}>
+									<Text fontSize="xs" color={textColor}>
+										甘味
+									</Text>
+									<Text fontSize="sm" fontWeight="medium">
+										{recipeParams.sweetness}
+									</Text>
+								</VStack>
+
+								{/* 辛み - 常に表示 */}
+								<VStack spacing={1}>
+									<Text fontSize="xs" color={textColor}>
+										辛み
+									</Text>
+									<Text fontSize="sm" fontWeight="medium">
+										{recipeParams.spiciness}
+									</Text>
+								</VStack>
+							</SimpleGrid>
+
+							{/* 嫌いな食材 - 常に表示（値がない場合は「なし」） */}
+							<VStack spacing={1} w="full">
+								<Text fontSize="xs" color={textColor}>
+									嫌いな食材
+								</Text>
+								<Text fontSize="sm" fontWeight="medium" textAlign="center">
+									{recipeParams.dislikedIngredients || "なし"}
+								</Text>
+							</VStack>
+						</VStack>
+					)}
 				</MotionVStack>
-				{/* AI Status Card */}
+
+				{/* ===== AI処理ステータスカード ===== */}
+				{/* WebSocket接続状態、進行状況、エラー表示、アクションボタン */}
 				<MotionBox
 					bg={cardBg}
 					p={6}
@@ -324,10 +513,11 @@ export default function RecipeAIGenPage() {
 					transition={{ duration: 0.6, delay: 0.2 }}
 				>
 					<VStack spacing={6}>
-						{/* AI Assistant Header */}
+						{/* AI アシスタントヘッダー（接続状態表示） */}
 						<HStack spacing={3} w="full" justify="center">
 							<Box p={2} bg="orange.100" rounded="full" position="relative">
 								<Icon as={FaRobot} boxSize={6} color={statusInfo.color} />
+								{/* 接続状態インジケーター */}
 								<Box
 									position="absolute"
 									top={1}
@@ -357,7 +547,7 @@ export default function RecipeAIGenPage() {
 							</VStack>
 						</HStack>
 
-						{/* Progress Bar */}
+						{/* 進行状況バー */}
 						{isProcessing && (
 							<VStack w="full" spacing={2}>
 								<Progress
@@ -374,7 +564,7 @@ export default function RecipeAIGenPage() {
 							</VStack>
 						)}
 
-						{/* Error Display */}
+						{/* エラー表示 */}
 						{hasError && (
 							<Box
 								w="full"
@@ -396,7 +586,7 @@ export default function RecipeAIGenPage() {
 							</Box>
 						)}
 
-						{/* Action Buttons */}
+						{/* アクションボタン（再試行・ホームに戻る） */}
 						{(!isProcessing || hasError) && (
 							<HStack spacing={4}>
 								{hasError && (
@@ -415,7 +605,9 @@ export default function RecipeAIGenPage() {
 						)}
 					</VStack>
 				</MotionBox>
-				{/* Messages Display */}
+
+				{/* ===== AI処理ログ表示 ===== */}
+				{/* WebSocketメッセージのリアルタイム表示 */}
 				<MotionBox
 					bg={cardBg}
 					rounded="2xl"
@@ -431,7 +623,9 @@ export default function RecipeAIGenPage() {
 							AI処理ログ
 						</Heading>
 
+						{/* メッセージ表示エリア */}
 						<VStack spacing={4} align="stretch" maxH="500px" overflowY="auto">
+							{/* メッセージがない場合の表示 */}
 							{message.length === 0 ? (
 								<VStack spacing={4} py={8}>
 									<Text color={textColor} textAlign="center">
@@ -446,6 +640,7 @@ export default function RecipeAIGenPage() {
 									</Text>
 								</VStack>
 							) : (
+								/* メッセージ一覧表示 */
 								message.map((msg, index) => {
 									const timestamp = messageTimestamps[index] || new Date();
 									return (
@@ -456,6 +651,7 @@ export default function RecipeAIGenPage() {
 											transition={{ duration: 0.3, delay: index * 0.1 }}
 										>
 											<Flex justify="start">
+												{/* 個別メッセージバブル */}
 												<Box
 													maxW="80%"
 													bg={useColorModeValue("blue.100", "blue.700")}
@@ -471,6 +667,7 @@ export default function RecipeAIGenPage() {
 													>
 														{msg}
 													</Text>
+													{/* タイムスタンプ */}
 													<Text fontSize="xs" color={textColor} mt={2}>
 														{timestamp.toLocaleTimeString("ja-JP", {
 															hour: "2-digit",
@@ -485,7 +682,7 @@ export default function RecipeAIGenPage() {
 								})
 							)}
 
-							{/* システムメッセージ */}
+							{/* 処理中インジケーター */}
 							{isProcessing && (
 								<Flex justify="center" mt={4}>
 									<HStack
@@ -507,7 +704,7 @@ export default function RecipeAIGenPage() {
 								</Flex>
 							)}
 
-							{/* Auto-scroll anchor */}
+							{/* 自動スクロール用アンカー */}
 							<div ref={messagesEndRef} />
 						</VStack>
 					</Box>
