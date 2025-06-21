@@ -9,7 +9,6 @@ import {
 	Spacer,
 	useColorModeValue,
 } from "@chakra-ui/react";
-import { useDisclosure } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
@@ -30,7 +29,6 @@ export default function Header() {
 		recipeQueryParam.keyword || "",
 	);
 	const navigate = useNavigate();
-	const disclosure = useDisclosure();
 
 	const bgGradient = useColorModeValue(
 		"linear(to-r, orange.400, pink.400)",
@@ -77,7 +75,7 @@ export default function Header() {
 				>
 					{/* 左側: サイドバーボタンとロゴ */}
 					<HStack spacing={4}>
-						<SiderDrawer {...disclosure} />
+						<SiderDrawer />
 						{/* ロゴとアイコン */}
 						<MotionBox
 							whileHover={{ scale: 1.05 }}
