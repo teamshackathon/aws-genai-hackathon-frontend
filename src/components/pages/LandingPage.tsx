@@ -19,20 +19,11 @@ import {
 	FaArrowRight,
 	FaFileAlt,
 	FaPlay,
-	FaRegFrown,
 	FaRegSadTear,
-	FaRegTired,
 	FaRobot,
-	FaSadTear,
 	FaVideo,
 } from "react-icons/fa";
-import {
-	FaDoorOpen,
-	FaKey,
-	FaSignInAlt,
-	FaUserLock,
-	FaUserShield,
-} from "react-icons/fa";
+import { FaSignInAlt } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { Link as RouterLink } from "react-router";
 
