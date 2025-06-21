@@ -1,8 +1,11 @@
+import type { RecipeParameters } from "./RecipeParameters";
+
 export interface WebSocketOptions {
 	onMessage?: (message: MessageEvent) => void;
 	reconnectAttempts?: number;
 	reconnectInterval?: number;
 	shouldConnect?: boolean;
+	recipeParams?: RecipeParameters | null;
 }
 
 export class WebSocketMessage {

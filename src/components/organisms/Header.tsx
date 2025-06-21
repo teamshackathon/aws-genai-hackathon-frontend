@@ -76,6 +76,7 @@ export default function Header() {
 					{/* 左側: サイドバーボタンとロゴ */}
 					<HStack spacing={4}>
 						<SiderDrawer />
+						{/* ロゴとアイコン */}
 						<MotionBox
 							whileHover={{ scale: 1.05 }}
 							transition={{ duration: 0.2 }}
