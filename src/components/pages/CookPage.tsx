@@ -420,7 +420,7 @@ export default function CookPage() {
 					console.warn("不正なメッセージ形式:", message);
 				}
 			} catch (error) {
-				console.error("WebSocketメッセージ解析エラー:", error);
+				console.error("WebSocketメッセージ分析エラー:", error);
 			}
 
 			// 3秒後にコマンド表示をクリア
