@@ -6,9 +6,11 @@ import { ProtectedRoute } from "@/lib/route/ProtectedRoute";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import CallbackPage from "@/components/pages/CallbackPage";
+import CookPage from "@/components/pages/CookPage";
 import LandingPage from "@/components/pages/LandingPage";
 import LoginPage from "@/components/pages/LoginPage";
 import MainPage from "@/components/pages/MainPage";
+import NotFoundPage from "@/components/pages/NotFoundPage";
 import ProfilePage from "@/components/pages/ProfilePage";
 import RecipeAIGenPage from "@/components/pages/RecipeAIGenPage";
 import RecipePage from "@/components/pages/RecipePage";
@@ -55,6 +57,7 @@ function App() {
 					<Route path="/home" element={<MainPage />} />
 					<Route path="/home/ai-gen" element={<RecipeAIGenPage />} />
 					<Route path="/home/recipe/:recipeId" element={<RecipePage />} />
+					<Route path="/home/recipe/:recipeId/cook" element={<CookPage />} />
 					<Route path="/home/setting" element={<SettingPage />} />
 					<Route path="/home/profile" element={<ProfilePage />} />
 					<Route path="/home/history" element={<HistoryPage />} />
@@ -66,7 +69,11 @@ function App() {
 						element={<ShoppingListDetailPage />}
 					/>
 					{/* ★ここまで追加 */}
+					<Route path="*" element={<NotFoundPage />} />
 				</Route>
+
+				{/* 404 Not Found - キャッチオールルート */}
+				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
 		</BrowserRouter>
 	);
