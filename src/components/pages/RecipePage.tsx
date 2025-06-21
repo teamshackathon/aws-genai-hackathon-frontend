@@ -72,7 +72,9 @@ export default function RecipePage() {
 	const { recipeId } = useParams<{ recipeId: string }>();
 	const navigate = useNavigate();
 	const toast = useToast();
-	const [userRecipe, setUserRecipe] = useState<UserRecipe | null>(null);
+	const [userRecipe, setUserRecipe] = useState<UserRecipe | null | undefined>(
+		undefined,
+	);
 	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
 	const [cookHistory, setCookHistory] = useState<CookHistory[]>([]);
 	const [isEditingNote, setIsEditingNote] = useState(false);
@@ -123,6 +125,10 @@ export default function RecipePage() {
 
 	const fetchData = async (recipeId: number) => {
 		const userRecipeData = await getUserRecipe(recipeId);
+		if (!userRecipeData) {
+			// ユーザーのレシピが存在しない場合はnullを設定
+			setUserRecipe(null);
+		}
 		setUserRecipe(userRecipeData);
 		// メモの初期値を設定
 		setNoteValue(userRecipeData?.note || "");
@@ -269,8 +275,9 @@ export default function RecipePage() {
 			setIsCreatingShoppingList(false); // ローディング終了
 		}
 	};
+
 	// Loading state
-	if (!currentRecipe && !userRecipe) {
+	if (currentRecipe === undefined) {
 		// データがロード中の場合
 		return (
 			<Box minH="100vh" bgGradient={bgGradient}>
@@ -294,7 +301,7 @@ export default function RecipePage() {
 	}
 
 	// Error state
-	if (!currentRecipe) {
+	if (currentRecipe === null || userRecipe === null) {
 		return (
 			<Box minH="100vh" bgGradient={bgGradient}>
 				<Header />

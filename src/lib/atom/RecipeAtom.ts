@@ -27,7 +27,9 @@ import { atomWithRefresh, atomWithReset, loadable } from "jotai/utils";
 export const recipeUrlAtom = atomWithReset<string>("");
 export const ingredientsAtom = atomWithReset<Ingridient[]>([]);
 export const processesAtom = atomWithReset<Process[]>([]);
-export const currentRecipeAtom = atomWithReset<Recipe | null>(null);
+export const currentRecipeAtom = atomWithReset<Recipe | null | undefined>(
+	undefined,
+);
 
 export const recipeQueryParamAtom = atom<RecipeQueryParams>({
 	page: 1,
