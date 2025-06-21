@@ -23,6 +23,7 @@ import {
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
+import { useBreakpointValue } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
@@ -100,6 +101,7 @@ export default function RecipePage() {
 	const headingColor = useColorModeValue("gray.800", "white"); // External services and statuses
 	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const recipeStatuses = useLoadableAtom(recipeStatusAtomLoadable);
+	const isMobile = useBreakpointValue({ base: true, md: false });
 
 	// Get external service name
 	const getExternalServiceName = (serviceId: number): string => {
@@ -515,30 +517,32 @@ export default function RecipePage() {
 
 									{/* Action buttons */}
 									<HStack spacing={4} w="full" flexWrap="wrap">
-										<MotionButton
-											leftIcon={
-												<Icon
-													as={FaBookmark}
-													color={
-														userRecipe?.isFavorite ? "orange.400" : "gray.400"
-													}
-												/>
-											}
-											variant={userRecipe?.isFavorite ? "solid" : "outline"}
-											colorScheme="orange"
-											onClick={() =>
-												toggleBookmark(
-													currentRecipe.id,
-													userRecipe?.isFavorite || false,
-												)
-											}
-											whileHover={{ scale: 1.05 }}
-											whileTap={{ scale: 0.95 }}
-										>
-											{userRecipe?.isFavorite
-												? "ブックマーク済み"
-												: "ブックマーク"}
-										</MotionButton>
+										{!isMobile && (
+											<MotionButton
+												leftIcon={
+													<Icon
+														as={FaBookmark}
+														color={
+															userRecipe?.isFavorite ? "orange.400" : "gray.400"
+														}
+													/>
+												}
+												variant={userRecipe?.isFavorite ? "solid" : "outline"}
+												colorScheme="orange"
+												onClick={() =>
+													toggleBookmark(
+														currentRecipe.id,
+														userRecipe?.isFavorite || false,
+													)
+												}
+												whileHover={{ scale: 1.05 }}
+												whileTap={{ scale: 0.95 }}
+											>
+												{!isMobile && userRecipe?.isFavorite
+													? "ブックマーク済み"
+													: "ブックマーク"}
+											</MotionButton>
+										)}
 										{/* ★「買い物リストを作成」ボタンを追加 */}
 										<MotionButton
 											leftIcon={<Icon as={FaClipboardList} />}
@@ -551,7 +555,7 @@ export default function RecipePage() {
 											whileHover={{ scale: 1.05 }}
 											whileTap={{ scale: 0.95 }}
 										>
-											買い物リストを作成
+											{!isMobile && "買い物リストを作成"}
 										</MotionButton>{" "}
 										{/* ★「料理開始」ボタンを追加 */}
 										{processes.length > 0 && (
@@ -565,7 +569,7 @@ export default function RecipePage() {
 												whileHover={{ scale: 1.05 }}
 												whileTap={{ scale: 0.95 }}
 											>
-												料理開始
+												{!isMobile && "料理開始"}
 											</MotionButton>
 										)}
 										{/* ★「レシピ共有」ボタンを追加 */}
@@ -613,7 +617,7 @@ export default function RecipePage() {
 													});
 											}}
 										>
-											レシピをテキストでコピー
+											{!isMobile && "レシピをテキストでコピー"}
 										</MotionButton>
 									</HStack>
 								</VStack>
