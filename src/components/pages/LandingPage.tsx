@@ -15,7 +15,24 @@ import {
 	useDisclosure,
 } from "@chakra-ui/react";
 import { useAtomValue } from "jotai";
-import { FaArrowRight, FaPlay, FaRobot, FaVideo } from "react-icons/fa";
+import {
+	FaArrowRight,
+	FaFileAlt,
+	FaPlay,
+	FaRegFrown,
+	FaRegSadTear,
+	FaRegTired,
+	FaRobot,
+	FaSadTear,
+	FaVideo,
+} from "react-icons/fa";
+import {
+	FaDoorOpen,
+	FaKey,
+	FaSignInAlt,
+	FaUserLock,
+	FaUserShield,
+} from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 import { Link as RouterLink } from "react-router";
 
@@ -57,13 +74,19 @@ const LandingPage = () => {
 								/>
 							</Box>
 						</HStack>
-						<HStack justify="center" spacing={3}>
+						<HStack justify="center" spacing={3} w="100%" overflow={"visible"}>
 							<Box
 								as="img"
 								src="/bae-recipe/bae-recipe-logo_orange.svg"
 								alt="Bae Recipe Logo"
 								height={{ base: "60px", md: "100px" }}
+								maxH={{ base: "60px", md: "100px" }}
+								maxW="100%"
 								width="auto"
+								objectFit={"contain"}
+								display="block"
+								mx="auto"
+								my={0}
 							/>
 						</HStack>
 						<Text
@@ -72,11 +95,13 @@ const LandingPage = () => {
 							color={useColorModeValue("gray.700", "gray.200")}
 							mb={4}
 						>
-							使い尽くして「映える献立」を実現する
+							「作りたい」が、もっと広がる。
 						</Text>
 
 						<Text fontSize="lg" color={textColor} maxW="3xl" mx="auto" mb={8}>
-							動画レシピをAIが自動で整理・要約。あなただけのレシピノートを作成します。
+							AIが動画レシピを自動で分析、整理して
+							<br />
+							あなた専用のレシピノートを作成します！
 						</Text>
 					</Box>
 
@@ -115,12 +140,22 @@ const LandingPage = () => {
 			<Box bg={cardBg} py={16}>
 				<Container maxW="6xl">
 					<VStack spacing={8} textAlign="center" mb={12}>
+						<Icon as={FaRegSadTear} boxSize={10} color="red.500" ml={2} />
 						<Heading size="xl" color={useColorModeValue("gray.800", "white")}>
-							こんな経験ありませんか？
+							「もっとスムーズに作れたらいいのに！」
 						</Heading>
+
 						<Text fontSize="lg" color={textColor} maxW="4xl">
-							SNSや動画サイトで見つけた「映える」レシピ。材料や手順が整理されておらず、
-							調理中に何度も動画を確認して困ったことはありませんか？
+							SNSや動画サイトで見つけた魅力的な「映えレシピ」
+							<br />
+							でも、いざ作ろうと思っても
+							<br />
+							レシピ動画をどこに保存したか忘れてしまう…
+							<br />
+							調理中に何度も動画を一時停止したり巻き戻したり…
+							<br />
+							<br />
+							こんな悩みはありませんか？
 						</Text>
 					</VStack>
 
@@ -136,10 +171,10 @@ const LandingPage = () => {
 							>
 								<Icon as={FaVideo} boxSize={8} color="red.500" mb={4} />
 								<Text fontWeight="bold" mb={2}>
-									動画の繰り返し確認
+									レシピ動画の繰り返し確認が面倒
 								</Text>
 								<Text fontSize="sm" color={textColor}>
-									調理中に材料や手順を確認するため、何度も動画を見返す必要がある
+									調理工程ごとの材料や手順を、何度も一時停止して見返さないといけない
 								</Text>
 							</Box>
 						</GridItem>
@@ -153,12 +188,12 @@ const LandingPage = () => {
 								border="2px"
 								borderColor={useColorModeValue("yellow.200", "yellow.700")}
 							>
-								<Icon as={HiSparkles} boxSize={8} color="yellow.500" mb={4} />
+								<Icon as={FaFileAlt} boxSize={8} color="yellow.500" mb={4} />
 								<Text fontWeight="bold" mb={2}>
-									情報の整理不足
+									レシピ情報の整理不足
 								</Text>
 								<Text fontSize="sm" color={textColor}>
-									材料の分量や調理手順が動画内に散らばっており、把握が困難
+									材料の分量や調理手順が動画内に散らばっていて、把握が困難
 								</Text>
 							</Box>
 						</GridItem>
@@ -172,19 +207,12 @@ const LandingPage = () => {
 								border="2px"
 								borderColor={useColorModeValue("blue.200", "blue.700")}
 							>
-								<Box
-									as="img"
-									src="/bae-recipe/favicon.svg"
-									alt="BAE RECIPE Icon"
-									boxSize={8}
-									mx="auto"
-									mb={4}
-								/>
+								<Icon as={FaSignInAlt} boxSize={8} color="blue.500" mb={4} />
 								<Text fontWeight="bold" mb={2}>
-									レシピ管理の困難
+									レシピ動画へのアクセスが困難
 								</Text>
 								<Text fontSize="sm" color={textColor}>
-									気に入ったレシピを保存・整理して、後で活用することが難しい
+									せっかく気に入ったレシピを保存しても、すぐに見つからない
 								</Text>
 							</Box>
 						</GridItem>
@@ -205,11 +233,14 @@ const LandingPage = () => {
 						>
 							AI搭載ソリューション
 						</Badge>
+
 						<Heading size="xl" color={useColorModeValue("gray.800", "white")}>
-							Bae Recipeが解決します
+							Bae Recipeが解決します✨
 						</Heading>
 						<Text fontSize="lg" color={textColor} maxW="4xl">
-							AIを活用して動画レシピを自動で分析・整理。あなた専用のレシピノートを簡単に作成できます。
+							私たちのサービスは、単なるメモアプリではありません。
+							<br />
+							以下3つの主要な機能で、日々の料理を強力にサポートします。
 						</Text>
 					</VStack>
 
@@ -222,42 +253,43 @@ const LandingPage = () => {
 							<VStack spacing={6} align="start">
 								<Box>
 									<HStack mb={3}>
-										<Icon as={FaRobot} boxSize={6} color="orange.500" />
+										<Icon as={FaRobot} boxSize={6} color="pink.500" />
 										<Text fontWeight="bold" fontSize="lg">
-											AI自動解析
+											AI自動分析
 										</Text>
 									</HStack>
 									<Text color={textColor}>
-										動画URLを入力するだけで、AIが自動的に材料の分量、調理手順、映えるポイントを抽出します。
+										動画URLを入れるだけで、AIが材料、手順、映えポイントを自動抽出。
+										<br />
+										もう、動画の一時停止や巻き戻しで戸惑うことはありません。
 									</Text>
 								</Box>
 
 								<Box>
 									<HStack mb={3}>
-										<Icon as={HiSparkles} boxSize={6} color="pink.500" />
+										<Icon as={FaFileAlt} boxSize={6} color="purple.500" />
 										<Text fontWeight="bold" fontSize="lg">
-											整理された情報
+											整理されたレシピノート
 										</Text>
 									</HStack>
 									<Text color={textColor}>
-										散らばった情報を見やすく整理。調理中も簡単に確認できるレシピノートに変換します。
+										抽出された情報は、調理中でも見やすいように整理。
+										<br />
+										散らばりがちな動画情報があなた仕様にまとまります。
 									</Text>
 								</Box>
 
 								<Box>
 									<HStack mb={3}>
-										<Box
-											as="img"
-											src="/bae-recipe/favicon.svg"
-											alt="BAE RECIPE Icon"
-											boxSize={6}
-										/>
+										<Icon as={HiSparkles} boxSize={6} color="yellow.500" />
 										<Text fontWeight="bold" fontSize="lg">
 											スマート管理
 										</Text>
 									</HStack>
 									<Text color={textColor}>
-										AIが自動でカテゴリ分類。最近のレシピや関連レシピを使って献立決定をサポートします。
+										作成されたレシピノートは、AIが自動でカテゴリ分類。
+										<br />
+										最近のレシピや関連レシピを瞬時に見つけ出しスムーズに料理を始められます。
 									</Text>
 								</Box>
 							</VStack>
@@ -293,7 +325,7 @@ const LandingPage = () => {
 										/>
 									</Box>
 									<Text fontSize="sm" color={textColor} textAlign="center">
-										動画から抽出された整理済みレシピ情報
+										動画から抽出されたレシピ例
 									</Text>
 								</VStack>
 							</Box>
@@ -307,7 +339,7 @@ const LandingPage = () => {
 				<Container maxW="6xl">
 					<VStack spacing={8} textAlign="center" mb={12}>
 						<Heading size="xl" color={useColorModeValue("gray.800", "white")}>
-							簡単3ステップ
+							簡単3ステップ！
 						</Heading>
 						<Text fontSize="lg" color={textColor}>
 							動画URLを入力するだけで、AIがあなた専用のレシピノートを作成します
@@ -317,26 +349,25 @@ const LandingPage = () => {
 					<Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={8}>
 						{[
 							{
-								step: "01",
+								step: "step 1",
 								title: "動画URLを入力",
-								description:
-									"お気に入りのレシピ動画のURLをコピー&ペーストするだけ",
+								description: "作りたいレシピ動画のURLをコピー&ペーストするだけ",
 								icon: FaVideo,
 								color: "orange",
 								isCustomIcon: false,
 							},
 							{
-								step: "02",
-								title: "AI自動解析",
-								description: "AIが動画を分析し、材料・手順・ポイントを抽出",
+								step: "step 2",
+								title: "AI自動分析",
+								description: "AIが動画から材料・手順・ポイントを抽出",
 								icon: FaRobot,
 								color: "pink",
 								isCustomIcon: false,
 							},
 							{
-								step: "03",
+								step: "step 3",
 								title: "レシピノート完成",
-								description: "整理されたレシピノートで簡単調理&献立管理",
+								description: "あなた仕様のレシピノートで簡単調理 & レシピ管理",
 								icon: null,
 								color: "purple",
 								isCustomIcon: true,
@@ -402,8 +433,11 @@ const LandingPage = () => {
 					<VStack spacing={6}>
 						<Heading size="xl">今すぐBae Recipeを始めよう</Heading>
 						<Text fontSize="lg" opacity={0.9}>
-							動画レシピをもっと簡単に、もっと楽しく。
-							あなた専用のレシピノートで「映える献立」を実現しませんか？
+							動画レシピをもっと手軽に、もっと楽しく。
+							<br />
+							AIが作るあなた専用のレシピノートで
+							<br />
+							「作りたい」気持ちを、そのまま料理に。
 						</Text>
 						<Button
 							as={RouterLink}
