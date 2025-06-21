@@ -124,7 +124,7 @@ export default function AIProcessChat({
 
 	const handleWebSocketMessage = useCallback((message: MessageEvent) => {
 		if (message) {
-			// JSON.parseを使用してメッセージを解析
+			// JSON.parseを使用してメッセージを分析
 			try {
 				const parsedMessage = JSON.parse(message.data);
 				const wsMessage = new WebSocketMessage(

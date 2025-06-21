@@ -262,6 +262,7 @@ export default function RecipeAIGenPage() {
 	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
 		shouldConnect: shouldConnect,
+		recipeParams: recipeParams,
 	});
 
 	// WebSocket接続状態の表示情報を取得
@@ -374,7 +375,7 @@ export default function RecipeAIGenPage() {
 					</HStack>
 
 					<Text fontSize="lg" color={textColor} maxW="2xl">
-						AIがYouTube動画を解析して、自動でレシピを生成しています
+						AIがYouTube動画を分析して、自動でレシピを生成しています
 					</Text>
 
 					{/* 処理中のYouTube URL表示 */}

@@ -215,7 +215,7 @@ export default function MainPage() {
 			return;
 		}
 
-		// AI解析ページに遷移（カスタム設定も含める）
+		// AI分析ページに遷移（カスタム設定も含める）
 		const encodedUrl = encodeURIComponent(urlInput);
 		const finalRecipeParams = useCustomGeneration
 			? recipeParams
@@ -342,7 +342,7 @@ export default function MainPage() {
 								bgGradient="linear(to-r, orange.500, pink.500)"
 								bgClip="text"
 							>
-								あなたのレシピコレクション
+								レシピコレクション
 							</Heading>
 						</HStack>
 						<Text fontSize="lg" color={textColor} maxW="2xl">
@@ -382,7 +382,7 @@ export default function MainPage() {
 									color={useColorModeValue("gray.800", "white")}
 									fontSize={{ base: "lg", md: "xl" }}
 								>
-									動画レシピをAIで解析
+									動画レシピをAIで分析
 								</Heading>
 								<Icon
 									as={HiSparkles}
@@ -442,7 +442,7 @@ export default function MainPage() {
 									transition="all 0.3s"
 									px={8}
 								>
-									AI解析開始
+									AI分析開始
 								</Button>
 							</Flex>
 							{/* カスタム生成設定トグル */}
