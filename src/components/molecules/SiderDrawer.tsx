@@ -29,14 +29,15 @@ import {
 	FaHome,
 	FaUser,
 } from "react-icons/fa";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 const MotionIconButton = motion(IconButton);
 const MotionBox = motion(Box);
 
 const SiderDrawer = () => {
-	const { isOpen, onOpen, onClose } = useDisclosure();
 	const navigate = useNavigate();
+	const pathname = useLocation().pathname;
+	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const textColor = "white";
 	const drawerBg = useColorModeValue("white", "gray.800");
@@ -57,6 +58,10 @@ const SiderDrawer = () => {
 	];
 
 	const handleNavigate = (href: string) => {
+		if (pathname === href) {
+			onClose();
+			return; // 既に同じページにいる場合は何もしない
+		}
 		navigate(href);
 		onClose();
 	};
@@ -66,6 +71,7 @@ const SiderDrawer = () => {
 			<MotionIconButton
 				aria-label="メニューを開く"
 				icon={<Icon as={FaBars} />}
+				onClick={onOpen}
 				variant="ghost"
 				color={textColor}
 				size="lg"
@@ -76,7 +82,6 @@ const SiderDrawer = () => {
 					bg: "whiteAlpha.200",
 					transform: "scale(1.1)",
 				}}
-				onClick={onOpen}
 			/>
 			<Drawer isOpen={isOpen} placement="left" onClose={onClose} size="sm">
 				<DrawerOverlay backdropFilter="blur(4px)" />
