@@ -17,8 +17,8 @@ import {
 	Text,
 	VStack,
 	useColorModeValue,
-	useDisclosure,
 } from "@chakra-ui/react";
+import type { UseDisclosureReturn } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
 	FaBars,
@@ -31,11 +31,12 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router";
 
+type SiderDrawerProps = Partial<UseDisclosureReturn>;
+
 const MotionIconButton = motion(IconButton);
 const MotionBox = motion(Box);
 
-const SiderDrawer = () => {
-	const { isOpen, onOpen, onClose } = useDisclosure();
+const SiderDrawer = ({ isOpen, onOpen, onClose }: SiderDrawerProps) => {
 	const navigate = useNavigate();
 
 	const textColor = "white";
@@ -58,7 +59,7 @@ const SiderDrawer = () => {
 
 	const handleNavigate = (href: string) => {
 		navigate(href);
-		onClose();
+		onClose?.();
 	};
 
 	return (
@@ -66,6 +67,7 @@ const SiderDrawer = () => {
 			<MotionIconButton
 				aria-label="メニューを開く"
 				icon={<Icon as={FaBars} />}
+				onClick={onOpen}
 				variant="ghost"
 				color={textColor}
 				size="lg"
@@ -76,9 +78,13 @@ const SiderDrawer = () => {
 					bg: "whiteAlpha.200",
 					transform: "scale(1.1)",
 				}}
-				onClick={onOpen}
 			/>
-			<Drawer isOpen={isOpen} placement="left" onClose={onClose} size="sm">
+			<Drawer
+				isOpen={!!isOpen}
+				placement="left"
+				onClose={onClose ?? (() => {})}
+				size="sm"
+			>
 				<DrawerOverlay backdropFilter="blur(4px)" />
 				<DrawerContent bg={drawerBg} shadow="2xl">
 					<DrawerCloseButton
