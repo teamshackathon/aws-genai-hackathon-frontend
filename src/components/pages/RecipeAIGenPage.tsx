@@ -262,6 +262,7 @@ export default function RecipeAIGenPage() {
 	const { connectionStatus, disconnect } = useRecipeGenWebSocket({
 		onMessage: handleWebSocketMessage,
 		shouldConnect: shouldConnect,
+		recipeParams: recipeParams,
 	});
 
 	// WebSocket接続状態の表示情報を取得
