@@ -13,6 +13,7 @@ export const useRecipeGenWebSocket = ({
 	reconnectAttempts = 5,
 	reconnectInterval = 3000,
 	shouldConnect = false,
+	recipeParams = null,
 }: WebSocketOptions) => {
 	const baseURL = import.meta.env.VITE_PUBLIC_API_URL;
 	const authToken = useAtomValue(authTokenAtom);
@@ -23,9 +24,14 @@ export const useRecipeGenWebSocket = ({
 
 	const sessionId = session?.sessionId || "";
 
+	// レシピパラメータをURLエンコードしてクエリパラメータとして追加
+	const recipeParamsQuery = recipeParams
+		? `&recipe_params=${encodeURIComponent(JSON.stringify(recipeParams))}`
+		: "";
+
 	const { sendMessage, lastMessage, readyState } = useWebSocket(
 		shouldConnect
-			? `${baseURL}/ws/recipe-gen?token=${authToken}&session_id=${sessionId}&url=${recipeUrl || ""}`
+			? `${baseURL}/ws/recipe-gen?token=${authToken}&session_id=${sessionId}&url=${recipeUrl || ""}${recipeParamsQuery}`
 			: null,
 		{
 			reconnectAttempts,

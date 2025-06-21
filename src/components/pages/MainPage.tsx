@@ -1,9 +1,4 @@
 import {
-	Accordion,
-	AccordionButton,
-	AccordionIcon,
-	AccordionItem,
-	AccordionPanel,
 	Badge,
 	Box,
 	Button,
@@ -27,6 +22,7 @@ import {
 	MenuList,
 	Select,
 	SimpleGrid,
+	Switch,
 	Tag,
 	TagLabel,
 	Text,
@@ -37,13 +33,15 @@ import {
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
 	FaBookmark,
 	FaChevronDown,
 	FaChevronLeft,
 	FaChevronRight,
+	FaChevronUp,
+	FaCog,
 	FaFilter,
 	FaSearch,
 	FaSort,
@@ -62,44 +60,113 @@ import {
 	recipeSortParamAtom,
 	recipeUrlAtom,
 } from "@/lib/atom/RecipeAtom";
-import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
+import { updateUserRecipeAtom, userAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 import type { RecipeParameters } from "@/lib/type/RecipeParameters";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
-// Framer Motion コンポーネントの定義
+// Motion components
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 
-/**
- * メインページコンポーネント
- * YouTube ShortsのURL入力、レシピパラメータ設定、既存レシピの一覧表示を行う
- */
 export default function MainPage() {
-	// ルーティング
 	const navigate = useNavigate();
-
-	// Jotai Atom 状態管理
 	const [urlInput, setUrlInput] = useAtom(recipeUrlAtom);
 	const [recipeQueryParam, setRecipeQueryParam] = useAtom(recipeQueryParamAtom);
 	const [recipeSortParam, setRecipeSortParam] = useAtom(recipeSortParamAtom);
 
-	// レシピパラメータの状態管理（AI解析時に使用）
+	const toast = useToast();
+
+	// カスタム生成設定の状態管理
+	const [useCustomGeneration, setUseCustomGeneration] = useState(false);
+	const [showCustomSettings, setShowCustomSettings] = useState(false);
 	const [recipeParams, setRecipeParams] = useState<RecipeParameters>({
-		peopleCount: "recipe",
-		cookingTime: "recipe",
-		preference: "recipe",
-		saltiness: "recipe",
-		sweetness: "recipe",
-		spiciness: "recipe",
+		peopleCount: "レシピ通り",
+		cookingTime: "レシピ通り",
+		preference: "レシピ通り",
+		saltiness: "レシピ通り",
+		sweetness: "レシピ通り",
+		spiciness: "レシピ通り",
 		dislikedIngredients: "",
 	});
 
-	// トースト通知用
-	const toast = useToast();
+	// ユーザー情報を取得してデフォルト値を設定
+	const user = useAtomValue(userAtom);
 
-	// カラーモード対応のスタイル定義
+	/**
+	 * ユーザープロファイルからRecipeParametersの初期値を作成
+	 */
+	const createInitialRecipeParamsFromUser = (user: any): RecipeParameters => {
+		return {
+			// ProfilePageのservingSizeから人数を設定
+			peopleCount:
+				user?.servingSize &&
+				["1", "2", "3", "4", "5", "6"].includes(String(user.servingSize))
+					? (String(user.servingSize) as "1" | "2" | "3" | "4" | "5" | "6")
+					: "レシピ通り",
+
+			// ProfilePageのcookingTimePreferenceから調理時間を設定
+			cookingTime:
+				user?.cookingTimePreference === "15分以内"
+					? "15分以内"
+					: user?.cookingTimePreference === "30分以内"
+						? "30分以内"
+						: user?.cookingTimePreference === "1時間以内"
+							? "1時間以内"
+							: "レシピ通り",
+
+			// ProfilePageのpreferenceTrendから重視する傾向を設定
+			preference:
+				user?.preferenceTrend === "栄養重視"
+					? "栄養重視"
+					: user?.preferenceTrend === "見栄え重視"
+						? "見栄え重視"
+						: user?.preferenceTrend === "コスパ重視"
+							? "コスパ重視"
+							: user?.preferenceTrend === "タイパ重視"
+								? "タイパ重視"
+								: "レシピ通り",
+
+			// ProfilePageのsaltPreferenceから塩味を設定
+			saltiness:
+				user?.saltPreference === "濃いめ"
+					? "濃いめ"
+					: user?.saltPreference === "普通"
+						? "普通"
+						: user?.saltPreference === "薄味"
+							? "薄味"
+							: "レシピ通り",
+
+			// ProfilePageのsweetnessPreferenceから甘味を設定
+			sweetness:
+				user?.sweetnessPreference === "甘め"
+					? "甘め"
+					: user?.sweetnessPreference === "普通"
+						? "普通"
+						: user?.sweetnessPreference === "控えめ"
+							? "控えめ"
+							: "レシピ通り",
+
+			// ProfilePageのspicinessPreferenceから辛味を設定
+			spiciness:
+				user?.spicinessPreference === "とても辛い"
+					? "とても辛い"
+					: user?.spicinessPreference === "辛め"
+						? "辛め"
+						: user?.spicinessPreference === "普通"
+							? "普通"
+							: user?.spicinessPreference === "少し辛い"
+								? "少し辛い"
+								: user?.spicinessPreference === "辛くない"
+									? "辛くない"
+									: "レシピ通り",
+
+			// ProfilePageのdislikedIngredientsから嫌いな食材を設定
+			dislikedIngredients: user?.dislikedIngredients || "",
+		};
+	};
+
 	const bgGradient = useColorModeValue(
 		"linear(to-br, orange.50, pink.50, purple.50)",
 		"linear(to-br, orange.900, pink.900, purple.900)",
@@ -108,18 +175,11 @@ export default function MainPage() {
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
 
-	// Loadable Atom の使用（非同期データ取得）
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
-
-	// ユーザーレシピ情報（お気に入り、評価など）の状態管理
 	const [userRecipe, setUserRecipe] = useState<UserRecipe[]>([]);
 
-	/**
-	 * ページネーション処理
-	 * @param newPage 新しいページ番号
-	 */
 	const handlePageChange = (newPage: number) => {
 		setRecipeQueryParam((prev) => ({
 			...prev,
@@ -127,18 +187,13 @@ export default function MainPage() {
 		}));
 	};
 
-	/**
-	 * YouTube Shorts URL送信処理
-	 * URLの妥当性をチェックし、レシピパラメータとともにAI解析ページに遷移
-	 * @param submittedParams オプション：外部から渡されたレシピパラメータ
-	 */
-	const handleUrlSubmit = (submittedParams?: RecipeParameters) => {
+	const handleUrlSubmit = () => {
+		//youtube shorts以外を受け付けない→
 		// YouTube ShortsのURLパターンをチェックする正規表現
-		// youtube.com/shorts/ または youtu.be/ に続く11桁の英数字（動画ID）をチェック
+		// youtube.com/shorts/ または youtu.be/ に続く11桁の英数字（動画ID）をチェックします。
 		const youtubeShortsRegex =
 			/^(https?:\/\/)?(www\.)?(youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})(\?.*)?$/;
 
-		// URL入力チェック
 		if (!urlInput.trim()) {
 			toast({
 				title: "Youtube ShortsのURLを入力してください",
@@ -148,8 +203,7 @@ export default function MainPage() {
 			});
 			return;
 		}
-
-		// YouTube Shorts URLの形式チェック
+		// 入力されたURLがYouTube Shortsの正規表現に一致するかをチェック
 		if (!youtubeShortsRegex.test(urlInput)) {
 			toast({
 				title:
@@ -161,14 +215,16 @@ export default function MainPage() {
 			return;
 		}
 
-		// レシピパラメータをstateに反映
-		const finalParams = submittedParams || recipeParams;
-		setRecipeParams(finalParams);
-
-		// AI解析ページに遷移（URLパラメータとstateでレシピパラメータを渡す）
+		// AI解析ページに遷移（カスタム設定も含める）
 		const encodedUrl = encodeURIComponent(urlInput);
+		const finalRecipeParams = useCustomGeneration
+			? recipeParams
+			: createInitialRecipeParamsFromUser(user);
+
 		navigate(`/home/ai-gen?url=${encodedUrl}`, {
-			state: { recipeParams: finalParams },
+			state: {
+				recipeParams: finalRecipeParams,
+			},
 		});
 	};
 
@@ -254,6 +310,13 @@ export default function MainPage() {
 	useEffect(() => {
 		fetchData();
 	}, [recipes]);
+
+	// ユーザー情報が変更されたときにデフォルト値を更新
+	useEffect(() => {
+		if (user && !useCustomGeneration) {
+			setRecipeParams(createInitialRecipeParamsFromUser(user));
+		}
+	}, [user, useCustomGeneration]);
 
 	return (
 		<Box minH="100vh" bgGradient={bgGradient}>
@@ -375,165 +438,219 @@ export default function MainPage() {
 										shadow: "lg",
 									}}
 									leftIcon={<Icon as={HiSparkles} />}
-									onClick={() => handleUrlSubmit()}
+									onClick={handleUrlSubmit}
 									transition="all 0.3s"
 									px={8}
 								>
 									AI解析開始
 								</Button>
 							</Flex>
-							{/* レシピパラメータ設定 */}
-							<Box maxW="4xl" mx="auto" w="100%">
-								<Accordion allowToggle mt={6}>
-									<AccordionItem border="none">
-										<AccordionButton
-											_expanded={{
-												bg: useColorModeValue("orange.50", "orange.900"),
-												color: useColorModeValue("orange.600", "orange.200"),
-											}}
-											borderRadius="md"
-											px={4}
-											py={3}
+							{/* カスタム生成設定トグル */}
+							<Flex justify="space-between" align="center" w="full">
+								<HStack spacing={3}>
+									<Icon as={FaCog} color="orange.500" />
+									<Text
+										fontWeight="medium"
+										color={useColorModeValue("gray.700", "gray.300")}
+									>
+										カスタム生成設定
+									</Text>
+								</HStack>
+								<HStack spacing={2}>
+									<Switch
+										colorScheme="orange"
+										isChecked={useCustomGeneration}
+										onChange={(e) => {
+											setUseCustomGeneration(e.target.checked);
+											if (e.target.checked) {
+												setShowCustomSettings(true);
+											} else {
+												setShowCustomSettings(false);
+												// プロファイルの設定に戻す
+												setRecipeParams(
+													createInitialRecipeParamsFromUser(user),
+												);
+											}
+										}}
+									/>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => setShowCustomSettings(!showCustomSettings)}
+										rightIcon={
+											<Icon
+												as={showCustomSettings ? FaChevronUp : FaChevronDown}
+												transition="transform 0.2s"
+											/>
+										}
+										isDisabled={!useCustomGeneration}
+									>
+										詳細設定
+									</Button>
+								</HStack>
+							</Flex>
+							{/* カスタム設定アコーディオン */}
+							<AnimatePresence>
+								{useCustomGeneration && showCustomSettings && (
+									<motion.div
+										initial={{ opacity: 0, height: 0 }}
+										animate={{ opacity: 1, height: "auto" }}
+										exit={{ opacity: 0, height: 0 }}
+										transition={{ duration: 0.3 }}
+										style={{ overflow: "hidden", width: "100%" }}
+									>
+										<Box
+											p={6}
+											bg={useColorModeValue("gray.50", "gray.700")}
+											rounded="lg"
+											border="1px"
+											borderColor={useColorModeValue("gray.200", "gray.600")}
+											w="full"
 										>
-											<Box flex="1" textAlign="center">
+											<VStack spacing={4} align="stretch">
 												<Text
-													fontSize="md"
 													fontWeight="semibold"
-													color={useColorModeValue("gray.700", "gray.200")}
+													color={useColorModeValue("gray.800", "white")}
 												>
-													レシピの詳細設定
+													レシピ生成の詳細設定
 												</Text>
-											</Box>
-											<AccordionIcon />
-										</AccordionButton>{" "}
-										<AccordionPanel pb={4} px={0}>
-											<VStack spacing={4} align="stretch" w="100%">
+
+												{/* 主要な3つのプルダウンを横並び */}
 												<SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-													{" "}
+													{/* 人数設定 */}
 													<FormControl>
-														<FormLabel>食べる人数</FormLabel>
+														<FormLabel fontSize="sm">食べる人数</FormLabel>
 														<Select
-															defaultValue="recipe"
 															value={recipeParams.peopleCount}
 															onChange={(e) =>
 																setRecipeParams((prev) => ({
 																	...prev,
-																	peopleCount: e.target.value,
+																	peopleCount: e.target.value as any,
 																}))
 															}
+															size="sm"
 														>
-															<option value="recipe">レシピ通り</option>
-															{[1, 2, 3, 4, 5, 6].map((num) => (
-																<option key={num} value={num}>
-																	{num}人
-																</option>
-															))}
+															<option value="1">1人</option>
+															<option value="2">2人</option>
+															<option value="3">3人</option>
+															<option value="4">4人</option>
+															<option value="5">5人</option>
+															<option value="6">6人</option>
+															<option value="レシピ通り">レシピ通り</option>
 														</Select>
 													</FormControl>
+
+													{/* 調理時間 */}
 													<FormControl>
-														<FormLabel>調理時間</FormLabel>
+														<FormLabel fontSize="sm">調理時間</FormLabel>
 														<Select
-															defaultValue="recipe"
 															value={recipeParams.cookingTime}
 															onChange={(e) =>
 																setRecipeParams((prev) => ({
 																	...prev,
-																	cookingTime: e.target.value,
+																	cookingTime: e.target.value as any,
 																}))
 															}
+															size="sm"
 														>
-															<option value="recipe">レシピ通り</option>
-															<option value="30min">30分以内</option>
-															<option value="60min">1時間以内</option>
-															<option value="free">自由</option>
+															<option value="15分以内">15分以内</option>
+															<option value="30分以内">30分以内</option>
+															<option value="1時間以内">1時間以内</option>
+															<option value="レシピ通り">レシピ通り</option>
 														</Select>
 													</FormControl>
+
+													{/* 重視する傾向 */}
 													<FormControl>
-														<FormLabel>重視する傾向</FormLabel>
+														<FormLabel fontSize="sm">重視する傾向</FormLabel>
 														<Select
-															defaultValue="recipe"
 															value={recipeParams.preference}
 															onChange={(e) =>
 																setRecipeParams((prev) => ({
 																	...prev,
-																	preference: e.target.value,
+																	preference: e.target.value as any,
 																}))
 															}
+															size="sm"
 														>
-															<option value="recipe">レシピ通り</option>
-															<option value="nutrition">栄養重視</option>
-															<option value="appearance">見栄え重視</option>
-															<option value="cost_performance">
-																コスパ重視
-															</option>
-															<option value="time_performance">
-																タイパ重視
-															</option>
+															<option value="栄養重視">栄養重視</option>
+															<option value="見栄え重視">見栄え重視</option>
+															<option value="コスパ重視">コスパ重視</option>
+															<option value="タイパ重視">タイパ重視</option>
+															<option value="レシピ通り">レシピ通り</option>
 														</Select>
 													</FormControl>
+												</SimpleGrid>
+
+												{/* 味付けの設定を別のセクション */}
+												<SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+													{/* 塩味 */}
 													<FormControl>
-														<FormLabel>塩味</FormLabel>
+														<FormLabel fontSize="sm">塩味</FormLabel>
 														<Select
-															defaultValue="recipe"
 															value={recipeParams.saltiness}
 															onChange={(e) =>
 																setRecipeParams((prev) => ({
 																	...prev,
-																	saltiness: e.target.value,
+																	saltiness: e.target.value as any,
 																}))
 															}
+															size="sm"
 														>
-															<option value="recipe">レシピ通り</option>
-															<option value="strong">濃いめ</option>
-															<option value="normal">普通</option>
-															<option value="light">薄め</option>
+															<option value="濃いめ">濃いめ</option>
+															<option value="普通">普通</option>
+															<option value="薄味">薄味</option>
+															<option value="レシピ通り">レシピ通り</option>
 														</Select>
 													</FormControl>
+
+													{/* 甘味 */}
 													<FormControl>
-														<FormLabel>甘味</FormLabel>
+														<FormLabel fontSize="sm">甘味</FormLabel>
 														<Select
-															defaultValue="recipe"
 															value={recipeParams.sweetness}
 															onChange={(e) =>
 																setRecipeParams((prev) => ({
 																	...prev,
-																	sweetness: e.target.value,
+																	sweetness: e.target.value as any,
 																}))
 															}
+															size="sm"
 														>
-															<option value="recipe">レシピ通り</option>
-															<option value="sweet">甘め</option>
-															<option value="normal">普通</option>
-															<option value="less">控えめ</option>
+															<option value="甘め">甘め</option>
+															<option value="普通">普通</option>
+															<option value="控えめ">控えめ</option>
+															<option value="レシピ通り">レシピ通り</option>
 														</Select>
 													</FormControl>
+
+													{/* 辛味 */}
 													<FormControl>
-														<FormLabel>辛み</FormLabel>
+														<FormLabel fontSize="sm">辛み</FormLabel>
 														<Select
-															defaultValue="recipe"
 															value={recipeParams.spiciness}
 															onChange={(e) =>
 																setRecipeParams((prev) => ({
 																	...prev,
-																	spiciness: e.target.value,
+																	spiciness: e.target.value as any,
 																}))
 															}
+															size="sm"
 														>
-															<option value="recipe">レシピ通り</option>
-															<option value="very_spicy">非常に好む</option>
-															<option value="spicy">好む</option>
-															<option value="normal">普通</option>
-															<option value="less">控えめ</option>
-															<option value="none">なし</option>
+															<option value="とても辛い">とても辛い</option>
+															<option value="辛め">辛め</option>
+															<option value="普通">普通</option>
+															<option value="少し辛い">少し辛い</option>
+															<option value="辛くない">辛くない</option>
+															<option value="レシピ通り">レシピ通り</option>
 														</Select>
 													</FormControl>
-												</SimpleGrid>{" "}
+												</SimpleGrid>
+
+												{/* 嫌いな食材 */}
 												<FormControl>
-													<FormLabel>嫌いな食材</FormLabel>
+													<FormLabel fontSize="sm">嫌いな食材</FormLabel>
 													<Textarea
-														placeholder="嫌いな食材を入力してください（例：なす、ピーマン、セロリなど）"
-														resize="vertical"
-														minH="100px"
 														value={recipeParams.dislikedIngredients}
 														onChange={(e) =>
 															setRecipeParams((prev) => ({
@@ -541,13 +658,17 @@ export default function MainPage() {
 																dislikedIngredients: e.target.value,
 															}))
 														}
+														placeholder="嫌いな食材を入力してください（例：なす、ピーマン、セロリなど）"
+														size="sm"
+														resize="vertical"
+														minH="80px"
 													/>
 												</FormControl>
 											</VStack>
-										</AccordionPanel>
-									</AccordionItem>
-								</Accordion>
-							</Box>
+										</Box>
+									</motion.div>
+								)}
+							</AnimatePresence>
 						</VStack>
 					</Box>
 				</MotionBox>
