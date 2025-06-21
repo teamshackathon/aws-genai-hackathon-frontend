@@ -347,14 +347,12 @@ export default function ShoppingListDetailPage() {
 											rounded="lg"
 											border="1px"
 											borderColor={borderColor}
+											onClick={() => handleItemCheck(item.id, item.isChecked)}
 										>
 											<Flex justify="space-between" align="center">
 												<HStack spacing={3}>
 													<Checkbox
 														isChecked={item.isChecked}
-														onChange={() =>
-															handleItemCheck(item.id, item.isChecked)
-														}
 														colorScheme="teal"
 													>
 														<Text
