@@ -10,6 +10,7 @@ import CookPage from "@/components/pages/CookPage";
 import LandingPage from "@/components/pages/LandingPage";
 import LoginPage from "@/components/pages/LoginPage";
 import MainPage from "@/components/pages/MainPage";
+import NotFoundPage from "@/components/pages/NotFoundPage";
 import ProfilePage from "@/components/pages/ProfilePage";
 import RecipeAIGenPage from "@/components/pages/RecipeAIGenPage";
 import RecipePage from "@/components/pages/RecipePage";
@@ -68,7 +69,11 @@ function App() {
 						element={<ShoppingListDetailPage />}
 					/>
 					{/* ★ここまで追加 */}
+					<Route path="*" element={<NotFoundPage />} />
 				</Route>
+
+				{/* 404 Not Found - キャッチオールルート */}
+				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
 		</BrowserRouter>
 	);
