@@ -342,7 +342,7 @@ export default function MainPage() {
 								bgGradient="linear(to-r, orange.500, pink.500)"
 								bgClip="text"
 							>
-								あなたのレシピコレクション
+								レシピコレクション
 							</Heading>
 						</HStack>
 						<Text fontSize="lg" color={textColor} maxW="2xl">

@@ -23,6 +23,7 @@ import {
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
+import { useBreakpointValue } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
@@ -39,7 +40,6 @@ import {
 	FaStickyNote,
 	FaTag,
 	FaTimes,
-	FaUser,
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router";
 
@@ -75,6 +75,7 @@ export default function RecipePage() {
 	const [userRecipe, setUserRecipe] = useState<UserRecipe | null | undefined>(
 		undefined,
 	);
+	const isMobile = useBreakpointValue({ base: true, md: false });
 	const [isCreatingShoppingList, setIsCreatingShoppingList] = useState(false);
 	const [cookHistory, setCookHistory] = useState<CookHistory[]>([]);
 	const [isEditingNote, setIsEditingNote] = useState(false);
@@ -483,22 +484,7 @@ export default function RecipePage() {
 											>
 												{getRecipeStatus(currentRecipe.status_id)}
 											</Badge>
-
-											<Badge
-												colorScheme="purple"
-												variant="outline"
-												fontSize="sm"
-												px={3}
-												py={1}
-												rounded="full"
-											>
-												<HStack spacing={1}>
-													<Icon as={FaUser} boxSize={3} />
-													<Text>BAE-RECIPE</Text>
-												</HStack>
-											</Badge>
 										</HStack>
-
 										<HStack spacing={2} color={textColor} fontSize="sm">
 											<Icon as={FaClock} />
 											<Text>
@@ -613,7 +599,7 @@ export default function RecipePage() {
 													});
 											}}
 										>
-											レシピをテキストでコピー
+											{!isMobile && "レシピをテキストでコピー"}
 										</MotionButton>
 									</HStack>
 								</VStack>
