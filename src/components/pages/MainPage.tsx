@@ -1,9 +1,4 @@
 import {
-	Accordion,
-	AccordionButton,
-	AccordionIcon,
-	AccordionItem,
-	AccordionPanel,
 	Badge,
 	Box,
 	Button,
@@ -27,6 +22,7 @@ import {
 	MenuList,
 	Select,
 	SimpleGrid,
+	Switch,
 	Tag,
 	TagLabel,
 	Text,
@@ -37,7 +33,7 @@ import {
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
 	FaBookmark,
@@ -62,15 +58,36 @@ import {
 	recipeSortParamAtom,
 	recipeUrlAtom,
 } from "@/lib/atom/RecipeAtom";
-import { updateUserRecipeAtom } from "@/lib/atom/UserAtom";
+import { updateUserRecipeAtom, userAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
 import { useLoadableAtom } from "@/lib/hook/useLoadableAtom";
 import type { RecipeParameters } from "@/lib/type/RecipeParameters";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
 // Framer Motion コンポーネントの定義
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
+
+/**
+ * ユーザープロフィールの設定値からRecipeParametersの初期値を生成する
+ * @param user ユーザーデータ
+ * @returns RecipeParameters
+ */
+const createInitialRecipeParamsFromUser = (user: any): RecipeParameters => {
+	return {
+		// ProfilePageの人数（数値）をMainPageの文字列形式に変換
+		peopleCount:
+			user?.servingSize && user.servingSize >= 1 && user.servingSize <= 6
+				? String(user.servingSize)
+				: "recipe",
+		cookingTime: user?.cookingTimePreference || "recipe",
+		preference: user?.mealPurpose || "recipe",
+		saltiness: user?.saltPreference || "recipe",
+		sweetness: user?.sweetnessPreference || "recipe",
+		spiciness: user?.spicinessPreference || "recipe",
+		dislikedIngredients: user?.dislikedIngredients || "",
+	};
+};
 
 /**
  * メインページコンポーネント
@@ -96,6 +113,9 @@ export default function MainPage() {
 		dislikedIngredients: "",
 	});
 
+	// カスタム生成設定の表示状態
+	const [showDetailSettings, setShowDetailSettings] = useState(false);
+
 	// トースト通知用
 	const toast = useToast();
 
@@ -107,11 +127,13 @@ export default function MainPage() {
 	const cardBg = useColorModeValue("white", "gray.800");
 	const textColor = useColorModeValue("gray.600", "gray.300");
 	const borderColor = useColorModeValue("gray.200", "gray.600");
-
 	// Loadable Atom の使用（非同期データ取得）
 	const recipes = useLoadableAtom(recipeListAtomLoadable);
 	const externalServices = useLoadableAtom(externalServiceAtomLoadable);
 	const updateUserRecipe = useSetAtom(updateUserRecipeAtom);
+
+	// ユーザーデータの取得（プロフィール設定値をレシピパラメータ初期値に反映するため）
+	const user = useAtomValue(userAtom);
 
 	// ユーザーレシピ情報（お気に入り、評価など）の状態管理
 	const [userRecipe, setUserRecipe] = useState<UserRecipe[]>([]);
@@ -250,10 +272,31 @@ export default function MainPage() {
 			page: 1, // ページを1に戻す
 		}));
 	};
-
 	useEffect(() => {
 		fetchData();
 	}, [recipes]);
+	/**
+	 * ユーザーデータが変更されたときに、プロフィール設定値を
+	 * レシピパラメータの初期値として反映する
+	 */
+	useEffect(() => {
+		if (user) {
+			const initialParams = createInitialRecipeParamsFromUser(user);
+			console.log("ユーザープロフィールからレシピパラメータを初期化:", {
+				user: {
+					servingSize: user.servingSize,
+					cookingTimePreference: user.cookingTimePreference,
+					mealPurpose: user.mealPurpose,
+					saltPreference: user.saltPreference,
+					sweetnessPreference: user.sweetnessPreference,
+					spicinessPreference: user.spicinessPreference,
+					dislikedIngredients: user.dislikedIngredients,
+				},
+				initialParams,
+			});
+			setRecipeParams(initialParams);
+		}
+	}, [user]);
 
 	return (
 		<Box minH="100vh" bgGradient={bgGradient}>
@@ -307,25 +350,51 @@ export default function MainPage() {
 						mx="auto"
 					>
 						<VStack spacing={6}>
-							{" "}
-							<HStack>
-								<Icon
-									as={FaVideo}
-									boxSize={{ base: 5, md: 6 }}
-									color="purple.500"
-								/>
-								<Heading
-									size={{ base: "sm", md: "md" }}
-									color={useColorModeValue("gray.800", "white")}
-									fontSize={{ base: "lg", md: "xl" }}
-								>
-									動画レシピをAIで解析
-								</Heading>
-								<Icon
-									as={HiSparkles}
-									boxSize={{ base: 4, md: 5 }}
-									color="pink.500"
-								/>
+							{/* AIタイトルとカスタム生成トグルを同じ高さに配置 */}
+							<HStack
+								justify="space-between"
+								align="center"
+								w="100%"
+								p={4}
+								borderRadius="md"
+							>
+								<Box flex={1} />
+								<HStack justify="center" flex={1}>
+									<Icon
+										as={FaVideo}
+										boxSize={{ base: 5, md: 6 }}
+										color="purple.500"
+									/>
+									<Heading
+										size={{ base: "sm", md: "md" }}
+										color={useColorModeValue("gray.800", "white")}
+										fontSize={{ base: "lg", md: "xl" }}
+									>
+										動画レシピをAIで解析
+									</Heading>
+									<Icon
+										as={HiSparkles}
+										boxSize={{ base: 4, md: 5 }}
+										color="pink.500"
+									/>
+								</HStack>
+
+								<HStack spacing={3} flex={1} justify="flex-end">
+									<Text
+										fontSize="md"
+										fontWeight="semibold"
+										color={useColorModeValue("gray.700", "gray.200")}
+									>
+										カスタム生成
+									</Text>
+									<Switch
+										id="detail-settings"
+										isChecked={showDetailSettings}
+										onChange={(e) => setShowDetailSettings(e.target.checked)}
+										colorScheme="orange"
+										size="lg"
+									/>
+								</HStack>
 							</HStack>
 							<Text
 								color={textColor}
@@ -382,34 +451,33 @@ export default function MainPage() {
 									AI解析開始
 								</Button>
 							</Flex>
-							{/* レシピパラメータ設定 */}
-							<Box maxW="4xl" mx="auto" w="100%">
-								<Accordion allowToggle mt={6}>
-									<AccordionItem border="none">
-										<AccordionButton
-											_expanded={{
-												bg: useColorModeValue("orange.50", "orange.900"),
-												color: useColorModeValue("orange.600", "orange.200"),
-											}}
-											borderRadius="md"
-											px={4}
-											py={3}
-										>
-											<Box flex="1" textAlign="center">
-												<Text
-													fontSize="md"
-													fontWeight="semibold"
-													color={useColorModeValue("gray.700", "gray.200")}
-												>
-													レシピの詳細設定
-												</Text>
-											</Box>
-											<AccordionIcon />
-										</AccordionButton>{" "}
-										<AccordionPanel pb={4} px={0}>
+
+							{/* カスタム生成設定パネル */}
+							<AnimatePresence>
+								{showDetailSettings && (
+									<motion.div
+										initial={{ height: 0, opacity: 0 }}
+										animate={{
+											height: "auto",
+											opacity: 1,
+											transition: {
+												height: { duration: 0.3, ease: "easeOut" },
+												opacity: { duration: 0.3, delay: 0.1 },
+											},
+										}}
+										exit={{
+											height: 0,
+											opacity: 0,
+											transition: {
+												height: { duration: 0.3, ease: "easeIn" },
+												opacity: { duration: 0.2 },
+											},
+										}}
+										style={{ overflow: "hidden", width: "100%" }}
+									>
+										<Box w="100%" p={6}>
 											<VStack spacing={4} align="stretch" w="100%">
 												<SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-													{" "}
 													<FormControl>
 														<FormLabel>食べる人数</FormLabel>
 														<Select
@@ -443,9 +511,9 @@ export default function MainPage() {
 															}
 														>
 															<option value="recipe">レシピ通り</option>
+															<option value="15min">15分以内</option>
 															<option value="30min">30分以内</option>
 															<option value="60min">1時間以内</option>
-															<option value="free">自由</option>
 														</Select>
 													</FormControl>
 													<FormControl>
@@ -527,7 +595,7 @@ export default function MainPage() {
 															<option value="none">なし</option>
 														</Select>
 													</FormControl>
-												</SimpleGrid>{" "}
+												</SimpleGrid>
 												<FormControl>
 													<FormLabel>嫌いな食材</FormLabel>
 													<Textarea
@@ -544,10 +612,10 @@ export default function MainPage() {
 													/>
 												</FormControl>
 											</VStack>
-										</AccordionPanel>
-									</AccordionItem>
-								</Accordion>
-							</Box>
+										</Box>
+									</motion.div>
+								)}
+							</AnimatePresence>
 						</VStack>
 					</Box>
 				</MotionBox>
