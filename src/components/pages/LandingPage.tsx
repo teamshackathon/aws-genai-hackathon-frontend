@@ -342,7 +342,7 @@ const LandingPage = () => {
 							簡単3ステップ！
 						</Heading>
 						<Text fontSize="lg" color={textColor}>
-							動画URLを入力するだけで、AIがあなた専用のレシピノートを作成します
+							動画URLを入力するだけでAIがあなた仕様のレシピノートを作成します
 						</Text>
 					</VStack>
 
@@ -435,7 +435,7 @@ const LandingPage = () => {
 						<Text fontSize="lg" opacity={0.9}>
 							動画レシピをもっと手軽に、もっと楽しく。
 							<br />
-							AIが作るあなた専用のレシピノートで
+							AIが作るあなただけのレシピノートで
 							<br />
 							「作りたい」気持ちを、そのまま料理に。
 						</Text>
