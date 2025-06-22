@@ -105,7 +105,7 @@ const SiderDrawer = () => {
 							>
 								<Box
 									as="img"
-									src="/bae-recipe/favicon.svg"
+									src="/favicon.svg"
 									alt="BAE RECIPE Icon"
 									boxSize={6}
 								/>

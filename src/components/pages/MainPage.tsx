@@ -335,11 +335,7 @@ export default function MainPage() {
 				>
 					<VStack spacing={6} textAlign="center">
 						<HStack>
-							<Image
-								src="/bae-recipe/favicon.svg"
-								alt="BAE Recipe Logo"
-								boxSize={8}
-							/>
+							<Image src="/favicon.svg" alt="BAE Recipe Logo" boxSize={8} />
 							<Heading
 								size="xl"
 								bgGradient="linear(to-r, orange.500, pink.500)"
@@ -1058,7 +1054,7 @@ export default function MainPage() {
 							<Box gridColumn="1 / -1" textAlign="center" py={16}>
 								<VStack spacing={4}>
 									<Image
-										src="/bae-recipe/favicon.svg"
+										src="/favicon.svg"
 										alt="BAE Recipe Logo"
 										boxSize={16}
 										opacity={0.4}
