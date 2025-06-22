@@ -15,6 +15,7 @@ import {
 	Switch,
 	Text,
 	VStack,
+	useBreakpointValue,
 	useColorModeValue,
 	useToast,
 } from "@chakra-ui/react";
@@ -97,6 +98,7 @@ export default function CookPage() {
 	const [autoPlayTimeout, setAutoPlayTimeout] = useState<number | null>(null);
 	const [lastVoiceCommand, setLastVoiceCommand] = useState<string | null>(null);
 	const toast = useToast();
+	const isMobile = useBreakpointValue({ base: true, md: false });
 
 	// Refs for cleanup
 	const currentVoiceRef = useRef<ChatVoice | null>(null);
@@ -516,60 +518,100 @@ export default function CookPage() {
 				py={4}
 			>
 				<Container maxW="4xl">
-					<HStack spacing={4} justify="space-between">
-						<HStack spacing={4}>
-							<Icon as={FaUtensils} color={primaryColor} boxSize={6} />
-							<VStack align="start" spacing={0}>
+					{isMobile ? (
+						<Box>
+							<Button
+								leftIcon={<FaArrowLeft />}
+								onClick={handleBackToRecipe}
+								variant="ghost"
+								colorScheme="purple"
+							>
+								レシピに戻る
+							</Button>
+							<HStack spacing={4} justify="space-between" mt={2}>
+								<Icon as={FaUtensils} color={primaryColor} boxSize={6} />
 								<Text fontSize="lg" fontWeight="bold" color={textColor}>
 									{currentRecipe.recipeName}
 								</Text>
-								<Text fontSize="sm" color={mutedColor}>
-									料理工程ガイド
-								</Text>
-							</VStack>
-						</HStack>{" "}
-						{/* WebSocket status */}
-						<HStack spacing={1}>
-							{statusInfo.icon}
-							<Text fontSize="sm" color={statusInfo.color} fontWeight="medium">
-								{statusInfo.text}
-							</Text>
-						</HStack>
-						{/* 最後の音声コマンド表示 */}
-						{lastVoiceCommand && (
-							<HStack spacing={2} bg="blue.50" px={3} py={1} rounded="md">
-								<Text fontSize="xs" color="blue.600" fontWeight="bold">
-									🎤 {lastVoiceCommand}
+								{statusInfo.icon}
+							</HStack>
+							<HStack spacing={2} mt={5}>
+								<Icon
+									as={autoPlayEnabled ? FaVolumeUp : FaVolumeOff}
+									color={autoPlayEnabled ? primaryColor : mutedColor}
+									boxSize={6}
+								/>
+								<Switch
+									isChecked={autoPlayEnabled}
+									onChange={(e) => setAutoPlayEnabled(e.target.checked)}
+									colorScheme="purple"
+									size="md"
+								/>
+								<Text fontSize="xl" color={mutedColor}>
+									自動音声
 								</Text>
 							</HStack>
-						)}
-						{/* 自動再生コントロール */}
-						<HStack spacing={2}>
-							<Icon
-								as={autoPlayEnabled ? FaVolumeUp : FaVolumeOff}
-								color={autoPlayEnabled ? primaryColor : mutedColor}
-								boxSize={4}
-							/>
-							<Switch
-								isChecked={autoPlayEnabled}
-								onChange={(e) => setAutoPlayEnabled(e.target.checked)}
+						</Box>
+					) : (
+						<HStack spacing={4} justify="space-between">
+							<HStack spacing={4}>
+								<Icon as={FaUtensils} color={primaryColor} boxSize={6} />
+								<VStack align="start" spacing={0}>
+									<Text fontSize="lg" fontWeight="bold" color={textColor}>
+										{currentRecipe.recipeName}
+									</Text>
+									<Text fontSize="sm" color={mutedColor}>
+										料理工程ガイド
+									</Text>
+								</VStack>
+							</HStack>{" "}
+							{/* WebSocket status */}
+							<HStack spacing={1}>
+								{statusInfo.icon}
+								<Text
+									fontSize="sm"
+									color={statusInfo.color}
+									fontWeight="medium"
+								>
+									{statusInfo.text}
+								</Text>
+							</HStack>
+							{/* 最後の音声コマンド表示 */}
+							{lastVoiceCommand && (
+								<HStack spacing={2} bg="blue.50" px={3} py={1} rounded="md">
+									<Text fontSize="xs" color="blue.600" fontWeight="bold">
+										🎤 {lastVoiceCommand}
+									</Text>
+								</HStack>
+							)}
+							{/* 自動再生コントロール */}
+							<HStack spacing={2}>
+								<Icon
+									as={autoPlayEnabled ? FaVolumeUp : FaVolumeOff}
+									color={autoPlayEnabled ? primaryColor : mutedColor}
+									boxSize={4}
+								/>
+								<Switch
+									isChecked={autoPlayEnabled}
+									onChange={(e) => setAutoPlayEnabled(e.target.checked)}
+									colorScheme="purple"
+									size="sm"
+								/>
+								<Text fontSize="xs" color={mutedColor}>
+									自動音声
+								</Text>
+							</HStack>
+							{/* Back button */}
+							<Button
+								leftIcon={<FaArrowLeft />}
+								onClick={handleBackToRecipe}
+								variant="ghost"
 								colorScheme="purple"
-								size="sm"
-							/>
-							<Text fontSize="xs" color={mutedColor}>
-								自動音声
-							</Text>
+							>
+								レシピに戻る
+							</Button>
 						</HStack>
-						{/* Back button */}
-						<Button
-							leftIcon={<FaArrowLeft />}
-							onClick={handleBackToRecipe}
-							variant="ghost"
-							colorScheme="purple"
-						>
-							レシピに戻る
-						</Button>
-					</HStack>
+					)}
 				</Container>
 			</Box>
 
@@ -579,7 +621,7 @@ export default function CookPage() {
 				borderBottom="1px"
 				borderColor={borderColor}
 				px={6}
-				py={4}
+				pt={4}
 			>
 				<Container maxW="4xl">
 					<VStack spacing={3}>
@@ -618,8 +660,8 @@ export default function CookPage() {
 			</Box>
 
 			{/* Main content area */}
-			<Container maxW="4xl" py={8}>
-				<Flex direction="column" minH="calc(100vh - 300px)" justify="center">
+			<Container maxW="4xl" py={4}>
+				<Flex direction="column" justify="center">
 					<AnimatePresence mode="wait">
 						<MotionCard
 							key={currentStep}
@@ -763,49 +805,94 @@ export default function CookPage() {
 				borderColor={borderColor}
 				p={4}
 			>
-				<Container maxW="4xl">
-					<HStack justify="space-between">
-						<Button
-							leftIcon={<FaArrowLeft />}
-							onClick={handlePrevious}
-							isDisabled={currentStep === 0}
-							variant="ghost"
-							colorScheme="purple"
-							size="lg"
-						>
-							前のステップ
-						</Button>
-
-						<VStack spacing={1}>
-							<Text fontSize="sm" color={mutedColor}>
-								{currentStep === totalSteps - 1 ? "料理完了" : "タップして次へ"}
-							</Text>
-							<Text fontSize="xs" color={mutedColor}>
-								{currentStep + 1} / {totalSteps}
-							</Text>
-						</VStack>
-
-						{currentStep === totalSteps - 1 ? (
-							<Button
-								rightIcon={<FaCheck />}
-								onClick={handleComplete}
-								colorScheme="green"
+				{isMobile ? (
+					<Box>
+						<HStack justify="space-between">
+							<IconButton
+								aria-label="前のステップ"
+								icon={<FaArrowLeft />}
+								onClick={handlePrevious}
+								isDisabled={currentStep === 0}
+								variant="ghost"
+								colorScheme="purple"
 								size="lg"
-							>
-								完了・終了
-							</Button>
-						) : (
+							/>
+							<VStack spacing={1}>
+								<Text fontSize="sm" color={mutedColor}>
+									{currentStep === totalSteps - 1
+										? "料理完了"
+										: "タップして次へ"}
+								</Text>
+								<Text fontSize="xs" color={mutedColor}>
+									{currentStep + 1} / {totalSteps}
+								</Text>
+							</VStack>
+							{currentStep === totalSteps - 1 ? (
+								<IconButton
+									aria-label="完了・終了"
+									icon={<FaCheck />}
+									onClick={handleComplete}
+									colorScheme="green"
+									size="lg"
+								/>
+							) : (
+								<IconButton
+									aria-label="次のステップ"
+									icon={<FaArrowRight />}
+									onClick={handleNext}
+									colorScheme="purple"
+									size="lg"
+								/>
+							)}
+						</HStack>
+					</Box>
+				) : (
+					<Container maxW="4xl">
+						<HStack justify="space-between">
 							<Button
-								rightIcon={<FaArrowRight />}
-								onClick={handleNext}
+								leftIcon={<FaArrowLeft />}
+								onClick={handlePrevious}
+								isDisabled={currentStep === 0}
+								variant="ghost"
 								colorScheme="purple"
 								size="lg"
 							>
-								次のステップ
+								前のステップ
 							</Button>
-						)}
-					</HStack>
-				</Container>
+
+							<VStack spacing={1}>
+								<Text fontSize="sm" color={mutedColor}>
+									{currentStep === totalSteps - 1
+										? "料理完了"
+										: "タップして次へ"}
+								</Text>
+								<Text fontSize="xs" color={mutedColor}>
+									{currentStep + 1} / {totalSteps}
+								</Text>
+							</VStack>
+
+							{currentStep === totalSteps - 1 ? (
+								<Button
+									rightIcon={<FaCheck />}
+									onClick={handleComplete}
+									colorScheme="green"
+									size="lg"
+								>
+									完了・終了
+								</Button>
+							) : (
+								<Button
+									rightIcon={<FaArrowRight />}
+									onClick={handleNext}
+									colorScheme="purple"
+									size="lg"
+								>
+									次のステップ
+								</Button>
+							)}
+						</HStack>
+					</Container>
+				)}
 			</Box>
 		</Box>
 	);
