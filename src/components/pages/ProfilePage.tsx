@@ -576,9 +576,12 @@ export default function ProfilePage() {
 												onChange={(e) =>
 													setEditingProfile({
 														...editingProfile,
-														servingSize: e.target.value
-															? Number(e.target.value)
-															: null,
+														servingSize:
+															e.target.value === "レシピ通り"
+																? ("レシピ通り" as any)
+																: e.target.value
+																	? Number(e.target.value)
+																	: null,
 													})
 												}
 												bg={useColorModeValue("gray.50", "gray.700")}
@@ -596,7 +599,8 @@ export default function ProfilePage() {
 												<option value="3">3人分</option>
 												<option value="4">4人分</option>
 												<option value="5">5人分</option>
-												<option value="6">6人分以上</option>
+												<option value="6">6人分</option>
+												<option value="レシピ通り">レシピ通り</option>
 											</Select>
 										) : (
 											<Text
@@ -604,9 +608,11 @@ export default function ProfilePage() {
 												py={2}
 												fontSize={{ base: "sm", md: "md" }}
 											>
-												{user?.servingSize
-													? `${user.servingSize}人分`
-													: "未設定"}
+												{user?.servingSize === ("レシピ通り" as any)
+													? "レシピ通り"
+													: typeof user?.servingSize === "number"
+														? `${user.servingSize}人分`
+														: "未設定"}
 											</Text>
 										)}
 									</FormControl>
@@ -641,6 +647,7 @@ export default function ProfilePage() {
 												<option value="薄味">薄味</option>
 												<option value="普通">普通</option>
 												<option value="濃いめ">濃いめ</option>
+												<option value="レシピ通り">レシピ通り</option>
 											</Select>
 										) : (
 											<Text
@@ -683,6 +690,7 @@ export default function ProfilePage() {
 												<option value="控えめ">控えめ</option>
 												<option value="普通">普通</option>
 												<option value="甘め">甘め</option>
+												<option value="レシピ通り">レシピ通り</option>
 											</Select>
 										) : (
 											<Text
@@ -723,6 +731,7 @@ export default function ProfilePage() {
 												<option value="普通">普通</option>
 												<option value="辛め">辛め</option>
 												<option value="とても辛い">とても辛い</option>
+												<option value="レシピ通り">レシピ通り</option>
 											</Select>
 										) : (
 											<Text fontWeight="medium" py={2}>
@@ -757,10 +766,7 @@ export default function ProfilePage() {
 												<option value="15分以内">15分以内</option>
 												<option value="30分以内">30分以内</option>
 												<option value="1時間以内">1時間以内</option>
-												<option value="1時間以上">1時間以上</option>
-												<option value="時間は気にしない">
-													時間は気にしない
-												</option>
+												<option value="レシピ通り">レシピ通り</option>
 											</Select>
 										) : (
 											<Text fontWeight="medium" py={2}>
@@ -769,47 +775,10 @@ export default function ProfilePage() {
 										)}
 									</FormControl>
 
-									{/* Meal Purpose */}
-									<FormControl>
-										<FormLabel fontSize="sm" color={mutedColor}>
-											食事の目的
-										</FormLabel>
-										{isEditing ? (
-											<Select
-												value={editingProfile.mealPurpose || ""}
-												onChange={(e) =>
-													setEditingProfile({
-														...editingProfile,
-														mealPurpose: e.target.value || null,
-													})
-												}
-												bg={useColorModeValue("gray.50", "gray.700")}
-												border="1px"
-												borderColor={borderColor}
-												_focus={{
-													borderColor: "orange.400",
-													boxShadow: "0 0 0 1px orange.400",
-												}}
-												placeholder="食事の目的を選択"
-											>
-												<option value="日常の食事">日常の食事</option>
-												<option value="ダイエット">ダイエット</option>
-												<option value="筋トレ・健康">筋トレ・健康</option>
-												<option value="おもてなし">おもてなし</option>
-												<option value="お弁当">お弁当</option>
-												<option value="パーティー">パーティー</option>
-											</Select>
-										) : (
-											<Text fontWeight="medium" py={2}>
-												{user?.mealPurpose || "未設定"}
-											</Text>
-										)}
-									</FormControl>
-
 									{/* Preferred Trend */}
 									<FormControl>
 										<FormLabel fontSize="sm" color={mutedColor}>
-											好みのトレンド
+											重視する傾向
 										</FormLabel>
 										{isEditing ? (
 											<Select
@@ -827,19 +796,13 @@ export default function ProfilePage() {
 													borderColor: "orange.400",
 													boxShadow: "0 0 0 1px orange.400",
 												}}
-												placeholder="好みのトレンドを選択"
+												placeholder="重視する傾向を選択"
 											>
-												<option value="和食">和食</option>
-												<option value="洋食">洋食</option>
-												<option value="中華">中華</option>
-												<option value="韓国料理">韓国料理</option>
-												<option value="イタリアン">イタリアン</option>
-												<option value="フレンチ">フレンチ</option>
-												<option value="タイ料理">タイ料理</option>
-												<option value="インド料理">インド料理</option>
-												<option value="メキシカン">メキシカン</option>
-												<option value="ヴィーガン">ヴィーガン</option>
-												<option value="グルテンフリー">グルテンフリー</option>
+												<option value="栄養重視">栄養重視</option>
+												<option value="見栄え重視">見栄え重視</option>
+												<option value="コスパ重視">コスパ重視</option>
+												<option value="タイパ重視">タイパ重視</option>
+												<option value="レシピ通り">レシピ通り</option>
 											</Select>
 										) : (
 											<Text fontWeight="medium" py={2}>
