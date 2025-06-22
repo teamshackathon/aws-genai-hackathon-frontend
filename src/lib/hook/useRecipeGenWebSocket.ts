@@ -4,7 +4,7 @@ import { authTokenAtom } from "@/lib/atom/AuthAtom";
 import type { WebSocketOptions } from "@/lib/type/websocket";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { recipeUrlAtom } from "../atom/RecipeAtom";
+import { recipeUrlAtom, useCustomGenerationAtom } from "../atom/RecipeAtom";
 import { sessionAtomLoadable } from "../atom/SessionAtom";
 import { useLoadableAtom } from "./useLoadableAtom";
 
@@ -19,15 +19,17 @@ export const useRecipeGenWebSocket = ({
 	const authToken = useAtomValue(authTokenAtom);
 	const session = useLoadableAtom(sessionAtomLoadable);
 	const recipeUrl = useAtomValue(recipeUrlAtom);
+	const useCustomGeneration = useAtomValue(useCustomGenerationAtom);
 	const [connectionStatus, setConnectionStatus] =
 		useState<string>("Uninstantiated");
 
 	const sessionId = session?.sessionId || "";
 
 	// レシピパラメータをURLエンコードしてクエリパラメータとして追加
-	const recipeParamsQuery = recipeParams
-		? `&recipe_params=${encodeURIComponent(JSON.stringify(recipeParams))}`
-		: "";
+	const recipeParamsQuery =
+		recipeParams && useCustomGeneration
+			? `&recipe_params=${encodeURIComponent(JSON.stringify(recipeParams))}`
+			: "";
 
 	const { sendMessage, lastMessage, readyState } = useWebSocket(
 		shouldConnect
