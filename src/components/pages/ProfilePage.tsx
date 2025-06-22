@@ -576,11 +576,12 @@ export default function ProfilePage() {
 												onChange={(e) =>
 													setEditingProfile({
 														...editingProfile,
-														servingSize: e.target.value === "レシピ通り"
-															? "レシピ通り" as any
-															: e.target.value
-																? Number(e.target.value)
-																: null,
+														servingSize:
+															e.target.value === "レシピ通り"
+																? ("レシピ通り" as any)
+																: e.target.value
+																	? Number(e.target.value)
+																	: null,
 													})
 												}
 												bg={useColorModeValue("gray.50", "gray.700")}
@@ -872,14 +873,14 @@ export default function ProfilePage() {
 												{getDislikedIngredientsArray(
 													editingProfile.dislikedIngredients,
 												).length === 0 && (
-														<Text
-															fontSize="sm"
-															color={mutedColor}
-															fontStyle="italic"
-														>
-															苦手な食材はありません
-														</Text>
-													)}
+													<Text
+														fontSize="sm"
+														color={mutedColor}
+														fontStyle="italic"
+													>
+														苦手な食材はありません
+													</Text>
+												)}
 											</VStack>
 										) : (
 											<Box>
