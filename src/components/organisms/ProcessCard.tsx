@@ -281,11 +281,7 @@ export default function ProcessCard({
 			<CardHeader pb={4}>
 				<HStack spacing={3} justify="space-between">
 					<HStack spacing={3}>
-						<Image
-							src="/bae-recipe/favicon.svg"
-							alt="BAE Recipe Logo"
-							boxSize={6}
-						/>
+						<Image src="/favicon.svg" alt="BAE Recipe Logo" boxSize={6} />
 						<Heading size="lg" color={headingColor}>
 							調理手順
 						</Heading>

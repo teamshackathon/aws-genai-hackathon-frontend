@@ -151,7 +151,7 @@ export default function LoginPage() {
 				transition={{ duration: 2, delay: 0.5 }}
 			>
 				<Image
-					src="/bae-recipe/favicon.svg"
+					src="/favicon.svg"
 					alt="BAE Recipe Logo"
 					boxSize={32}
 					opacity={0.6}
@@ -179,15 +179,11 @@ export default function LoginPage() {
 					>
 						<VStack spacing={4}>
 							<HStack spacing={3} justify="center">
-								<Image
-									src="/bae-recipe/favicon.svg"
-									alt="BAE Recipe Logo"
-									boxSize={10}
-								/>
+								<Image src="/favicon.svg" alt="BAE Recipe Logo" boxSize={10} />
 								<Box
 									onClick={() => navigate("/home")}
 									as="img"
-									src="/bae-recipe/bae-recipe-logo_orange.png"
+									src="/bae-recipe-logo_orange.png"
 									alt="BAE RECIPE Logo"
 									height={{ base: "32px", md: "40px" }}
 									width="auto"
