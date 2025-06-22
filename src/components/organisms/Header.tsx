@@ -7,6 +7,7 @@ import {
 	InputGroup,
 	InputLeftElement,
 	Spacer,
+	useBreakpointValue,
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -37,6 +38,7 @@ export default function Header() {
 	const textColor = "white";
 	const searchBg = useColorModeValue("whiteAlpha.200", "whiteAlpha.300");
 	const searchBorder = useColorModeValue("whiteAlpha.300", "whiteAlpha.400");
+	const isMobile = useBreakpointValue({ base: true, md: false });
 
 	// デバウンス処理で検索を実行
 	useEffect(() => {
@@ -77,22 +79,24 @@ export default function Header() {
 					<HStack spacing={4}>
 						<SiderDrawer />
 						{/* ロゴとアイコン */}
-						<MotionBox
-							whileHover={{ scale: 1.05 }}
-							transition={{ duration: 0.2 }}
-						>
-							<HStack spacing={3}>
-								<Box
-									onClick={() => navigate("/home")}
-									as="img"
-									src="/bae-recipe/bae-recipe-logo_white.png"
-									alt="BAE RECIPE Logo"
-									height={{ base: "32px", md: "40px" }}
-									width="auto"
-								/>
-								<Icon as={HiSparkles} boxSize={5} color="yellow.200" />
-							</HStack>
-						</MotionBox>{" "}
+						{!isMobile && (
+							<MotionBox
+								whileHover={{ scale: 1.05 }}
+								transition={{ duration: 0.2 }}
+							>
+								<HStack spacing={3}>
+									<Box
+										onClick={() => navigate("/home")}
+										as="img"
+										src="/bae-recipe/bae-recipe-logo_white.png"
+										alt="BAE RECIPE Logo"
+										height={{ base: "32px", md: "40px" }}
+										width="auto"
+									/>
+									<Icon as={HiSparkles} boxSize={5} color="yellow.200" />
+								</HStack>
+							</MotionBox>
+						)}
 					</HStack>
 
 					{/* 中央: 検索窓 */}
@@ -103,7 +107,7 @@ export default function Header() {
 						flex={2}
 						maxW="100%"
 						mx={{ base: 4, md: 8 }}
-						display={{ base: "none", md: "block" }}
+						display={{ base: "block", md: "block" }}
 					>
 						<InputGroup w={"100%"} size="lg">
 							<InputLeftElement pointerEvents="none" h="full">

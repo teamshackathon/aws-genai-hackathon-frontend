@@ -59,6 +59,7 @@ import {
 	recipeQueryParamAtom,
 	recipeSortParamAtom,
 	recipeUrlAtom,
+	useCustomGenerationAtom,
 } from "@/lib/atom/RecipeAtom";
 import { updateUserRecipeAtom, userAtom } from "@/lib/atom/UserAtom";
 import { type UserRecipe, getUserRecipes } from "@/lib/domain/UserQuery";
@@ -79,7 +80,9 @@ export default function MainPage() {
 	const toast = useToast();
 
 	// カスタム生成設定の状態管理
-	const [useCustomGeneration, setUseCustomGeneration] = useState(false);
+	const [useCustomGeneration, setUseCustomGeneration] = useAtom(
+		useCustomGenerationAtom,
+	);
 	const [showCustomSettings, setShowCustomSettings] = useState(false);
 	const [recipeParams, setRecipeParams] = useState<RecipeParameters>({
 		peopleCount: "レシピ通り",
