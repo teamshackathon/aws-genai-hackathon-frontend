@@ -59,7 +59,7 @@ const LandingPage = () => {
 							>
 								<Box
 									as="img"
-									src="/bae-recipe/favicon.svg"
+									src="/favicon.svg"
 									alt="BAE RECIPE Icon"
 									boxSize={12}
 								/>
@@ -68,7 +68,7 @@ const LandingPage = () => {
 						<HStack justify="center" spacing={3} w="100%" overflow={"visible"}>
 							<Box
 								as="img"
-								src="/bae-recipe/bae-recipe-logo_orange.png"
+								src="/bae-recipe-logo_orange.png"
 								alt="Bae Recipe Logo"
 								height={{ base: "60px", md: "100px" }}
 								maxH={{ base: "60px", md: "100px" }}
@@ -307,7 +307,7 @@ const LandingPage = () => {
 									>
 										<Box
 											as="img"
-											src="/bae-recipe/preview.gif"
+											src="/preview.gif"
 											alt="レシピノートプレビュー"
 											w="full"
 											h="full"
@@ -380,7 +380,7 @@ const LandingPage = () => {
 											{item.isCustomIcon ? (
 												<Box
 													as="img"
-													src="/bae-recipe/favicon.svg"
+													src="/favicon.svg"
 													alt="BAE RECIPE Icon"
 													boxSize={8}
 												/>
