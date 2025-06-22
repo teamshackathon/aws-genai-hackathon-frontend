@@ -68,7 +68,7 @@ const LandingPage = () => {
 						<HStack justify="center" spacing={3} w="100%" overflow={"visible"}>
 							<Box
 								as="img"
-								src="/bae-recipe/bae-recipe-logo_orange.svg"
+								src="/bae-recipe/bae-recipe-logo_orange.png"
 								alt="Bae Recipe Logo"
 								height={{ base: "60px", md: "100px" }}
 								maxH={{ base: "60px", md: "100px" }}
