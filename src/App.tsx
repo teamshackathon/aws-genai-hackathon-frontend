@@ -40,7 +40,7 @@ function App() {
 	}, [toastState]);
 
 	return (
-		<BrowserRouter basename="/bae-recipe">
+		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={<LandingPage />} />
 				<Route path="/login" element={<LoginPage />} />
