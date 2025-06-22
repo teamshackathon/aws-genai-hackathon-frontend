@@ -16,7 +16,7 @@ COPY . .
 # サブディレクトリのパスを環境変数で指定可能にする
 ARG BASE_PATH=/bae-recipe
 ENV VITE_BASE_PATH=$BASE_PATH
-ENV VITE_PUBLIC_API_URL=https://163.44.125.128/api-bae-recipe/api/v1
+ENV VITE_PUBLIC_API_URL=https://api.bae-recipe.com/api/v1
 
 # アプリケーションをビルド
 RUN npm run build
@@ -31,7 +31,7 @@ ENV TZ=Asia/Tokyo
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Nginxの設定を最適化
-COPY --from=build /app/dist /usr/share/nginx/html/bae-recipe
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # ヘルスチェック用のパスを設定
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
