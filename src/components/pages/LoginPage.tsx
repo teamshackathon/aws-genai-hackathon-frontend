@@ -184,14 +184,14 @@ export default function LoginPage() {
 									alt="BAE Recipe Logo"
 									boxSize={10}
 								/>
-								<Heading
-									size="2xl"
-									bgGradient="linear(to-r, orange.400, pink.400)"
-									bgClip="text"
-									fontWeight="bold"
-								>
-									BAE Recipe
-								</Heading>
+								<Box
+									onClick={() => navigate("/home")}
+									as="img"
+									src="/bae-recipe/bae-recipe-logo_orange.png"
+									alt="BAE RECIPE Logo"
+									height={{ base: "32px", md: "40px" }}
+									width="auto"
+								/>
 								<Icon as={HiSparkles} boxSize={6} color="yellow.400" />
 							</HStack>
 							<Text color={mutedColor} fontSize="lg">

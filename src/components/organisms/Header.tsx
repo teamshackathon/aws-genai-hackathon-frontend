@@ -85,7 +85,7 @@ export default function Header() {
 								<Box
 									onClick={() => navigate("/home")}
 									as="img"
-									src="/bae-recipe/bae-recipe-logo_white.svg"
+									src="/bae-recipe/bae-recipe-logo_white.png"
 									alt="BAE RECIPE Logo"
 									height={{ base: "32px", md: "40px" }}
 									width="auto"
