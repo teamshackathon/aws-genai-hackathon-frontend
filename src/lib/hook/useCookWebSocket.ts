@@ -11,7 +11,7 @@ export const useCookWebSocket = ({
 	reconnectInterval = 3000,
 	shouldConnect = false,
 }: WebSocketOptions) => {
-	const baseURL = import.meta.env.VITE_PUBLIC_API_URL;
+	const baseURL = import.meta.env.VITE_PUBLIC_WEBSOCKET_URL;
 	const authToken = useAtomValue(authTokenAtom);
 	const [connectionStatus, setConnectionStatus] =
 		useState<string>("Uninstantiated");
