@@ -501,32 +501,31 @@ export default function RecipePage() {
 
 									{/* Action buttons */}
 									<HStack spacing={4} w="full" flexWrap="wrap">
-										{!isMobile && (
-											<MotionButton
-												leftIcon={
-													<Icon
-														as={FaBookmark}
-														color={
-															userRecipe?.isFavorite ? "orange.400" : "gray.400"
-														}
-													/>
-												}
-												variant={userRecipe?.isFavorite ? "solid" : "outline"}
-												colorScheme="orange"
-												onClick={() =>
-													toggleBookmark(
-														currentRecipe.id,
-														userRecipe?.isFavorite || false,
-													)
-												}
-												whileHover={{ scale: 1.05 }}
-												whileTap={{ scale: 0.95 }}
-											>
-												{userRecipe?.isFavorite
+										<MotionButton
+											leftIcon={
+												<Icon
+													as={FaBookmark}
+													color={
+														userRecipe?.isFavorite ? "orange.400" : "gray.400"
+													}
+												/>
+											}
+											variant={userRecipe?.isFavorite ? "solid" : "outline"}
+											colorScheme="orange"
+											onClick={() =>
+												toggleBookmark(
+													currentRecipe.id,
+													userRecipe?.isFavorite || false,
+												)
+											}
+											whileHover={{ scale: 1.05 }}
+											whileTap={{ scale: 0.95 }}
+										>
+											{!isMobile &&
+												(userRecipe?.isFavorite
 													? "ブックマーク済み"
-													: "ブックマーク"}
-											</MotionButton>
-										)}
+													: "ブックマーク")}
+										</MotionButton>
 										{/* ★「買い物リストを作成」ボタンを追加 */}
 										<MotionButton
 											leftIcon={<Icon as={FaClipboardList} />}
